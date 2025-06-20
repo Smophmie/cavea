@@ -22,6 +22,7 @@ Ce projet utilise Docker pour exécuter :
 ```bash
 git clone https://github.com/ton-utilisateur/ton-repo.git
 cd ton-repo
+```
 
 ### 2. Créer un fichier .env
 
@@ -31,3 +32,4 @@ FRONTEND_VOLUME=./cavea-front
 BACKEND_VOLUME=./cavea-back
 DB_VOLUME=./data/db
 LARAVEL_VERSION=12.0.10
+```
