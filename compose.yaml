@@ -1,0 +1,66 @@
+services:
+  frontend:
+    build:
+      context: ./cavea-front
+      dockerfile: dockerfile
+    ports:
+      - "8092:8081"
+    networks:
+      - front-back
+    working_dir: /cavea
+    volumes:
+      - ${FRONTEND_VOLUME}:/cavea
+
+  backend:
+    image: bitnami/laravel:${LARAVEL_VERSION}
+    ports:
+      - "8093:8000"
+    volumes:
+      - ${BACKEND_VOLUME}:/cavea
+    working_dir: /cavea
+    networks:
+      - front-back
+      - bdd
+    depends_on:
+      - bdd
+    command: "php artisan serve --host=0.0.0.0 --port=8000"
+
+  
+  bdd:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: cavea
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${DB_VOLUME}:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - bdd
+
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    depends_on:
+      - bdd
+    environment:
+      PMA_HOST: bdd
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8080:80"
+    networks:
+      - bdd
+
+
+networks:
+  front-back: 
+    driver: bridge
+  bdd:
+    driver: bridge
