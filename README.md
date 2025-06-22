@@ -20,8 +20,8 @@ Ce projet utilise Docker pour exécuter :
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/ton-utilisateur/ton-repo.git
-cd ton-repo
+git clone https://github.com/Smophmie/cavea.git
+cd cavea
 ```
 
 ### 2. Créer un fichier .env
