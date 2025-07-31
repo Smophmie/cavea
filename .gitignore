@@ -1,6 +1,3 @@
 /db_data/
 .env
-**/gantt
-**/Gantt
-/Online Gantt 20250520.csv
-/Online Gantt 20250520.gantt
+/Gantt/
