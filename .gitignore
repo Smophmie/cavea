@@ -1,2 +1,4 @@
 /db_data/
 .env
+**/gantt
+**/Gantt
