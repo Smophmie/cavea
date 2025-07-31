@@ -65,3 +65,5 @@ php artisan migrate
 php artisan db:seed
 php artisan serve
 ```
+
+Cela permettra d'alimenter la base de données.
