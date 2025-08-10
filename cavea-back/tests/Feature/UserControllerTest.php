@@ -65,4 +65,32 @@ class UserControllerTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
+
+    public function testUserCanRegister()
+    {
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'testuser@example.com',
+            'password' => 'Password1!',
+            'password_confirmation' => 'Password1!',
+        ];
+
+        $response = $this->postJson('/api/register', $userData);
+
+        $response->assertStatus(201)
+                ->assertJsonStructure([
+                    'user' => [
+                        'id',
+                        'name',
+                        'email',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'testuser@example.com',
+        ]);
+    }
+
 }

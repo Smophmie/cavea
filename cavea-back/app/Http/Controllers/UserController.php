@@ -28,31 +28,28 @@ class UserController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|max:255',
-            'email' => [
-                'required', 
-                'email',
-                'unique:users,email'
-            ],
+            'email' => ['required', 'email', 'unique:users,email'],
             'password' => [
-                'required', 
+                'required',
                 'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]+$/',                
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]+$/',
                 'confirmed'
             ],
             'password_confirmation' => 'required',
         ]);
+
         try {
+            $validatedData['password'] = bcrypt($validatedData['password']);
+
             $user = User::create($validatedData);
-    
-            return response()->json([
-                'user' => $user,
-            ], 201);
+
+            return response()->json(['user' => $user], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'La création de compte n\'a pas fonctionné!',
                 'error' => $e->getMessage()
             ], 500);
-        }
+        };
     }
     
     public function update(Request $request, string $id)
