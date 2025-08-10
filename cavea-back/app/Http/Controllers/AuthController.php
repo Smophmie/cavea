@@ -23,8 +23,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Mot de passe incorrect.'], 401);
         }
 
-        // Créer un token d’API personnel
-        $token = $user->createToken('api-token')->plainTextToken;
+         $user->tokens()->delete();
+
+         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'token' => $token,

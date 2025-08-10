@@ -113,7 +113,7 @@ class UserControllerTest extends TestCase
         $userData = [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password', // pas de majuscule, chiffre ou caractère spécial
+            'password' => 'password',
             'password_confirmation' => 'password',
         ];
 
