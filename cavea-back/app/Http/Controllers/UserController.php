@@ -54,55 +54,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-
-    
-    public function login(Request $request)
-    {
-        try {
-            $validateUser = Validator::make($request->all(), 
-            [
-                'email' => 'required|email',
-                'password' => 'required'
-            ]);
-
-            if($validateUser->fails()){
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $validateUser->errors()
-                ], 401);
-            }
-
-            if(!Auth::attempt($request->only(['email', 'password']))){
-                return response()->json([
-                    'status' => false,
-                    'message' => "L'e-mail ou le mot de passe est incorrect.",
-                ], 401);
-            }
-
-            $user = User::where('email', $request->email)->first();
-
-            if(auth('sanctum')->check()){
-                auth()->user()->tokens()->delete();
-             }
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Utilisateur connecté.',
-                'token' => $user->createToken("API TOKEN")->plainTextToken,
-                'is_admin' => $user->is_admin,
-                'name'=> $user->name,
-                'city' => $user->city
-            ], 200);
-
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Une erreur est survenue lors de la connexion. Veuillez réessayer plus tard.'
-            ], 500);
-        }
-    }
-
     
     public function update(Request $request, string $id)
     {
@@ -122,25 +73,6 @@ class UserController extends Controller
         return $user;
     }
 
-    
-    public function logout(Request $request)
-    {
-        $user = Auth::user();
-        if ($user) {
-            $user->tokens()->delete();
-
-            return response()->json([
-                'status' => true,
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Utilisateur non déconnecté',
-        ], 401);
-    }
-
-    
     public function destroy(string $id)
     {
         $user = User::find($id);
