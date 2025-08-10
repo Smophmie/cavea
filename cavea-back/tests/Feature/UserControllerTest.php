@@ -93,4 +93,52 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    public function testUserRegisterFailsWithInvalidEmail()
+    {
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'invalid-email',
+            'password' => 'Password1!',
+            'password_confirmation' => 'Password1!',
+        ];
+
+        $response = $this->postJson('/api/register', $userData);
+
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['email']);
+    }
+
+    public function testUserRegisterFailsWithWeakPassword()
+    {
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password', // pas de majuscule, chiffre ou caractère spécial
+            'password_confirmation' => 'password',
+        ];
+
+        $response = $this->postJson('/api/register', $userData);
+
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['password']);
+    }
+
+    public function testUserRegisterFailsWithDuplicateEmail()
+    {
+        $existingUser = User::factory()->create([
+            'email' => 'duplicate@example.com'
+        ]);
+
+        $userData = [
+            'name' => 'Another User',
+            'email' => 'duplicate@example.com',
+            'password' => 'Password1!',
+            'password_confirmation' => 'Password1!',
+        ];
+
+        $response = $this->postJson('/api/register', $userData);
+
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['email']);
+    }
 }
