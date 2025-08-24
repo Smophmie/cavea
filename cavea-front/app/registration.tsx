@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
 import PrimaryButton from "./components/PrimaryButton";
 import BackButton from "./components/BackButton";
 import { useRouter } from "expo-router";
 import { baseURL } from "../api";
+import PageTitle from "./components/PageTitle";
 
 export default function RegistrationPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function RegistrationPage() {
       console.log("Response:", response.status, data);
       if (response.ok) {
         setMessage(`Compte créé avec succès. Bienvenue ${data.user.firstname}, vous pouvez maintenant vous connecter !`);
-        setTimeout(() => router.push("/login"), 2500);
+        setTimeout(() => router.push("/login"), 2000);
       } else {
         setMessage(data.message || "Erreur lors de la création du compte");
       }
@@ -55,14 +56,10 @@ export default function RegistrationPage() {
   };
 
   return (
-    <View className="flex-1 bg-white px-6 justify-center">
-
-      <BackButton />
-
-      <Text className="text-3xl font-playfairbold text-center mb-2">
-        Créer un compte
-      </Text>
-      <Text className="text-center text-gray-600 mb-6">
+    <View className="flex-1 bg-app items-center px-6 justify-center">
+      
+      <PageTitle text="Créer un compte" color="wine"></PageTitle>
+      <Text className="text-center text-gray text-lg mb-9">
         Commencez à gérer votre cave.
       </Text>
 
@@ -70,14 +67,14 @@ export default function RegistrationPage() {
         placeholder="Nom"
         value={name}
         onChangeText={setName}
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
       />
 
       <TextInput
         placeholder="Prénom"
         value={firstname}
         onChangeText={setFirstname}
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
       />
 
       <TextInput
@@ -86,7 +83,7 @@ export default function RegistrationPage() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
       />
 
       <TextInput
@@ -94,7 +91,7 @@ export default function RegistrationPage() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
       />
 
       <TextInput
@@ -102,7 +99,7 @@ export default function RegistrationPage() {
         value={passwordConfirmation}
         onChangeText={setPasswordConfirmation}
         secureTextEntry
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-6"
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
       />
 
       {loading ? (

@@ -12,7 +12,7 @@ export default function PrimaryButton({
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
-      className={`bg-wine rounded-lg px-6 py-3 w-full`}
+      className={`bg-wine rounded-lg px-6 py-3 w-full my-2`}
       onPress={onPress}
     >
       <Text

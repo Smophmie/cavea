@@ -12,7 +12,7 @@ export default function SecondaryButton({
 }: SecondaryButtonProps) {
   return (
     <TouchableOpacity
-      className={`bg-white rounded-lg border border-wine border-solid px-6 py-3 w-full`}
+      className={`bg-white rounded-lg border border-wine border-solid px-6 py-3 my-2 w-full`}
       onPress={onPress}
     >
       <Text

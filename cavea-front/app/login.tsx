@@ -4,7 +4,8 @@ import { baseURL } from "../api";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
-import BackButton from "./components/BackButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageTitle from "./components/PageTitle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +27,9 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(`Connexion réussie ! Bonjour ${data.user.name}`);
+        setMessage(`Connexion réussie ! Bonjour ${data.user.firstname}`);
+        await AsyncStorage.setItem("authToken", data.token);
+        setTimeout(() => router.replace("/(tabs)/dashboard"), 2000);
       } else {
         setMessage(data.message || "Erreur lors de la connexion");
       }
@@ -39,11 +42,13 @@ export default function LoginPage() {
   };
 
   return (
-    <View className="flex-1 justify-center px-6 bg-white">
-    
-        <BackButton/>
-        
-        <Text className="text-3xl font-playfairbold text-wine text-center mb-8">Connexion</Text>
+    <View className="flex-1 justify-center items-center px-6 bg-white">
+            
+        <PageTitle text="Connexion" color="wine"></PageTitle>
+
+        <Text className="text-center text-gray text-lg mb-9">
+          Retrouvez votre cave à vin.
+        </Text>
 
         <TextInput
             placeholder="Email"
@@ -51,7 +56,7 @@ export default function LoginPage() {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
         />
 
         <TextInput
@@ -59,7 +64,7 @@ export default function LoginPage() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-6"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
         />
 
         {loading ? (
@@ -74,9 +79,10 @@ export default function LoginPage() {
             </Text>
         ) : null}
 
-        <Text>Pas encore de compte?</Text>
+        <Text className="mt-9 text-lg text-grey">Pas encore de compte?</Text>
         <TextLink
             text="Créer mon compte"
+            className="text-lg"
             onPress={() => router.push("/registration")}
         />
     </View>
