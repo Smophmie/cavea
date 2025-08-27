@@ -41,7 +41,7 @@ docker compose up --build
 
 Cela va :
 
-Construire les conteneurs frontend, backend, base de données
+Construire les conteneurs frontend, backend, base de données.
 Lancer l’application sur les bons ports.
 
 ### 4. Accéder à l'application
@@ -66,4 +66,18 @@ php artisan db:seed
 php artisan serve
 ```
 
-Cela permettra d'alimenter la base de données.
+Cela permettra d'alimenter la base de données et de lancer le projet.
+
+## 📱 Frontend (Expo)
+
+### 🚀 Lancer Expo en local (hors Docker)
+
+Pour visualiser le **frontend**, sans passer par Docker :  
+
+```bash
+cd cavea-front
+npm install
+npm start
+```
+
+Vous pouvez ensuite scanner le QR code avec l’app Expo Go (iOS/Android) pour tester sur votre téléphone.
