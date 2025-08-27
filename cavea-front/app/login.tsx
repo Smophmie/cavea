@@ -4,14 +4,16 @@ import { baseURL } from "../api";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageTitle from "./components/PageTitle";
+import { useAuth } from "@/authentication/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -28,8 +30,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         setMessage(`Connexion réussie ! Bonjour ${data.user.firstname}`);
-        await AsyncStorage.setItem("authToken", data.token);
-        setTimeout(() => router.replace("/(tabs)/dashboard"), 2000);
+        login(data.token);
       } else {
         setMessage(data.message || "Erreur lors de la connexion");
       }
