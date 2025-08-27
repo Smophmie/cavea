@@ -10,36 +10,10 @@ import { useAuth } from "@/authentication/AuthContext";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const { login } = useAuth();
+  const { login, loading, error, token } = useAuth();
 
   const handleLogin = async () => {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(`${baseURL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(`Connexion réussie ! Bonjour ${data.user.firstname}`);
-        login(data.token);
-      } else {
-        setMessage(data.message || "Erreur lors de la connexion");
-      }
-    } catch (error) {
-      setMessage("Impossible de se connecter au serveur.");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    await login(email, password);
   };
 
   return (
@@ -74,11 +48,7 @@ export default function LoginPage() {
             <PrimaryButton text="Connexion" onPress={handleLogin} />
         )}
 
-        {message ? (
-            <Text className={`text-center text-lg ${message.includes("réussie") ? "text-green-600" : "text-red-600"}`}>
-            {message}
-            </Text>
-        ) : null}
+        {error && <Text className="text-red-600 text-center">{error}</Text>}
 
         <Text className="mt-9 text-lg text-grey">Pas encore de compte?</Text>
         <TextLink

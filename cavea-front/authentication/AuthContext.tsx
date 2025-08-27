@@ -1,22 +1,48 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 import { useStorageState } from "./useStorageState";
 import { baseURL } from "@/api";
 
 type AuthContextType = {
   token: string | null;
-  login: (token: string) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   loading: boolean;
+  error: string | null;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken, loading] = useStorageState("authToken");
+  const [token, setToken, storageLoading] = useStorageState("authToken");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
 
-  const login = (newToken: string) => {
-    setToken(newToken);
+    try {
+      const response = await fetch(`${baseURL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToken(data.token);
+      } else {
+        setError(data.message || "Erreur lors de la connexion");
+      }
+    } catch (err) {
+      setError("Impossible de se connecter au serveur.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const logout = async () => {
     try {
@@ -37,7 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ token, login, logout, loading: storageLoading || loading, error }}
+    >
       {children}
     </AuthContext.Provider>
   );
