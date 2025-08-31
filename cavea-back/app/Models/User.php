@@ -35,6 +35,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function cellarItems()
+    {
+        return $this->hasMany(CellarItem::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
