@@ -1,0 +1,69 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, pdo_mysql
+
+      - name: Install Composer dependencies
+        working-directory: cavea-back
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Copy .env
+        working-directory: cavea-back
+        run: cp .env.example .env
+
+      - name: Generate app key
+        working-directory: cavea-back
+        run: php artisan key:generate
+
+      - name: Run migrations
+        working-directory: cavea-back
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+
+      - name: Run tests
+        working-directory: cavea-back
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test
