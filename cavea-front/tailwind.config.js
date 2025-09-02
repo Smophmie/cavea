@@ -1,0 +1,22 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./App.{js,jsx,ts,tsx}",
+    "./app/**/*.{js,jsx,ts,tsx}",
+  ],
+  presets: [require("nativewind/preset")],
+  theme: {
+    extend: {
+      colors: {
+        app: "#faf9f6",
+        wine: "#bb2700",
+        gray: "#6B7280",
+      },
+      fontFamily: {
+        playfair: ['PlayfairDisplay_400Regular'],
+        playfairbold: ['PlayfairDisplay_700Bold'],
+      },
+    },
+  },
+  plugins: [],
+};

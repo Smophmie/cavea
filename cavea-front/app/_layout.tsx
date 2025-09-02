@@ -1,29 +1,37 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack, Redirect } from "expo-router";
+import { useFonts, PlayfairDisplay_400Regular, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display";
+import { AuthProvider, useAuth } from "../authentication/AuthContext";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+function RootNavigator() {
+  const { token, loading } = useAuth();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  if (loading) {
+    return <Redirect href="/loading" />;
   }
 
+  if (!token) {
+    return <Redirect href="/login" />;
+  }
+
+  return <Redirect href="/protected/dashboard" />;
+}
+
+export default function RootLayout() {
+  useFonts({
+    PlayfairDisplay_400Regular,
+    PlayfairDisplay_700Bold,
+  });
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="registration" />
+        <Stack.Screen name="loading" />
+        <Stack.Screen name="protected" />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <RootNavigator />
+    </AuthProvider>
   );
 }
