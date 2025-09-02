@@ -42,6 +42,7 @@ class UserControllerTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->putJson('api/users/' . $user->id, [
+            'firstname' => 'Firstname',
             'name' => 'New Name',
             'email' => 'new@example.com'
         ]);
@@ -69,6 +70,7 @@ class UserControllerTest extends TestCase
     public function testUserCanRegister()
     {
         $userData = [
+            'firstname' => 'Test Firstname',
             'name' => 'Test User',
             'email' => 'testuser@example.com',
             'password' => 'Password1!',
@@ -81,6 +83,7 @@ class UserControllerTest extends TestCase
                 ->assertJsonStructure([
                     'user' => [
                         'id',
+                        'firstname',
                         'name',
                         'email',
                         'created_at',
