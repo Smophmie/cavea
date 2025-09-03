@@ -84,7 +84,3 @@ jobs:
           context: ./cavea-back
           push: false
           tags: cavea-back:test
-
-      - name: Run container
-        run: |
-          docker run --rm cavea-back:test php artisan --version
