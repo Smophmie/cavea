@@ -10,6 +10,8 @@ use App\Models\User;
 
 class UserController extends Controller
 {
+    const RULE_REQUIRED_MAX225 = 'required|max:255';
+
     public function index()
     {
         $users = User::all();
@@ -27,8 +29,8 @@ class UserController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:255',
-            'firstname' => 'required|max:255',
+            'name' => User::RULE_REQUIRED_MAX225,
+            'firstname' => User::RULE_REQUIRED_MAX225,
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => [
                 'required',
@@ -78,8 +80,8 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|max:255',
-            'firstname' => 'required|max:255',
+            'name' => User::RULE_REQUIRED_MAX225,
+            'firstname' => User::RULE_REQUIRED_MAX225,
             'email' => 'required|email|unique:users,email,' . $id,
         ]);
         $user = User::find($id);
