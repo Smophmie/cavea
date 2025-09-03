@@ -16,7 +16,10 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@1a6d90ebcb0e6a6b1d87e37ba693fe453195ae25
         with:
           projectBaseDir: ./cavea-back
+          args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_ORGANIZATION : ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
