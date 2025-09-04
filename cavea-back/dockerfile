@@ -1,5 +1,12 @@
 FROM dunglas/frankenphp
 
+# Installer dépendances système utiles à Composer et PHP
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install system dependencies
 RUN install-php-extensions \
     pdo_mysql \
