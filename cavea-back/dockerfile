@@ -29,4 +29,4 @@ RUN php artisan config:cache \
 
 EXPOSE 8080
 
-CMD ["frankenphp", "run", "--worker", "public/index.php"]
+CMD ["frankenphp", "run", "public/index.php"]
