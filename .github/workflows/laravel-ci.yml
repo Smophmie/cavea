@@ -135,26 +135,26 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.4
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
 
-    laravel-deploy:
-      runs-on: ubuntu-latest
-      needs: laravel-package
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+  laravel-deploy:
+    runs-on: ubuntu-latest
+    needs: laravel-package
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        - name: Set up Kubectl
-          uses: azure/setup-kubectl@v3
-          with:
-            version: 'v1.27.0'
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
 
-        - name: Configure Kubeconfig
-          run: |
-            mkdir -p ~/.kube
-            echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+      - name: Configure Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
-        - name: Deploy to Kubernetes
-          run: |
-            kubectl apply -f namespace.yaml
-            kubectl apply -f deployment.yaml -n cavea-back-namespace
-            kubectl apply -f service.yaml -n cavea-back-namespace
-            kubectl apply -f ingress.yaml -n cavea-back-namespace
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f namespace.yaml
+          kubectl apply -f deployment.yaml -n cavea-back-namespace
+          kubectl apply -f service.yaml -n cavea-back-namespace
+          kubectl apply -f ingress.yaml -n cavea-back-namespace
