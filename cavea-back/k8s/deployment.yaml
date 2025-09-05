@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cavea-back-deployment
-  namespace: cavea-namespace
+  namespace: cavea-back-namespace
 spec:
   replicas: 1
   selector:
