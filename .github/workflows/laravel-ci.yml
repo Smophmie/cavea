@@ -86,46 +86,29 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  laravel-prepare:
+
+  laravel-package:
     runs-on: ubuntu-latest
     needs: laravel-sonarqube
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set environment variables for substitution
-        run: |
-          echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
-          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-
-      - name: Generate .env.prod
+      - name: Generate .env.prod with secrets
         working-directory: ./cavea-back
         run: |
-          cp .env.prod.example .env.prod
-          envsubst < .env.prod.example > .env.prod
-
-  laravel-package:
-    runs-on: ubuntu-latest
-    needs: laravel-prepare
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+          export APP_KEY="${{ secrets.APP_KEY }}"
+          export DB_HOST="${{ secrets.DB_HOST }}"
+          export DB_DATABASE="${{ secrets.DB_DATABASE }}"
+          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          envsubst < .env.prod.example > .env
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Copy .env.prod into build context
-        run: |
-          cp cavea-back/.env.prod cavea-back/.env
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
