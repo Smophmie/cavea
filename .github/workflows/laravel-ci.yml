@@ -138,7 +138,7 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f .cavea-back/k8s/namespace.yaml
-          kubectl apply -f .cavea-back/k8s/deployment.yaml -n cavea-back-namespace
-          kubectl apply -f .cavea-back/k8s/service.yaml -n cavea-back-namespace
-          kubectl apply -f .cavea-back/k8s/ingress.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/namespace.yaml
+          kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
