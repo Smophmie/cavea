@@ -108,5 +108,5 @@ jobs:
           context: ./cavea-back
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.2
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.3
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
