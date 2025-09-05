@@ -86,6 +86,26 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
+  laravel-prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set environment variables for substitution
+        run: |
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Generate .env.prod
+        working-directory: ./cavea-back
+        run: |
+          cp .env.prod.example .env.prod
+          envsubst < .env.prod.example > .env.prod
+
   laravel-package:
     runs-on: ubuntu-latest
     needs: laravel-sonarqube
@@ -102,11 +122,39 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Copy .env.prod into build context
+        run: |
+          cp cavea-back/.env.prod cavea-back/.env
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: ./cavea-back
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.3
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.4
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
+
+    laravel-deploy:
+      runs-on: ubuntu-latest
+      needs: laravel-package
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+
+        - name: Set up Kubectl
+          uses: azure/setup-kubectl@v3
+          with:
+            version: 'v1.27.0'
+
+        - name: Configure Kubeconfig
+          run: |
+            mkdir -p ~/.kube
+            echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+
+        - name: Deploy to Kubernetes
+          run: |
+            kubectl apply -f namespace.yaml
+            kubectl apply -f deployment.yaml -n cavea-back-namespace
+            kubectl apply -f service.yaml -n cavea-back-namespace
+            kubectl apply -f ingress.yaml -n cavea-back-namespace
