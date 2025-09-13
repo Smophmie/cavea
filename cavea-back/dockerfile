@@ -1,15 +1,23 @@
-FROM php:8.3-fpm
+FROM dunglas/frankenphp
+
+# Installer dépendances système utiles à Composer et PHP
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Set working directory
-WORKDIR /var/www
 
 COPY . .
 
@@ -19,4 +27,6 @@ RUN php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
 
-CMD ["php-fpm"]
+EXPOSE 80
+
+CMD ["frankenphp", "php-server", "-r", "public/"]
