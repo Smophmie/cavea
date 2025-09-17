@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('cellar_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('bottle_id')->constrained();
-            $table->foreignId('vintage_id')->constrained();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');;
+            $table->foreignId('bottle_id')->constrained()->onDelete('cascade');;
+            $table->foreignId('vintage_id')->constrained()->onDelete('cascade');;
             $table->integer('stock');
             $table->string('rating');
             $table->double('price');
