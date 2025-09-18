@@ -15,12 +15,20 @@ class AuthController extends Controller
         $request->validate([
            'email' => 'required|email',
            'password' => 'required',
+        ], [
+            'email.required' => 'L’email est obligatoire.',
+            'email.email' => 'Format d’email invalide.',
+            'password.required' => 'Le mot de passe est obligatoire.',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Mot de passe incorrect.'], 401);
+        if (! $user) {
+            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+        }
+
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Mot de passe invalide.'], 401);
         }
 
          $user->tokens()->delete();
