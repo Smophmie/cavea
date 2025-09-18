@@ -39,7 +39,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(401)
-                 ->assertJson(['message' => 'Mot de passe incorrect.']);
+                 ->assertJson(['message' => 'Mot de passe invalide.']);
     }
 
     public function testAuthenticatedUserCanAccessProtectedRoutes()
