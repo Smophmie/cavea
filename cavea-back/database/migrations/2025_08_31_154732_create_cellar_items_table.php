@@ -17,12 +17,12 @@ return new class extends Migration
             $table->foreignId('bottle_id')->constrained()->onDelete('cascade');;
             $table->foreignId('vintage_id')->constrained()->onDelete('cascade');;
             $table->integer('stock');
-            $table->string('rating');
-            $table->double('price');
-            $table->string('shop');
-            $table->string('offered_by');
-            $table->year('drinking_window_start');
-            $table->year('drinking_window_end');
+            $table->string('rating')->nullable();
+            $table->double('price')->nullable();
+            $table->string('shop')->nullable();
+            $table->string('offered_by')->nullable();
+            $table->year('drinking_window_start')->nullable();
+            $table->year('drinking_window_end')->nullable();
             $table->timestamps();
         });
     }
