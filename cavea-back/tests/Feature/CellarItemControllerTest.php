@@ -56,15 +56,18 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanStoreCellarItem()
     {
-        $this->bottleService->shouldReceive('findOrCreate')
-            ->once()
-            ->andReturn(Bottle::factory()->create());
+        $colour = \App\Models\Colour::factory()->create();
+
+        $this->bottleService
+            ->shouldReceive('findOrCreate')
+            ->andReturn(Bottle::factory()->create(['colour_id' => $colour->id]));
+
         $this->vintageService->shouldReceive('findOrCreate')
             ->once()
             ->andReturn(Vintage::factory()->create());
 
         $payload = [
-            'bottle' => ['name' => 'Château Test', 'domain' => 'Test', 'PDO' => 'AOC Test', 'colour_id' => 1],
+            'bottle' => ['name' => 'Château Test', 'domain' => 'Test', 'PDO' => 'AOC Test', 'colour_id' => $colour->id],
             'vintage' => ['year' => 2020],
             'stock' => 5,
             'rating' => 4.5,
@@ -150,9 +153,10 @@ class CellarItemControllerTest extends TestCase
             ->getJson("api/cellar-items/colour/{$bottleRed->colour_id}");
 
         $response->assertOk();
+        $data = $response->json();
 
-        $response->assertJsonFragment(['id' => $redItem->id])
-                ->assertJsonMissing(['id' => $whiteItem->id]);
+        $this->assertCount(1, $data);
+        $this->assertEquals($redItem->id, $data[0]['id']);
     }
 
     public function testCanDecrementStock()
