@@ -18,7 +18,7 @@ class CellarItemFactory extends Factory
     {
         return [
             'stock' => $this->faker->numberBetween(1, 10),
-            'rating' => $this->faker->numberBetween(6, 10),
+            'rating' => $this->faker->randomFloat(1, 0, 5),
             'price' => $this->faker->randomFloat(2, 10, 100),
             'shop' => $this->faker->company,
             'offered_by' => $this->faker->name,
