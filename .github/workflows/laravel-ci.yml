@@ -85,7 +85,7 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.sources=app/Http/Controllers
             -Dsonar.tests=tests
-            -Dsonar.php.coverage.reportPaths=storage/coverage.xml
+            -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
