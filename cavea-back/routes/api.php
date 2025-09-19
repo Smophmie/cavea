@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/cellar-items', [CellarItemController::class, 'index']);
     Route::get('/cellar-items/{id}', [CellarItemController::class, 'show']);
+    Route::get('/cellar-items/colour/{colourId}', [CellarItemController::class, 'filterByColour']);
     Route::post('/cellar-items', [CellarItemController::class, 'store']);
     Route::put('/cellar-items/{id}', [CellarItemController::class, 'update']);
     Route::post('/cellar-items/{id}/increment', [CellarItemController::class, 'incrementStock']);

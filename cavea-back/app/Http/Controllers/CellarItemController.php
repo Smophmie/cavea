@@ -26,7 +26,7 @@ class CellarItemController extends Controller
     {
         return auth()->user()
             ->cellarItems()
-            ->with(['bottle', 'vintage'])
+            ->with(['bottle.colour', 'vintage'])
             ->get();
     }
 
@@ -39,11 +39,13 @@ class CellarItemController extends Controller
             'bottle.name' => 'required|string|max:255',
             'bottle.domain' => 'nullable|string|max:255',
             'bottle.PDO' => 'nullable|string|max:255',
+            'bottle.colour_id' => 'required|exists:colours,id',
+
 
             'vintage.year' => 'required|integer|digits:4|min:1900|max:2100',
 
             'stock' => 'required|integer|min:0',
-            'rating' => 'nullable|integer|min:0|max:100',
+            'rating' => 'nullable|numeric|min:0|max:5',
             'price' => 'nullable|numeric|min:0',
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',
@@ -68,7 +70,10 @@ class CellarItemController extends Controller
             'drinking_window_end' => $validated['drinking_window_end'] ?? null,
         ]);
 
-        return response()->json($cellarItem, 201);
+        return response()->json(
+            $cellarItem->load(['bottle.colour', 'vintage']),
+            201
+        );
     }
 
     /**
@@ -76,7 +81,7 @@ class CellarItemController extends Controller
      */
     public function show(string $id)
     {
-        $cellarItem = CellarItem::with(['bottle', 'vintage'])->find($id);
+        $cellarItem = CellarItem::with(['bottle.colour', 'vintage'])->find($id);
 
         if (! $cellarItem) {
             return response()->json(['error' => 'Elément inexistant'], 404);
@@ -87,6 +92,20 @@ class CellarItemController extends Controller
         }
 
         return response()->json($cellarItem);
+    }
+
+    public function filterByColour($colourId)
+    {
+        $userId = auth()->id();
+
+        $cellarItems = CellarItem::with(['bottle.colour', 'vintage'])
+            ->where('user_id', $userId)
+            ->whereHas('bottle', function ($query) use ($colourId) {
+                $query->where('colour_id', $colourId);
+            })
+            ->get();
+
+        return response()->json($cellarItems);
     }
 
     public function incrementStock($id)
@@ -129,7 +148,7 @@ class CellarItemController extends Controller
 
         $validated = $request->validate([
             'stock' => 'integer|min:0',
-            'rating' => 'nullable|integer|min:0|max:100',
+            'rating' => 'nullable|numeric|min:0|max:5',
             'price' => 'nullable|numeric|min:0',
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',

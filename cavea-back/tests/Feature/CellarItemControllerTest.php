@@ -7,6 +7,7 @@ use App\Models\CellarItem;
 use App\Models\Bottle;
 use App\Models\Vintage;
 use App\Models\User;
+use App\Models\Colour;
 use App\Services\BottleService;
 use App\Services\VintageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,10 +64,10 @@ class CellarItemControllerTest extends TestCase
             ->andReturn(Vintage::factory()->create());
 
         $payload = [
-            'bottle' => ['name' => 'Château Test', 'domain' => 'Test', 'PDO' => 'AOC Test'],
+            'bottle' => ['name' => 'Château Test', 'domain' => 'Test', 'PDO' => 'AOC Test', 'colour_id' => 1],
             'vintage' => ['year' => 2020],
             'stock' => 5,
-            'rating' => 90,
+            'rating' => 4.5,
             'price' => 15.5,
             'shop' => 'Carrefour',
         ];
@@ -74,7 +75,7 @@ class CellarItemControllerTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('api/cellar-items', $payload);
 
         $response->assertCreated()
-                 ->assertJsonFragment(['stock' => 5, 'rating' => 90]);
+                 ->assertJsonFragment(['stock' => 5, 'rating' => 4.5]);
     }
 
     public function testCanShowCellarItem()
@@ -121,6 +122,37 @@ class CellarItemControllerTest extends TestCase
             'id' => $cellarItem->id,
             'stock' => 4,
         ]);
+    }
+
+    public function testCanFilterCellarItemsByColour()
+    {
+        $red = Colour::factory()->create(['name' => 'Red']);
+        $white = Colour::factory()->create(['name' => 'White']);
+
+        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
+        $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
+        
+        $vintage = Vintage::factory()->create();
+
+        $redItem = CellarItem::factory()
+            ->for($this->user)
+            ->for($bottleRed)
+            ->for($vintage)
+            ->create();
+
+        $whiteItem = CellarItem::factory()
+            ->for($this->user)
+            ->for($bottleWhite)
+            ->for($vintage)
+            ->create();
+
+        $response = $this->actingAs($this->user)
+            ->getJson("api/cellar-items/colour/{$bottleRed->colour_id}");
+
+        $response->assertOk();
+
+        $response->assertJsonFragment(['id' => $redItem->id])
+                ->assertJsonMissing(['id' => $whiteItem->id]);
     }
 
     public function testCanDecrementStock()
