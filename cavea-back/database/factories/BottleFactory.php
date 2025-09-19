@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use App\Models\Colour;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Bottle>
@@ -20,6 +21,7 @@ class BottleFactory extends Factory
         return [
             'name'=>fake()->name(),
             'domain'=>Str::random(10),
+            'colour_id' => Colour::inRandomOrder()->first()->id ?? Colour::factory(),
         ];
     }
 }

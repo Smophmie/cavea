@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Colour;
 use App\Models\Vintage;
 use App\Models\Bottle;
 use App\Models\CellarItem;
@@ -25,6 +26,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
+        $colours = ['Rouge', 'Blanc', 'Rosé', 'Pétillant', 'Orange', 'Autre'];
+
+        foreach ($colours as $colour) {
+            Colour::firstOrCreate(['name' => $colour]);
+        }
+
         Vintage::factory()->create([
             'year' => 1995
         ]);
@@ -32,6 +39,7 @@ class DatabaseSeeder extends Seeder
         Bottle::factory()->create([
             'name' => "Les Pampres",
             'domain' => "Mas Laval",
+            'colour_id' => Colour::inRandomOrder()->first()->id,
         ]);
 
         $user = User::first() ?? User::factory()->create();
@@ -43,8 +51,8 @@ class DatabaseSeeder extends Seeder
             'bottle_id' => $bottle->id,
             'vintage_id' => $vintage->id,
             'stock' => rand(1, 10),
-            'rating' => rand(6, 10),
-            'price' => rand(10, 100),
+            'rating' => rand(0, 5),
+            'price' => rand(10, 45),
             'shop' => 'Cave locale',
             'offered_by' => 'Ami',
             'drinking_window_start' => 2020,

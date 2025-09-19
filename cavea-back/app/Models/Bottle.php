@@ -20,4 +20,9 @@ class Bottle extends Model
     {
         return $this->hasMany(CellarItem::class);
     }
+
+    public function colour()
+    {
+        return $this->belongsTo(Colour::class);
+    }
 }

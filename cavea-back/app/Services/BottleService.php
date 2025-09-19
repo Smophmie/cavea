@@ -12,6 +12,7 @@ class BottleService
             'name' => $data['name'],
             'domain' => $data['domain'] ?? null,
             'PDO' => $data['PDO'] ?? null,
+            'colour_id' => $data['colour_id'],
         ]);
     }
 }
