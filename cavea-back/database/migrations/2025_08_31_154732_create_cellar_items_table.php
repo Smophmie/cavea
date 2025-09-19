@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('bottle_id')->constrained()->onDelete('cascade');;
             $table->foreignId('vintage_id')->constrained()->onDelete('cascade');;
             $table->integer('stock');
-            $table->string('rating')->nullable();
+            $table->decimal('rating', 2, 1)->nullable();
             $table->double('price')->nullable();
             $table->string('shop')->nullable();
             $table->string('offered_by')->nullable();
