@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1758304738">
-  <project timestamp="1758304738" name="Clover Coverage">
+<coverage generated="1758450517">
+  <project timestamp="1758450517" name="Clover Coverage">
     <package name="App\Http\Controllers">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\AuthController.php">
         <class name="App\Http\Controllers\AuthController" namespace="App\Http\Controllers">
@@ -206,100 +206,6 @@
         <metrics loc="104" ncloc="104" classes="1" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="50" elements="63" coveredelements="54"/>
       </file>
     </package>
-    <package name="App\Http\Controllers\Auth">
-      <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\Auth\EmailVerificationNotificationController.php">
-        <class name="App\Http\Controllers\Auth\EmailVerificationNotificationController" namespace="App\Http\Controllers\Auth">
-          <metrics complexity="2" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="5" coveredelements="0"/>
-        </class>
-        <line num="15" type="method" name="store" visibility="public" complexity="2" crap="6" count="0"/>
-        <line num="17" type="stmt" count="0"/>
-        <line num="18" type="stmt" count="0"/>
-        <line num="21" type="stmt" count="0"/>
-        <line num="23" type="stmt" count="0"/>
-        <metrics loc="26" ncloc="23" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="5" coveredelements="0"/>
-      </file>
-      <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\Auth\NewPasswordController.php">
-        <class name="App\Http\Controllers\Auth\NewPasswordController" namespace="App\Http\Controllers\Auth">
-          <metrics complexity="2" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="20" coveredstatements="0" elements="21" coveredelements="0"/>
-        </class>
-        <line num="22" type="method" name="store" visibility="public" complexity="2" crap="6" count="0"/>
-        <line num="24" type="stmt" count="0"/>
-        <line num="25" type="stmt" count="0"/>
-        <line num="26" type="stmt" count="0"/>
-        <line num="27" type="stmt" count="0"/>
-        <line num="28" type="stmt" count="0"/>
-        <line num="33" type="stmt" count="0"/>
-        <line num="34" type="stmt" count="0"/>
-        <line num="35" type="stmt" count="0"/>
-        <line num="36" type="stmt" count="0"/>
-        <line num="37" type="stmt" count="0"/>
-        <line num="38" type="stmt" count="0"/>
-        <line num="39" type="stmt" count="0"/>
-        <line num="41" type="stmt" count="0"/>
-        <line num="42" type="stmt" count="0"/>
-        <line num="43" type="stmt" count="0"/>
-        <line num="45" type="stmt" count="0"/>
-        <line num="46" type="stmt" count="0"/>
-        <line num="47" type="stmt" count="0"/>
-        <line num="48" type="stmt" count="0"/>
-        <line num="51" type="stmt" count="0"/>
-        <metrics loc="54" ncloc="46" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="20" coveredstatements="0" elements="21" coveredelements="0"/>
-      </file>
-      <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\Auth\PasswordResetLinkController.php">
-        <class name="App\Http\Controllers\Auth\PasswordResetLinkController" namespace="App\Http\Controllers\Auth">
-          <metrics complexity="2" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="11" coveredstatements="0" elements="12" coveredelements="0"/>
-        </class>
-        <line num="18" type="method" name="store" visibility="public" complexity="2" crap="6" count="0"/>
-        <line num="20" type="stmt" count="0"/>
-        <line num="21" type="stmt" count="0"/>
-        <line num="22" type="stmt" count="0"/>
-        <line num="27" type="stmt" count="0"/>
-        <line num="28" type="stmt" count="0"/>
-        <line num="29" type="stmt" count="0"/>
-        <line num="31" type="stmt" count="0"/>
-        <line num="32" type="stmt" count="0"/>
-        <line num="33" type="stmt" count="0"/>
-        <line num="34" type="stmt" count="0"/>
-        <line num="37" type="stmt" count="0"/>
-        <metrics loc="40" ncloc="32" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="11" coveredstatements="0" elements="12" coveredelements="0"/>
-      </file>
-      <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\Auth\RegisteredUserController.php">
-        <class name="App\Http\Controllers\Auth\RegisteredUserController" namespace="App\Http\Controllers\Auth">
-          <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="0" elements="14" coveredelements="0"/>
-        </class>
-        <line num="21" type="method" name="store" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="23" type="stmt" count="0"/>
-        <line num="24" type="stmt" count="0"/>
-        <line num="25" type="stmt" count="0"/>
-        <line num="26" type="stmt" count="0"/>
-        <line num="27" type="stmt" count="0"/>
-        <line num="29" type="stmt" count="0"/>
-        <line num="30" type="stmt" count="0"/>
-        <line num="31" type="stmt" count="0"/>
-        <line num="32" type="stmt" count="0"/>
-        <line num="33" type="stmt" count="0"/>
-        <line num="35" type="stmt" count="0"/>
-        <line num="37" type="stmt" count="0"/>
-        <line num="39" type="stmt" count="0"/>
-        <metrics loc="42" ncloc="37" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="0" elements="14" coveredelements="0"/>
-      </file>
-      <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\Auth\VerifyEmailController.php">
-        <class name="App\Http\Controllers\Auth\VerifyEmailController" namespace="App\Http\Controllers\Auth">
-          <metrics complexity="3" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="0" elements="10" coveredelements="0"/>
-        </class>
-        <line num="15" type="method" name="__invoke" visibility="public" complexity="3" crap="12" count="0"/>
-        <line num="17" type="stmt" count="0"/>
-        <line num="18" type="stmt" count="0"/>
-        <line num="19" type="stmt" count="0"/>
-        <line num="20" type="stmt" count="0"/>
-        <line num="23" type="stmt" count="0"/>
-        <line num="24" type="stmt" count="0"/>
-        <line num="27" type="stmt" count="0"/>
-        <line num="28" type="stmt" count="0"/>
-        <line num="29" type="stmt" count="0"/>
-        <metrics loc="32" ncloc="29" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="0" elements="10" coveredelements="0"/>
-      </file>
-    </package>
     <package name="App\Http\Middleware">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Middleware\EnsureEmailIsVerified.php">
         <class name="App\Http\Middleware\EnsureEmailIsVerified" namespace="App\Http\Middleware">
@@ -355,11 +261,11 @@
         <class name="App\Models\Bottle" namespace="App\Models">
           <metrics complexity="2" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
         </class>
-        <line num="19" type="method" name="cellarItems" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="21" type="stmt" count="0"/>
-        <line num="24" type="method" name="colour" visibility="public" complexity="1" crap="1" count="4"/>
-        <line num="26" type="stmt" count="4"/>
-        <metrics loc="29" ncloc="29" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
+        <line num="20" type="method" name="cellarItems" visibility="public" complexity="1" crap="2" count="0"/>
+        <line num="22" type="stmt" count="0"/>
+        <line num="25" type="method" name="colour" visibility="public" complexity="1" crap="1" count="4"/>
+        <line num="27" type="stmt" count="4"/>
+        <metrics loc="30" ncloc="30" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
       </file>
       <file name="C:\wamp64\www\cavea\cavea-back\app\Models\CellarItem.php">
         <class name="App\Models\CellarItem" namespace="App\Models">
@@ -408,40 +314,40 @@
         <class name="App\Providers\AppServiceProvider" namespace="App\Providers">
           <metrics complexity="2" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="3" elements="6" coveredelements="4"/>
         </class>
-        <line num="13" type="method" name="register" visibility="public" complexity="1" crap="1" count="24"/>
-        <line num="16" type="stmt" count="24"/>
-        <line num="21" type="method" name="boot" visibility="public" complexity="1" crap="1.04" count="24"/>
-        <line num="23" type="stmt" count="24"/>
+        <line num="13" type="method" name="register" visibility="public" complexity="1" crap="1" count="28"/>
+        <line num="16" type="stmt" count="28"/>
+        <line num="21" type="method" name="boot" visibility="public" complexity="1" crap="1.04" count="28"/>
+        <line num="23" type="stmt" count="28"/>
         <line num="24" type="stmt" count="0"/>
-        <line num="25" type="stmt" count="24"/>
+        <line num="25" type="stmt" count="28"/>
         <metrics loc="28" ncloc="21" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="3" elements="6" coveredelements="4"/>
       </file>
     </package>
     <package name="App\Services">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Services\BottleService.php">
         <class name="App\Services\BottleService" namespace="App\Services">
-          <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+          <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
         </class>
-        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="11" type="stmt" count="0"/>
-        <line num="12" type="stmt" count="0"/>
-        <line num="13" type="stmt" count="0"/>
-        <line num="14" type="stmt" count="0"/>
-        <line num="15" type="stmt" count="0"/>
-        <line num="16" type="stmt" count="0"/>
-        <metrics loc="19" ncloc="19" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="1" count="2"/>
+        <line num="11" type="stmt" count="2"/>
+        <line num="12" type="stmt" count="2"/>
+        <line num="13" type="stmt" count="2"/>
+        <line num="14" type="stmt" count="2"/>
+        <line num="15" type="stmt" count="2"/>
+        <line num="16" type="stmt" count="2"/>
+        <metrics loc="19" ncloc="19" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
       </file>
       <file name="C:\wamp64\www\cavea\cavea-back\app\Services\VintageService.php">
         <class name="App\Services\VintageService" namespace="App\Services">
-          <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="4" coveredelements="0"/>
+          <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
         </class>
-        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="11" type="stmt" count="0"/>
-        <line num="12" type="stmt" count="0"/>
-        <line num="13" type="stmt" count="0"/>
-        <metrics loc="16" ncloc="16" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="4" coveredelements="0"/>
+        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="1" count="2"/>
+        <line num="11" type="stmt" count="2"/>
+        <line num="12" type="stmt" count="2"/>
+        <line num="13" type="stmt" count="2"/>
+        <metrics loc="16" ncloc="16" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
       </file>
     </package>
-    <metrics files="19" loc="882" ncloc="793" classes="18" methods="41" coveredmethods="18" conditionals="0" coveredconditionals="0" statements="272" coveredstatements="158" elements="313" coveredelements="176"/>
+    <metrics files="14" loc="689" ncloc="627" classes="13" methods="36" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="215" coveredstatements="167" elements="251" coveredelements="187"/>
   </project>
 </coverage>
