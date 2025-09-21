@@ -83,7 +83,7 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.sources=app/Http/Controllers
+            -Dsonar.sources=app
             -Dsonar.tests=tests
             -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
         env:
@@ -120,7 +120,7 @@ jobs:
           context: ./cavea-back
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.4
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.5
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
 
   laravel-deploy:
@@ -140,9 +140,9 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
-      # - name: Deploy to Kubernetes
-      #   run: |
-      #     kubectl apply -f ./cavea-back/k8s/namespace.yaml
-      #     kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
-      #     kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
-      #     kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f ./cavea-back/k8s/namespace.yaml
+          kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
