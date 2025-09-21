@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1758304738">
-  <project timestamp="1758304738" name="Clover Coverage">
+<coverage generated="1758450090">
+  <project timestamp="1758450090" name="Clover Coverage">
     <package name="App\Http\Controllers">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\AuthController.php">
         <class name="App\Http\Controllers\AuthController" namespace="App\Http\Controllers">
@@ -355,11 +355,11 @@
         <class name="App\Models\Bottle" namespace="App\Models">
           <metrics complexity="2" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
         </class>
-        <line num="19" type="method" name="cellarItems" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="21" type="stmt" count="0"/>
-        <line num="24" type="method" name="colour" visibility="public" complexity="1" crap="1" count="4"/>
-        <line num="26" type="stmt" count="4"/>
-        <metrics loc="29" ncloc="29" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
+        <line num="20" type="method" name="cellarItems" visibility="public" complexity="1" crap="2" count="0"/>
+        <line num="22" type="stmt" count="0"/>
+        <line num="25" type="method" name="colour" visibility="public" complexity="1" crap="1" count="4"/>
+        <line num="27" type="stmt" count="4"/>
+        <metrics loc="30" ncloc="30" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="1" elements="4" coveredelements="2"/>
       </file>
       <file name="C:\wamp64\www\cavea\cavea-back\app\Models\CellarItem.php">
         <class name="App\Models\CellarItem" namespace="App\Models">
@@ -408,40 +408,40 @@
         <class name="App\Providers\AppServiceProvider" namespace="App\Providers">
           <metrics complexity="2" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="3" elements="6" coveredelements="4"/>
         </class>
-        <line num="13" type="method" name="register" visibility="public" complexity="1" crap="1" count="24"/>
-        <line num="16" type="stmt" count="24"/>
-        <line num="21" type="method" name="boot" visibility="public" complexity="1" crap="1.04" count="24"/>
-        <line num="23" type="stmt" count="24"/>
+        <line num="13" type="method" name="register" visibility="public" complexity="1" crap="1" count="28"/>
+        <line num="16" type="stmt" count="28"/>
+        <line num="21" type="method" name="boot" visibility="public" complexity="1" crap="1.04" count="28"/>
+        <line num="23" type="stmt" count="28"/>
         <line num="24" type="stmt" count="0"/>
-        <line num="25" type="stmt" count="24"/>
+        <line num="25" type="stmt" count="28"/>
         <metrics loc="28" ncloc="21" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="3" elements="6" coveredelements="4"/>
       </file>
     </package>
     <package name="App\Services">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Services\BottleService.php">
         <class name="App\Services\BottleService" namespace="App\Services">
-          <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+          <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
         </class>
-        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="11" type="stmt" count="0"/>
-        <line num="12" type="stmt" count="0"/>
-        <line num="13" type="stmt" count="0"/>
-        <line num="14" type="stmt" count="0"/>
-        <line num="15" type="stmt" count="0"/>
-        <line num="16" type="stmt" count="0"/>
-        <metrics loc="19" ncloc="19" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="1" count="2"/>
+        <line num="11" type="stmt" count="2"/>
+        <line num="12" type="stmt" count="2"/>
+        <line num="13" type="stmt" count="2"/>
+        <line num="14" type="stmt" count="2"/>
+        <line num="15" type="stmt" count="2"/>
+        <line num="16" type="stmt" count="2"/>
+        <metrics loc="19" ncloc="19" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
       </file>
       <file name="C:\wamp64\www\cavea\cavea-back\app\Services\VintageService.php">
         <class name="App\Services\VintageService" namespace="App\Services">
-          <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="4" coveredelements="0"/>
+          <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
         </class>
-        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="2" count="0"/>
-        <line num="11" type="stmt" count="0"/>
-        <line num="12" type="stmt" count="0"/>
-        <line num="13" type="stmt" count="0"/>
-        <metrics loc="16" ncloc="16" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="4" coveredelements="0"/>
+        <line num="9" type="method" name="findOrCreate" visibility="public" complexity="1" crap="1" count="2"/>
+        <line num="11" type="stmt" count="2"/>
+        <line num="12" type="stmt" count="2"/>
+        <line num="13" type="stmt" count="2"/>
+        <metrics loc="16" ncloc="16" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
       </file>
     </package>
-    <metrics files="19" loc="882" ncloc="793" classes="18" methods="41" coveredmethods="18" conditionals="0" coveredconditionals="0" statements="272" coveredstatements="158" elements="313" coveredelements="176"/>
+    <metrics files="19" loc="883" ncloc="794" classes="18" methods="41" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="272" coveredstatements="167" elements="313" coveredelements="187"/>
   </project>
 </coverage>

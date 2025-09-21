@@ -19,7 +19,7 @@ class ColourFactory extends Factory
         $colours = ['Rouge', 'Blanc', 'Rosé', 'Pétillant', 'Orange', 'Autre'];
 
         return [
-            'name' => $this->faker->randomElement($colours),
+            'name' => fake()->randomElement($colours),
         ];
     }
 }

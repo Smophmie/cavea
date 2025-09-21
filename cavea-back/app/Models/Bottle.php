@@ -14,6 +14,7 @@ class Bottle extends Model
         'name',
         'domain',
         'PDO',
+        'colour_id'
     ];
 
     public function cellarItems(): HasMany
