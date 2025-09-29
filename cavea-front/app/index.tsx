@@ -1,5 +1,5 @@
 import "../global.css"
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from 'expo-image';
 import PrimaryButton from "./components/PrimaryButton"
@@ -13,7 +13,10 @@ export default function Index() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 items-center justify-center bg-app px-6">
+    <ScrollView 
+      className="flex-1 bg-app px-6"
+      contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+    >
       <Image 
         source={Logo}
         style={{ width: 150, height: 150 }}
@@ -39,7 +42,7 @@ export default function Index() {
         text="Se connecter"
         onPress={() => router.push("/login")}
       />
-    </View>
+    </ScrollView>
   );
 }
 

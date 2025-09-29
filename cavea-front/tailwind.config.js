@@ -11,6 +11,7 @@ module.exports = {
         app: "#faf9f6",
         wine: "#bb2700",
         gray: "#6B7280",
+        lightgray: "#e2e8f0",
       },
       fontFamily: {
         playfair: ['PlayfairDisplay_400Regular'],

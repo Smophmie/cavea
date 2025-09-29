@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator } from "react-native";
-import { baseURL } from "../api";
+import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
@@ -17,7 +16,10 @@ export default function LoginPage() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center px-6 bg-white">
+    <ScrollView
+      className="flex-1 bg-white px-6"
+      contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+    >
             
         <PageTitle text="Connexion" color="wine"></PageTitle>
 
@@ -56,6 +58,6 @@ export default function LoginPage() {
             className="text-lg"
             onPress={() => router.push("/registration")}
         />
-    </View>
+    </ScrollView>
   );
 }

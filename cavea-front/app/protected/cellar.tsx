@@ -1,10 +1,15 @@
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import PageTitle from "../components/PageTitle";
 
 export default function CellarPage() {
   return (
-    <View className="flex-1 items-center justify-center bg-app px-6">
+    <ScrollView 
+      className="flex-1 bg-app px-6"
+      contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+    >
+
       <PageTitle text="Ma cave en détail" color="wine"></PageTitle>
-    </View>
+      
+    </ScrollView>
   );
 }
