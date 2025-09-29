@@ -140,9 +140,13 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
-      # - name: Deploy to Kubernetes
-      #   run: |
-      #     kubectl apply -f ./cavea-back/k8s/namespace.yaml
-      #     kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
-      #     kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
-      #     kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f ./cavea-back/k8s/namespace.yaml
+          kubectl apply -f ./cavea-back/k8s/db_secrets.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/db_pvc.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/db_service.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/db_deployment.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
+          kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace

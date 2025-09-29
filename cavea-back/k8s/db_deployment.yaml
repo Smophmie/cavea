@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  namespace: cavea-back-namespace
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+          - name: mysqldata
+            mountPath: /var/lib/mysql
+        resources:
+          limits:
+            memory: "512Mi"  # Maximum memory allowed
+            cpu: "400m"       # Maximum CPU allowed (200 milliCPU)
+          requests:
+            memory: "256Mi"  # Initial memory request
+            cpu: "200m"       # Initial CPU request
+        envFrom:
+        - secretRef:
+            name: db-secrets
+        env:
+        - name: MYSQL_DATABASE
+          value: cavea_db
+      volumes:
+        - name: mysqldata
+          persistentVolumeClaim:
+            claimName: mysql-pvc
