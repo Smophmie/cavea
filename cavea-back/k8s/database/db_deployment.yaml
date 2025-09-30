@@ -33,6 +33,8 @@ spec:
         envFrom:
         - secretRef:
             name: db-secrets
+        - configMapRef:
+            name: db-config
         env:
         - name: MYSQL_DATABASE
           value: cavea_db

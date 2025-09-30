@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: cavea-back-namespace
+data:
+  MYSQL_DATABASE: "cavea_db"
+  DB_USERNAME: "root"
