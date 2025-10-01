@@ -152,5 +152,5 @@ jobs:
 
       - name: Run Laravel migrations on cluster
         run: |
-          kubectl exec deploy/cavea-back-deployment -n cavea-back-namespace -- \
+          kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
           php artisan migrate --force
