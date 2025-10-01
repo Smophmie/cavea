@@ -148,7 +148,8 @@ jobs:
             -f ./cavea-back/k8s_helm/backend/values.yaml \
             --namespace cavea-back-namespace \
             --create-namespace \
-            --install
+            --install \
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Run Laravel migrations on cluster
         run: |
