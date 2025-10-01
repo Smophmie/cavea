@@ -149,7 +149,7 @@ jobs:
             -f ./cavea-back/k8s_helm/backend/values.yaml \
             --namespace cavea-back-namespace \
             --create-namespace \
-            --install \
+            --install
 
       - name: Run Laravel migrations on cluster
         run: |
