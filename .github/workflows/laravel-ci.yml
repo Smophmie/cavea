@@ -141,7 +141,7 @@ jobs:
             --namespace cavea-back-namespace \
             --create-namespace \
             --install \
-            --set db_password=${{ secrets.DB_PASSWORD }}
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Deploy backend with Helm
         run: |
@@ -149,7 +149,8 @@ jobs:
             -f ./cavea-back/k8s_helm/backend/values.yaml \
             --namespace cavea-back-namespace \
             --create-namespace \
-            --install
+            --install \
+            --set db_password=${{ secrets.DB_PASSWORD }}
 
       - name: Wait for backend pod to be ready
         run: |
