@@ -140,7 +140,7 @@ jobs:
             -f ./cavea-back/k8s_helm/database/values.yaml \
             --namespace cavea-back-namespace \
             --create-namespace \
-            --install
+            --install \
             --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Deploy backend with Helm
