@@ -141,6 +141,7 @@ jobs:
             --namespace cavea-back-namespace \
             --create-namespace \
             --install
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Deploy backend with Helm
         run: |
@@ -149,7 +150,6 @@ jobs:
             --namespace cavea-back-namespace \
             --create-namespace \
             --install \
-            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Run Laravel migrations on cluster
         run: |
