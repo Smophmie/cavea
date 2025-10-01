@@ -7,3 +7,4 @@ resources:
     memory: "128Mi"  # Initial memory request
     cpu: "100m"       # Initial CPU request
 db_name: cavea_db
+db_password: ""

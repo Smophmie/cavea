@@ -9,7 +9,6 @@ data:
   DB_HOST: "database-service.cavea-back-namespace.svc.cluster.local"
   DB_DATABASE: {{ .Values.db_name }}
   DB_USERNAME: "root"
-  MYSQL_ROOT_PASSWORD:  {{ .Values.mysql_root_password }}
-  DB_PASSWORD: "root"
+  DB_PASSWORD: {{ .Values.db_password }}
   DB_PORT: "3306"
   DB_CONNECTION: "mysql"
