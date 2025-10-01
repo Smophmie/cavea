@@ -6,5 +6,5 @@ metadata:
   labels:
       {{- include "database.labels" . | nindent 4 }}
 data:
-  MYSQL_DATABASE: "cavea_db"
+  MYSQL_DATABASE: {{ .Values.db_name }}
   DB_USERNAME: "root"

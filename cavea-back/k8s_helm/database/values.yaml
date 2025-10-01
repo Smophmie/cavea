@@ -6,4 +6,4 @@ ressources:
   requests:
     memory: "256Mi"  # Initial memory request
     cpu: "200m"       # Initial CPU request
-mysql_root_password: ""
+db_name: cavea_db
