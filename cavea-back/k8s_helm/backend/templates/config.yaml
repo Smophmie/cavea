@@ -7,9 +7,9 @@ metadata:
       {{- include "backend.labels" . | nindent 4 }}
 data:
   DB_HOST: "mysql-service.cavea-back-namespace.svc.cluster.local"
-  DB_DATABASE: "cavea_db"
+  DB_DATABASE: {{ .Values.db_name }}
   DB_USERNAME: "root"
-  MYSQL_ROOT_PASSWORD: "root"
+  MYSQL_ROOT_PASSWORD:  {{ .Values.mysql_root_password }}
   DB_PASSWORD: "root"
   DB_PORT: "3306"
   DB_CONNECTION: "mysql"
