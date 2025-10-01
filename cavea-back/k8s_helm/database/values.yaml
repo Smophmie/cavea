@@ -1,5 +1,5 @@
 namespace: cavea-back
-ressources:
+resources:
   limits:
     memory: "512Mi"  # Maximum memory allowed
     cpu: "400m"       # Maximum CPU allowed (200 milliCPU)
@@ -7,4 +7,4 @@ ressources:
     memory: "256Mi"  # Initial memory request
     cpu: "200m"       # Initial CPU request
 db_name: cavea_db
-mysql_root_password: ""
+mysql_root_password: "root"

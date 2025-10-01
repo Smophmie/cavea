@@ -34,9 +34,6 @@ spec:
             name: {{ .Release.Name }}-secrets
         - configMapRef:
             name: {{ .Release.Name }}-config
-        env:
-        - name: MYSQL_DATABASE
-          value: cavea_db
       volumes:
         - name: mysqldata
           persistentVolumeClaim:
