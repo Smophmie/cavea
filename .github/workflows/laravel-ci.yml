@@ -90,7 +90,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-
   laravel-package:
     runs-on: ubuntu-latest
     needs: laravel-sonarqube
@@ -113,7 +112,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.6
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
 
-  laravel-deploy:
+  laravel-and-db-deploy:
     runs-on: ubuntu-latest
     needs: laravel-package
     steps:
@@ -124,26 +123,34 @@ jobs:
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.0'
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
 
       - name: Configure Kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
+      - name: Deploy database with Helm
+        run: |
+          helm upgrade database ./cavea-back/k8s_helm/database \
+            -f ./cavea-back/k8s_helm/database/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install
+
+      - name: Deploy backend with Helm
+        run: |
+          helm upgrade back ./cavea-back/k8s_helm/backend \
+            -f ./cavea-back/k8s_helm/backend/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install
+
       - name: Run Laravel migrations on cluster
         run: |
           kubectl exec deploy/cavea-back-deployment -n cavea-back-namespace -- \
           php artisan migrate --force
-
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl apply -f ./cavea-back/k8s/namespace.yaml
-          kubectl apply -f ./cavea-back/k8s/database/db_config.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/database/db_secrets.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/database/db_pvc.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/database/db_service.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/database/db_deployment.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/config.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
