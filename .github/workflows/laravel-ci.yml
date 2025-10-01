@@ -151,6 +151,10 @@ jobs:
             --create-namespace \
             --install
 
+      - name: Wait for backend pod to be ready
+        run: |
+          kubectl rollout status deployment/back-deployment -n cavea-back-namespace
+      
       - name: Run Laravel migrations on cluster
         run: |
           kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
