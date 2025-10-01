@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+      {{- include "database.labels" . | nindent 4 }}
+data:
+  MYSQL_DATABASE: "cavea_db"
+  DB_USERNAME: "root"

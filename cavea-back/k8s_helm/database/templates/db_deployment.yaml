@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+      {{- include "database.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "database.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "database.name" . }}
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+          - name: mysqldata
+            mountPath: /var/lib/mysql
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10}}
+        {{- end }}
+        envFrom:
+        - secretRef:
+            name: {{ .Release.Name }}-secrets
+        - configMapRef:
+            name: {{ .Release.Name }}-config
+        env:
+        - name: MYSQL_DATABASE
+          value: cavea_db
+      volumes:
+        - name: mysqldata
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc

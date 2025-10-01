@@ -98,16 +98,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # - name: Generate .env.prod with secrets
-      #   working-directory: ./cavea-back
-      #   run: |
-      #     export APP_KEY="${{ secrets.APP_KEY }}"
-      #     export DB_HOST="${{ secrets.DB_HOST }}"
-      #     export DB_DATABASE="${{ secrets.DB_DATABASE }}"
-      #     export DB_USERNAME="${{ secrets.DB_USERNAME }}"
-      #     export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-      #     envsubst < .env.prod.example > .env
-
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -139,6 +129,11 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+
+      - name: Run Laravel migrations on cluster
+        run: |
+          kubectl exec deploy/cavea-back-deployment -n cavea-back-namespace -- \
+          php artisan migrate --force
 
       - name: Deploy to Kubernetes
         run: |
