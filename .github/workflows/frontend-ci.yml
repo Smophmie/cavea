@@ -1,9 +1,0 @@
-name: Frontend CI
-
-on:
-  push:
-    branches: [ main, dev, feature/ci-cd ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
