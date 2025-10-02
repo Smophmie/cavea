@@ -1,12 +1,11 @@
-name: laravel-and-db-deploy
+name: Laravel Kubernetes Deployment
 
 on:
-  workflow_call
+  workflow_call:
 
 jobs:
   laravel-and-db-deploy:
     runs-on: ubuntu-latest
-    needs: laravel-package
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,4 +58,3 @@ jobs:
         run: |
           kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
           php artisan migrate --force
-

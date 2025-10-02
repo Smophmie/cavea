@@ -1,12 +1,18 @@
-name: laravel-package
+name: Laravel Docker Package
 
 on:
   workflow_call:
+    outputs:
+      image-tag:
+        description: "Docker image tag (Git SHA)"
+        value: ${{ jobs.laravel-package.outputs.image-tag }}
 
 jobs:
   laravel-package:
     runs-on: ubuntu-latest
-    needs: laravel-sonarqube
+    outputs:
+      image-tag: ${{ steps.version.outputs.SHORT_SHA }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
