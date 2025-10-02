@@ -7,17 +7,17 @@ on:
     branches: [ main ]
 
 jobs:
-  tests:
-    uses: ./cavea/.github/jobs/common/laravel-tests.yaml
+  # tests:
+  #   uses: ./.github/actions/common/Laravel-tests
 
   sonarqube:
     needs: tests
-    uses: ./cavea/.github/jobs/common/laravel-sonarqube.yaml
+    uses: ./.github/actions/Laravel-sonarqube
 
-  package:
-    needs: sonarqube
-    uses: ./cavea/.github/jobs/common/laravel-package.yaml
+  # package:
+  #   needs: sonarqube
+  #   uses: ./.github/jobs/common/laravel-package.yaml
 
-  deploy:
-    needs: package
-    uses: ./cavea/.github/jobs/common/laravel-and-db-deploy.yaml
+  # deploy:
+  #   needs: package
+  #   uses: ./.github/jobs/common/laravel-and-db-deploy.yaml
