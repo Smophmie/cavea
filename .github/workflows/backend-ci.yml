@@ -7,14 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  steps:
+  Laravel-sonarqube:
+    steps:
   # tests:
   #   uses: ./.github/actions/common/Laravel-tests
 
   # sonarqube:
     # needs: tests
-    - name: Laravel-sonarqube
-      uses: ./.github/actions/Laravel-sonarqube
+      - name: Laravel-sonarqube
+        uses: ./.github/actions/Laravel-sonarqube
 
   # package:
   #   needs: sonarqube
