@@ -8,16 +8,16 @@ on:
 
 jobs:
   tests:
-    uses: ./.github/workflows/jobs/common/laravel-tests.yaml
+    uses: ./.github/jobs/common/laravel-tests.yaml
 
   sonarqube:
     needs: tests
-    uses: ./.github/workflows/jobs/common/laravel-sonarqube.yaml
+    uses: ./.github/jobs/common/laravel-sonarqube.yaml
 
   package:
     needs: sonarqube
-    uses: ./.github/workflows/jobs/common/laravel-package.yaml
+    uses: ./.github/jobs/common/laravel-package.yaml
 
   deploy:
     needs: package
-    uses: ./.github/workflows/jobs/common/laravel-and-db-deploy.yaml
+    uses: ./.github/jobs/common/laravel-and-db-deploy.yaml
