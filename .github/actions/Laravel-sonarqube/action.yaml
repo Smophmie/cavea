@@ -27,4 +27,4 @@ runs:
           -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
-        SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
+        SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
