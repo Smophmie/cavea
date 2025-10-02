@@ -11,7 +11,7 @@ jobs:
   #   uses: ./.github/actions/common/Laravel-tests
 
   sonarqube:
-    needs: tests
+    # needs: tests
     uses: ./.github/actions/Laravel-sonarqube
 
   # package:
