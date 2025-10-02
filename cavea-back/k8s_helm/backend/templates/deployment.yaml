@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: cavea-back
-        image: smophmie/cavea-back:1.0.6
+        image: smophmie/cavea-back:{{ .Values.image.tag }}
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         {{- with .Values.resources }}
