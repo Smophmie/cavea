@@ -1,4 +1,4 @@
-name: laravel-tests
+name: Laravel Tests
 
 on:
   workflow_call:
@@ -65,3 +65,10 @@ jobs:
           DB_PASSWORD: root
         run: |
           ./vendor/bin/phpunit --coverage-clover storage/coverage.xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: cavea-back/storage/coverage.xml
+          retention-days: 1

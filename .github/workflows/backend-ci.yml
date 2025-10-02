@@ -7,22 +7,26 @@ on:
     branches: [ main ]
 
 jobs:
-  Laravel-sonarqube:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
+  tests:
+    uses: ./.github/workflows/laravel-tests.yml
+    secrets: inherit
+    
+  # Laravel-sonarqube:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v5
   # tests:
   #   uses: ./.github/actions/common/Laravel-tests
 
   # sonarqube:
     # needs: tests
-      - name: Laravel-sonarqube
-        uses: ./.github/actions/Laravel-sonarqube
-        with:
-          sonar_project_key: ${{ secrets.SONAR_PROJECT_KEY }}
-          sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
-          sonar_organization: ${{ secrets.SONAR_ORGANIZATION }}
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
+      # - name: Laravel-sonarqube
+      #   uses: ./.github/actions/Laravel-sonarqube
+      #   with:
+      #     sonar_project_key: ${{ secrets.SONAR_PROJECT_KEY }}
+      #     sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
+      #     sonar_organization: ${{ secrets.SONAR_ORGANIZATION }}
+      #     sonar_token: ${{ secrets.SONAR_TOKEN }}
 
   # package:
   #   needs: sonarqube
