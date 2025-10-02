@@ -13,7 +13,8 @@ jobs:
 
   # sonarqube:
     # needs: tests
-    - uses: ./.github/actions/Laravel-sonarqube
+    - name: Laravel-sonarqube
+      uses: ./.github/actions/Laravel-sonarqube
 
   # package:
   #   needs: sonarqube
