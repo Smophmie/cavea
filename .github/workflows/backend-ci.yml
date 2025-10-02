@@ -18,6 +18,11 @@ jobs:
     # needs: tests
       - name: Laravel-sonarqube
         uses: ./.github/actions/Laravel-sonarqube
+        with:
+          sonar_project_key: ${{ secrets.SONAR_PROJECT_KEY }}
+          sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
+          sonar_organization: ${{ secrets.SONAR_ORGANIZATION }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
 
   # package:
   #   needs: sonarqube

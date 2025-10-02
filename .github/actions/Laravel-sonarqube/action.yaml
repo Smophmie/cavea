@@ -1,6 +1,14 @@
 name: 'Laravel-sonarqube'
 description: 'Laravel-sonarqube'
-
+inputs:
+  sonar_project_key:
+    required: true
+  sonar_organization:
+    required: true
+  sonar_token:
+    required: true
+  sonar_host_url:
+    required: true
 runs:
   using: "composite"
   steps:
@@ -12,11 +20,11 @@ runs:
       with:
         projectBaseDir: ./cavea-back
         args: >
-          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+          -Dsonar.projectKey=${{ inputs.sonar_project_key }}
+          -Dsonar.organization=${{ inputs.sonar_organization }}
           -Dsonar.sources=app
           -Dsonar.tests=tests
           -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
       env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_TOKEN: ${{ inputs.sonar_token }}
+        SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
