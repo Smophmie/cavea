@@ -2,7 +2,7 @@ name: Laravel CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, feature/ci-cd ]
   pull_request:
     branches: [ main ]
 
@@ -90,7 +90,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-
   laravel-package:
     runs-on: ubuntu-latest
     needs: laravel-sonarqube
@@ -98,16 +97,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Generate .env.prod with secrets
-        working-directory: ./cavea-back
+      - name: Generate version from Git SHA
+        id: version
         run: |
-          export APP_KEY="${{ secrets.APP_KEY }}"
-          export DB_HOST="${{ secrets.DB_HOST }}"
-          export DB_DATABASE="${{ secrets.DB_DATABASE }}"
-          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          envsubst < .env.prod.example > .env
-
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+        
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
@@ -120,33 +115,61 @@ jobs:
           context: ./cavea-back
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:1.0.5
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:${{ steps.version.outputs.SHORT_SHA }}
             ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
 
-  laravel-deploy:
+  laravel-and-db-deploy:
     runs-on: ubuntu-latest
     needs: laravel-package
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Get version from Git SHA
+        id: version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.0'
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
 
       - name: Configure Kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
-      - name: Deploy to Kubernetes
+      - name: Deploy database with Helm
         run: |
-          kubectl apply -f ./cavea-back/k8s/namespace.yaml
-          kubectl apply -f ./cavea-back/k8s/db_secrets.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/db_pvc.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/db_service.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/db_deployment.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/deployment.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/service.yaml -n cavea-back-namespace
-          kubectl apply -f ./cavea-back/k8s/ingress.yaml -n cavea-back-namespace
+          helm upgrade database ./cavea-back/k8s_helm/database \
+            -f ./cavea-back/k8s_helm/database/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install \
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+      - name: Deploy backend with Helm
+        run: |
+          helm upgrade back ./cavea-back/k8s_helm/backend \
+            -f ./cavea-back/k8s_helm/backend/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install \
+            --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --set image.tag=${{ steps.version.outputs.SHORT_SHA }}
+
+      - name: Wait for backend pod to be ready
+        run: |
+          kubectl rollout status deployment/back-deployment -n cavea-back-namespace
+      
+      - name: Run Laravel migrations on cluster
+        run: |
+          kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
+          php artisan migrate --force

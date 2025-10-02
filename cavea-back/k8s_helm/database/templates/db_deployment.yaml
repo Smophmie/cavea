@@ -1,19 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-deployment
-  namespace: cavea-back-namespace
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+      {{- include "database.labels" . | nindent 4 }}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: mysql
+      app: {{ include "database.name" . }}
   template:
     metadata:
       labels:
-        app: mysql
+        app: {{ include "database.name" . }}
     spec:
       containers:
       - name: mysql
@@ -23,20 +25,16 @@ spec:
         volumeMounts:
           - name: mysqldata
             mountPath: /var/lib/mysql
+        {{- with .Values.resources }}
         resources:
-          limits:
-            memory: "512Mi"  # Maximum memory allowed
-            cpu: "400m"       # Maximum CPU allowed (200 milliCPU)
-          requests:
-            memory: "256Mi"  # Initial memory request
-            cpu: "200m"       # Initial CPU request
+          {{- toYaml . | nindent 10}}
+        {{- end }}
         envFrom:
         - secretRef:
-            name: db-secrets
-        env:
-        - name: MYSQL_DATABASE
-          value: cavea_db
+            name: {{ .Release.Name }}-secrets
+        - configMapRef:
+            name: {{ .Release.Name }}-config
       volumes:
         - name: mysqldata
           persistentVolumeClaim:
-            claimName: mysql-pvc
+            claimName: {{ .Release.Name }}-pvc
