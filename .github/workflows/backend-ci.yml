@@ -1,0 +1,24 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, dev, feature/ci-cd ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  tests:
+    uses: jobs/common/laravel-tests.yaml
+
+  sonarqube:
+    needs: tests
+    uses: jobs/common/laravel-sonarqube.yaml
+
+  package:
+    needs: sonarqube
+    uses: jobs/common/laravel-package.yaml
+
+  deploy:
+    needs: package
+    uses: jobs/common/laravel-and-db-deploy.yaml
