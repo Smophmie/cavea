@@ -8,22 +8,22 @@ on:
 
 jobs:
   tests:
-    uses: ./.github/workflows/common-laravel-tests.yaml
+    uses: ./.github/workflows/common-laravel-tests.yml
     secrets: inherit
 
   sonarqube:
     needs: tests
-    uses: ./.github/workflows/common-laravel-sonarqube.yaml
+    uses: ./.github/workflows/common-laravel-sonarqube.yml
     secrets: inherit
 
   package:
     needs: sonarqube
-    uses: ./.github/workflows/common-laravel-package.yaml
+    uses: ./.github/workflows/common-laravel-package.yml
     secrets: inherit
 
   deploy:
     needs: package
     # Permit to deploy just on main and dev branches
     # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    uses: ./.github/workflows/common-laravel-and-db-deploy.yaml
+    uses: ./.github/workflows/common-laravel-and-db-deploy.yml
     secrets: inherit
