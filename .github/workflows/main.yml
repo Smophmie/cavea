@@ -1,0 +1,175 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ main, dev, feature/ci-cd ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, pdo_mysql, xdebug
+
+      - name: Install Composer dependencies
+        working-directory: cavea-back
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Copy .env
+        working-directory: cavea-back
+        run: cp .env.example .env
+
+      - name: Generate app key
+        working-directory: cavea-back
+        run: php artisan key:generate
+
+      - name: Run migrations
+        working-directory: cavea-back
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+
+      - name: Run tests
+        working-directory: cavea-back
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          ./vendor/bin/phpunit --coverage-clover storage/coverage.xml
+
+  laravel-sonarqube:
+    runs-on: ubuntu-latest
+    needs: laravel-tests
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@1a6d90ebcb0e6a6b1d87e37ba693fe453195ae25
+        with:
+          projectBaseDir: ./cavea-back
+          args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.sources=app
+            -Dsonar.tests=tests
+            -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  laravel-package:
+    runs-on: ubuntu-latest
+    needs: laravel-sonarqube
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate version from Git SHA
+        id: version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+        
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cavea-back
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:${{ steps.version.outputs.SHORT_SHA }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest
+
+  laravel-and-db-deploy:
+    runs-on: ubuntu-latest
+    needs: laravel-package
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version from Git SHA
+        id: version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Configure Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+
+      - name: Deploy database with Helm
+        run: |
+          helm upgrade database ./cavea-back/k8s_helm/database \
+            -f ./cavea-back/k8s_helm/database/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install \
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+      - name: Deploy backend with Helm
+        run: |
+          helm upgrade back ./cavea-back/k8s_helm/backend \
+            -f ./cavea-back/k8s_helm/backend/values.yaml \
+            --namespace cavea-back-namespace \
+            --create-namespace \
+            --install \
+            --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --set image.tag=${{ steps.version.outputs.SHORT_SHA }}
+
+      - name: Wait for backend pod to be ready
+        run: |
+          kubectl rollout status deployment/back-deployment -n cavea-back-namespace
+      
+      - name: Run Laravel migrations on cluster
+        run: |
+          kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
+          php artisan migrate --force
