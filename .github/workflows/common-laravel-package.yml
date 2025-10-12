@@ -4,7 +4,6 @@ on:
   workflow_call:
     outputs:
       image-tag:
-        description: "Docker image tag (Git SHA)"
         value: ${{ jobs.laravel-package.outputs.image-tag }}
 
 jobs:
