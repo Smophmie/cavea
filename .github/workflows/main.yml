@@ -1,4 +1,4 @@
-name: Backend CI/CD
+name: Backend and frontend CI/CD
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
 
   sonarqube:
     needs: tests
-    uses: ./.github/workflows/common-laravel-sonarqube.yml
+    uses: ./.github/workflows/common-laravel-and-expo-sonarqube.yml
     secrets: inherit
 
   package:
@@ -23,7 +23,5 @@ jobs:
 
   deploy:
     needs: package
-    # Permit to deploy just on main and dev branches
-    # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/common-laravel-and-db-deploy.yml
     secrets: inherit
