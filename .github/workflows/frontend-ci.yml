@@ -8,6 +8,5 @@ on:
 
 jobs:
   sonarqube:
-    needs: tests
     uses: ./.github/workflows/common-expo-sonarqube.yml
     secrets: inherit
