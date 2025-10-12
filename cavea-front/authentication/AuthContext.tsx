@@ -4,6 +4,7 @@ import { baseURL } from "@/api";
 
 type AuthContextType = {
   token: string | null;
+  username: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken, storageLoading] = useStorageState("authToken");
+  const [username, setUsername] = useStorageState("authUser");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -32,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         setToken(data.token);
+        setUsername(data.user.firstname);
       } else {
         setError(data.message || "Erreur lors de la connexion");
       }
@@ -59,12 +62,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Erreur lors de la déconnexion :", err);
     } finally {
       setToken(null);
+      setUsername(null);
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ token, login, logout, loading: storageLoading || loading, error }}
+      value={{ token, username, login, logout, loading: storageLoading || loading, error }}
     >
       {children}
     </AuthContext.Provider>
