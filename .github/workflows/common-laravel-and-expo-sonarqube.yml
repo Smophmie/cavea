@@ -21,14 +21,14 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.modules=backend,frontend
 
-            -Dbackend.sonar.projectName=Backend (Laravel)
+            -Dbackend.sonar.projectName=Backend
             -Dbackend.sonar.projectBaseDir=cavea-back
             -Dbackend.sonar.sources=app
             -Dbackend.sonar.tests=tests
             -Dbackend.sonar.php.coverage.reportPaths=storage/coverage.xml
             -Dbackend.sonar.exclusions=**/vendor/**,**/storage/**,**/bootstrap/cache/**
 
-            -Dfrontend.sonar.projectName=Frontend (Expo)
+            -Dfrontend.sonar.projectName=Frontend
             -Dfrontend.sonar.projectBaseDir=cavea-front
             -Dfrontend.sonar.sources=app,authentication,api.ts
             -Dfrontend.sonar.exclusions=**/node_modules/**,**/assets/**,**/.expo/**
