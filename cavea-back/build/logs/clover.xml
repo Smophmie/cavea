@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1758450517">
-  <project timestamp="1758450517" name="Clover Coverage">
+<coverage generated="1760271143">
+  <project timestamp="1760271143" name="Clover Coverage">
     <package name="App\Http\Controllers">
       <file name="C:\wamp64\www\cavea\cavea-back\app\Http\Controllers\AuthController.php">
         <class name="App\Http\Controllers\AuthController" namespace="App\Http\Controllers">

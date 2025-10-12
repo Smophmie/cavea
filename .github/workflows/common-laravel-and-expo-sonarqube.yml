@@ -12,6 +12,12 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: cavea-back/build/logs
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@1a6d90ebcb0e6a6b1d87e37ba693fe453195ae25
         with:
@@ -25,7 +31,7 @@ jobs:
             -Dbackend.sonar.projectBaseDir=cavea-back
             -Dbackend.sonar.sources=app
             -Dbackend.sonar.tests=tests
-            -Dbackend.sonar.php.coverage.reportPaths=storage/coverage.xml
+            -Dbackend.sonar.php.coverage.reportPaths=build/logs/clover.xml
             -Dbackend.sonar.exclusions=**/vendor/**,**/storage/**,**/bootstrap/cache/**
 
             -Dfrontend.sonar.projectName=Frontend
