@@ -56,12 +56,22 @@ export default function RegistrationPage() {
   };
 
   return (
-    <View className="flex-1 bg-app items-center px-6 justify-center">
+    <ScrollView 
+      className="flex-1 bg-app px-6"
+      contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+    >
       
       <PageTitle text="Créer un compte" color="wine"></PageTitle>
       <Text className="text-center text-gray text-lg mb-9">
         Commencez à gérer votre cave.
       </Text>
+
+      <TextInput
+        placeholder="Prénom"
+        value={firstname}
+        onChangeText={setFirstname}
+        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
+      />
 
       <TextInput
         placeholder="Nom"
@@ -70,12 +80,6 @@ export default function RegistrationPage() {
         className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
       />
 
-      <TextInput
-        placeholder="Prénom"
-        value={firstname}
-        onChangeText={setFirstname}
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
-      />
 
       <TextInput
         placeholder="Email"
@@ -117,7 +121,7 @@ export default function RegistrationPage() {
           {message}
         </Text>
       ) : null}
-    </View>
+    </ScrollView>
   );
 }
 
