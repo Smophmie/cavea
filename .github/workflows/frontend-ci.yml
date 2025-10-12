@@ -1,0 +1,12 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main, dev, feature/ci-cd ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sonarqube:
+    uses: ./.github/workflows/common-expo-sonarqube.yml
+    secrets: inherit
