@@ -64,4 +64,10 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root
         run: |
-          ./vendor/bin/phpunit --coverage-clover storage/coverage.xml
+          ./vendor/bin/phpunit
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cavea-back/build/logs/clover.xml
