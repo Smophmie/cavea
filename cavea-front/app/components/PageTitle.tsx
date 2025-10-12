@@ -9,6 +9,6 @@ type PageTitleProps = {
 export default function PageTitle({ text, color = "white" }: PageTitleProps) {
 
   return (
-      <Text className={`text-3xl font-playfairbold mb-8 text-${color}`}>{text}</Text>
+      <Text className={`text-4xl font-playfairbold mb-4 text-${color}`}>{text}</Text>
   );
 }
