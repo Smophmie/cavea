@@ -19,7 +19,8 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.sources=src
+            -Dsonar.sources=app,authentication,api.ts
+            -Dsonar.exclusions=**/node_modules/**,**/assets/**
 
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
