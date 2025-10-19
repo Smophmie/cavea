@@ -1,0 +1,33 @@
+name: Backend Linting
+
+on:
+  workflow_call:
+
+jobs:
+  php-cs-fixer:
+    name: PHP Code Style
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        working-directory: cavea-back
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Run PHP CS Fixer
+        working-directory: cavea-back
+        run: composer lint
+
+      - name: Show how to fix
+        if: failure()
+        run: |
+          echo "::error:: Code style issues detected!"
+          echo "::notice::Run 'composer lint:fix' locally to automatically fix them."

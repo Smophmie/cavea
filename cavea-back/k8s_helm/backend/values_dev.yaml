@@ -1,0 +1,29 @@
+namespace: cavea-back-dev
+
+image:
+  tag: "latest"
+
+resources: 
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+
+db_name: cavea_dev_db
+db_password: "CHANGE_ME"
+
+app_env: local
+app_debug: "true"
+app_url: "https://137.74.44.42"
+
+replicas: 1
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  tls: true
+  tlsSecretName: cavea-back-dev-tls

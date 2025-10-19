@@ -7,7 +7,6 @@ use App\Models\Colour;
 use App\Models\Vintage;
 use App\Models\Bottle;
 use App\Models\CellarItem;
-
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

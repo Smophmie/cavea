@@ -38,7 +38,7 @@ class UserControllerTest extends TestCase
     public function testCanUpdateAUser()
     {
         $user = User::factory()->create();
-        
+
         $this->actingAs($user);
 
         $response = $this->putJson('api/users/' . $user->id, [
@@ -53,7 +53,7 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'new@example.com']);
     }
 
-    
+
     public function testCanDeleteAUser()
     {
         $user = User::factory()->create();

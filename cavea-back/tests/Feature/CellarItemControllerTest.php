@@ -134,7 +134,7 @@ class CellarItemControllerTest extends TestCase
 
         $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
         $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
-        
+
         $vintage = Vintage::factory()->create();
 
         $redItem = CellarItem::factory()
