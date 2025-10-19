@@ -23,7 +23,7 @@ jobs:
 
   deploy-dev:
     needs: package
-    if: github.ref == 'refs/heads/dev'
+    # if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/common-laravel-and-db-deploy.yml
     with:
       environment: dev
