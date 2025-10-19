@@ -21,7 +21,18 @@ jobs:
     uses: ./.github/workflows/common-laravel-package.yml
     secrets: inherit
 
-  deploy:
+  deploy-dev:
     needs: package
+    if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/common-laravel-and-db-deploy.yml
+    with:
+      environment: dev
+    secrets: inherit
+
+  deploy-prod:
+    needs: package
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/common-laravel-and-db-deploy.yml
+    with:
+      environment: prod
     secrets: inherit

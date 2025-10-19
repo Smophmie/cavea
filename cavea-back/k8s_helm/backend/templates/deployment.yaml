@@ -6,7 +6,7 @@ metadata:
   labels:
       {{- include "backend.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   selector:
     matchLabels:
       app: {{ include "backend.app" . }}
@@ -25,6 +25,13 @@ spec:
         resources:
           {{- toYaml . | nindent 10}}
         {{- end }}
+        env:
+        - name: APP_ENV
+          value: {{ .Values.app_env | default "production" | quote }}
+        - name: APP_DEBUG
+          value: {{ .Values.app_debug | default "false" | quote }}
+        - name: APP_URL
+          value: {{ .Values.app_url | default "http://localhost" | quote }}
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-config

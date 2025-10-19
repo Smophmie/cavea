@@ -6,6 +6,7 @@ metadata:
   labels:
       {{- include "backend.labels" . | nindent 4 }}
 spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
   selector:
     app: {{ include "backend.app" . }}
   ports:

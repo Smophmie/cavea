@@ -1,10 +1,7 @@
-namespace: cavea-back
 resources: 
   limits:
-    memory: "256Mi"  # Maximum memory allowed
-    cpu: "200m"       # Maximum CPU allowed (200 milliCPU)
+    memory: "256Mi"
+    cpu: "200m"
   requests:
-    memory: "128Mi"  # Initial memory request
-    cpu: "100m"       # Initial CPU request
-db_name: cavea_db
-db_password: "root"
+    memory: "128Mi"
+    cpu: "100m"

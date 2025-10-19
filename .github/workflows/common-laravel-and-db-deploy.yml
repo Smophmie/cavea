@@ -2,10 +2,17 @@ name: Laravel Kubernetes Deployment
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to (dev or prod)'
+        required: true
+        type: string
+        default: 'dev'
 
 jobs:
   laravel-and-db-deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -15,6 +22,17 @@ jobs:
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ inputs.environment }}" == "prod" ]; then
+            echo "NAMESPACE=cavea-prod" >> $GITHUB_OUTPUT
+            echo "VALUES_FILE=values-prod.yaml" >> $GITHUB_OUTPUT
+          else
+            echo "NAMESPACE=cavea-dev" >> $GITHUB_OUTPUT
+            echo "VALUES_FILE=values-dev.yaml" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
@@ -34,8 +52,8 @@ jobs:
       - name: Deploy database with Helm
         run: |
           helm upgrade database ./cavea-back/k8s_helm/database \
-            -f ./cavea-back/k8s_helm/database/values.yaml \
-            --namespace cavea-back-namespace \
+            -f ./cavea-back/k8s_helm/database/${{ steps.env.outputs.VALUES_FILE }} \
+            --namespace ${{ steps.env.outputs.NAMESPACE }} \
             --create-namespace \
             --install \
             --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -43,8 +61,8 @@ jobs:
       - name: Deploy backend with Helm
         run: |
           helm upgrade back ./cavea-back/k8s_helm/backend \
-            -f ./cavea-back/k8s_helm/backend/values.yaml \
-            --namespace cavea-back-namespace \
+            -f ./cavea-back/k8s_helm/backend/${{ steps.env.outputs.VALUES_FILE }} \
+            --namespace ${{ steps.env.outputs.NAMESPACE }} \
             --create-namespace \
             --install \
             --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
@@ -52,9 +70,9 @@ jobs:
 
       - name: Wait for backend pod to be ready
         run: |
-          kubectl rollout status deployment/back-deployment -n cavea-back-namespace
+          kubectl rollout status deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }}
       
       - name: Run Laravel migrations on cluster
         run: |
-          kubectl exec deploy/back-deployment -n cavea-back-namespace -- \
+          kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
           php artisan migrate --force

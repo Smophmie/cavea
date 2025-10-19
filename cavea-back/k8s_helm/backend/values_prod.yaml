@@ -1,10 +1,29 @@
-namespace: cavea-back
+namespace: cavea-back-prod
+
+image:
+  tag: "latest"
+
 resources: 
   limits:
-    memory: "256Mi"  # Maximum memory allowed
-    cpu: "200m"       # Maximum CPU allowed (200 milliCPU)
+    memory: "512Mi"
+    cpu: "500m"
   requests:
-    memory: "128Mi"  # Initial memory request
-    cpu: "100m"       # Initial CPU request
-db_name: cavea_db
-db_password: "root"
+    memory: "256Mi"
+    cpu: "250m"
+
+db_name: cavea_prod_db
+db_password: "CHANGE_ME"
+
+app_env: production
+app_debug: "false"
+app_url: "https://137.74.44.42"
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  tls: true
+  tlsSecretName: cavea-back-prod-tls
+
+replicas: 2

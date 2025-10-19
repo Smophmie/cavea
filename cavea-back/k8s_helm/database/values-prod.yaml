@@ -1,0 +1,16 @@
+
+namespace: cavea-back-prod
+
+resources:
+  limits:
+    memory: "1Gi"
+    cpu: "800m"
+  requests:
+    memory: "512Mi"
+    cpu: "400m"
+
+db_name: cavea_prod_db
+mysql_root_password: "CHANGE_ME"
+
+storage:
+  size: "20Gi"
