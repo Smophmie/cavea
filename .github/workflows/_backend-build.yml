@@ -4,10 +4,10 @@ on:
   workflow_call:
     outputs:
       image-tag:
-        value: ${{ jobs.laravel-package.outputs.image-tag }}
+        value: ${{ jobs.backend-build.outputs.image-tag }}
 
 jobs:
-  laravel-package:
+  backend-build:
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ steps.version.outputs.SHORT_SHA }}

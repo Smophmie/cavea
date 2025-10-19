@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  laravel-and-expo-sonarqube:
+  repo-sonarqube:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

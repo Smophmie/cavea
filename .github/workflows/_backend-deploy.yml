@@ -10,7 +10,7 @@ on:
         default: 'dev'
 
 jobs:
-  laravel-and-db-deploy:
+  backend-deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -83,7 +83,7 @@ jobs:
 
       - name: Verify MySQL is accepting connections
         run: |
-          echo "🔍 Verifying MySQL is accepting connections..."
+          echo "Verifying MySQL is accepting connections..."
           
           # Attendre que MySQL soit vraiment prêt (pas juste le pod)
           for i in {1..30}; do
