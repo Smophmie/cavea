@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
 use App\Services\VintageService;
 
-
-
 class CellarItemController extends Controller
 {
     protected BottleService $bottleService;

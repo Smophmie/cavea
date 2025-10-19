@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 
-
 class UserController extends Controller
 {
     public function index()
@@ -16,14 +15,14 @@ class UserController extends Controller
         return $users;
     }
 
-    
+
     public function show($id)
     {
         $user = User::find($id);
         return $user;
     }
 
-    
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -74,7 +73,7 @@ class UserController extends Controller
             ], 500);
         }
     }
-        
+
     public function update(Request $request, string $id)
     {
         $request->validate([

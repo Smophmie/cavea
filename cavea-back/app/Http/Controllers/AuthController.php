@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
     public function login(Request $request)
     {
         $request->validate([
@@ -31,9 +30,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Mot de passe invalide.'], 401);
         }
 
-         $user->tokens()->delete();
+        $user->tokens()->delete();
 
-         $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'token' => $token,

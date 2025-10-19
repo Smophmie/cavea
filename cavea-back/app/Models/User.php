@@ -9,10 +9,11 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    const RULE_REQUIRED_MAX = 'required|max:255';
-
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    public const RULE_REQUIRED_MAX = 'required|max:255';
 
     /**
      * The attributes that are mass assignable.
