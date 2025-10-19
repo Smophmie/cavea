@@ -71,15 +71,34 @@ jobs:
       - name: Wait for backend pod to be ready
         run: |
           kubectl rollout status deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }}
-      
-      - name: Wait for MySQL to be ready
-        run: |
-          kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- sh -c '
-            until nc -z database-service 3306; do
-              echo "MySQL not ready, sleeping 3s..."
-              sleep 3
-            done
 
+      - name: Wait for database pod to be ready
+        run: |
+          echo "Waiting for MySQL database to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=database \
+            -n ${{ steps.env.outputs.NAMESPACE }} \
+            --timeout=300s
+          echo "Database pod is ready"
+
+      - name: Verify MySQL is accepting connections
+        run: |
+          echo "🔍 Verifying MySQL is accepting connections..."
+          
+          # Attendre que MySQL soit vraiment prêt (pas juste le pod)
+          for i in {1..30}; do
+            if kubectl exec deployment/database-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
+               mysqladmin ping -h localhost -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} --silent; then
+              echo "MySQL is accepting connections"
+              exit 0
+            fi
+            echo "Attempt $i/30: MySQL not ready yet, waiting 10s..."
+            sleep 10
+          done
+          
+          echo "MySQL failed to become ready after 5 minutes"
+          exit 1
+      
       - name: Run Laravel migrations on cluster
         run: |
           kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
