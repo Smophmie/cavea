@@ -54,6 +54,83 @@ class CellarItemControllerTest extends TestCase
                  ->assertJsonFragment(['id' => $cellarItem->id]);
     }
 
+    public function testCanGetLastAddedCellarItems()
+    {
+        $bottle = Bottle::factory()->create();
+        $vintage = Vintage::factory()->create();
+
+        CellarItem::factory()
+            ->count(15)
+            ->for($this->user)
+            ->for($bottle)
+            ->for($vintage)
+            ->create();
+
+        $response = $this->actingAs($this->user)->getJson('api/cellar-items/last');
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertCount(10, $data);
+        $this->assertArrayHasKey('bottle', $data[0]);
+        $this->assertArrayHasKey('vintage', $data[0]);
+    }
+
+    public function testCanGetTotalStockForAuthenticatedUser()
+    {
+        $bottle = Bottle::factory()->create();
+        $vintage = Vintage::factory()->create();
+
+        CellarItem::factory()
+            ->for($this->user)
+            ->for($bottle)
+            ->for($vintage)
+            ->create(['stock' => 3]);
+
+        CellarItem::factory()
+            ->for($this->user)
+            ->for($bottle)
+            ->for($vintage)
+            ->create(['stock' => 7]);
+
+        $response = $this->actingAs($this->user)->getJson('api/cellar-items/total-stock');
+
+        $response->assertOk()
+                 ->assertJson([
+                     'total_stock' => 10
+                 ]);
+    }
+
+    public function testCanGetStockGroupedByColour()
+    {
+        $red = Colour::factory()->create(['name' => 'Rouge']);
+        $white = Colour::factory()->create(['name' => 'Blanc']);
+        $vintage = Vintage::factory()->create();
+
+        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
+        $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
+
+        CellarItem::factory()
+            ->for($this->user)
+            ->for($bottleRed)
+            ->for($vintage)
+            ->create(['stock' => 5]);
+
+        CellarItem::factory()
+            ->for($this->user)
+            ->for($bottleWhite)
+            ->for($vintage)
+            ->create(['stock' => 2]);
+
+        $response = $this->actingAs($this->user)->getJson('api/cellar-items/stock-by-colour');
+
+        $response->assertOk();
+        $data = collect($response->json());
+
+        $this->assertTrue($data->contains(fn($i) => $i['colour'] === 'Rouge' && $i['stock'] === 5));
+        $this->assertTrue($data->contains(fn($i) => $i['colour'] === 'Blanc' && $i['stock'] === 2));
+    }
+
     public function testCanStoreCellarItem()
     {
         $colour = \App\Models\Colour::factory()->create();

@@ -7,6 +7,7 @@ use App\Models\CellarItem;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
 use App\Services\VintageService;
+use Illuminate\Support\Facades\DB;
 
 class CellarItemController extends Controller
 {
@@ -26,6 +27,56 @@ class CellarItemController extends Controller
             ->cellarItems()
             ->with(['bottle.colour', 'vintage'])
             ->get();
+    }
+
+    /**
+     * Get the ten last added cellar items.
+     */
+    public function getLastAdded()
+    {
+        $userId = auth()->id();
+
+        $items = CellarItem::with(['bottle.colour', 'vintage'])
+            ->where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
+
+        return response()->json($items);
+    }
+
+    /**
+     * Get the stock of bottles.
+     */
+    public function getTotalStock()
+    {
+        $userId = auth()->id();
+
+        $totalStock = CellarItem::where('user_id', $userId)
+            ->sum('stock');
+
+        return response()->json(['total_stock' => $totalStock]);
+    }
+
+    public function getStockByColour()
+    {
+        $userId = auth()->id();
+
+        $stocks = CellarItem::join('bottles', 'cellar_items.bottle_id', '=', 'bottles.id')
+            ->join('colours', 'bottles.colour_id', '=', 'colours.id')
+            ->where('cellar_items.user_id', $userId)
+            ->select('colours.name as colour', DB::raw('SUM(cellar_items.stock) as total'))
+            ->groupBy('colours.name')
+            ->orderBy('colours.name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'colour' => $item->colour,
+                    'stock'  => (int) $item->total,
+                ];
+            });
+
+        return response()->json($stocks);
     }
 
     /**
