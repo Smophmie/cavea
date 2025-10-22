@@ -25,7 +25,8 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN php artisan config:cache \
     && php artisan route:cache \
-    && php artisan view:cache
+    && php artisan view:cache \
+    && rm -rf bootstrap/cache/config.php bootstrap/cache/services.php
 
 EXPOSE 80
 

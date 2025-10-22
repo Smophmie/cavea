@@ -1,0 +1,38 @@
+name: Laravel Docker Package
+
+on:
+  workflow_call:
+    outputs:
+      image-tag:
+        value: ${{ jobs.backend-build.outputs.image-tag }}
+
+jobs:
+  backend-build:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.version.outputs.SHORT_SHA }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate version from Git SHA
+        id: version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
+        
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cavea-back
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:${{ steps.version.outputs.SHORT_SHA }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cavea-back:latest

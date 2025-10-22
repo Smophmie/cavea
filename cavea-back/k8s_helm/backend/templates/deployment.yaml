@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+      {{- include "backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "backend.app" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "backend.app" . }}
+    spec:
+      containers:
+      - name: cavea-back
+        image: smophmie/cavea-back:{{ .Values.image.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10}}
+        {{- end }}
+        env:
+        - name: APP_ENV
+          value: {{ .Values.app_env | default "production" | quote }}
+        - name: APP_DEBUG
+          value: {{ .Values.app_debug | default "false" | quote }}
+        - name: APP_URL
+          value: {{ .Values.app_url | default "http://localhost" | quote }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-config
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"

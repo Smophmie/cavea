@@ -19,8 +19,8 @@ class BottleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name'=>fake()->name(),
-            'domain'=>Str::random(10),
+            'name' => fake()->name(),
+            'domain' => Str::random(10),
             'colour_id' => Colour::inRandomOrder()->first()->id ?? Colour::factory(),
         ];
     }

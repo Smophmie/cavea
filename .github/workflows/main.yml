@@ -1,0 +1,44 @@
+name: Backend and frontend CI/CD
+
+on:
+  push:
+    branches: [ main, dev, feature/ci-cd ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Code Style Check
+    uses: ./.github/workflows/_backend-lint.yml
+    secrets: inherit
+
+  tests:
+    needs: lint
+    uses: ./.github/workflows/_backend-tests.yml
+    secrets: inherit
+
+  sonarqube:
+    needs: tests
+    uses: ./.github/workflows/_repo-sonarqube.yml
+    secrets: inherit
+
+  backend-build:
+    needs: sonarqube
+    uses: ./.github/workflows/_backend-build.yml
+    secrets: inherit
+
+  backend-deploy-dev:
+    needs: backend-build
+    if: github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/_backend-deploy.yml
+    with:
+      environment: dev
+    secrets: inherit
+
+  backend-deploy-prod:
+    needs: backend-build
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/_backend-deploy.yml
+    with:
+      environment: prod
+    secrets: inherit

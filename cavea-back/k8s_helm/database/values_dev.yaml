@@ -1,0 +1,16 @@
+namespace: cavea-back-dev
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "200m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+  
+
+db_name: cavea_dev_db
+mysql_root_password: "CHANGE_ME"
+
+storage:
+  size: "5Gi"
