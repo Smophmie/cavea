@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class CellarItemService
 {
-    
     /**
      * Get all cellar items for a user
      */
@@ -52,7 +51,7 @@ class CellarItemService
             ->groupBy('colours.name')
             ->orderBy('colours.name')
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'colour' => $item->colour,
                 'stock'  => (int) $item->total,
             ]);
@@ -65,7 +64,7 @@ class CellarItemService
     {
         return CellarItem::with(['bottle.colour', 'vintage'])
             ->where('user_id', $userId)
-            ->whereHas('bottle', fn($query) => $query->where('colour_id', $colourId))
+            ->whereHas('bottle', fn ($query) => $query->where('colour_id', $colourId))
             ->get();
     }
 

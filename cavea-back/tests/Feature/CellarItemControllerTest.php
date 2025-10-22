@@ -58,7 +58,7 @@ class CellarItemControllerTest extends TestCase
             ->for($bottle)
             ->for($vintage)
             ->create();
-        
+
         // Mock du service (ce n'est pas lui qu'on teste ici)
         $this->cellarItemService
             ->shouldReceive('getUserItems')
@@ -138,8 +138,8 @@ class CellarItemControllerTest extends TestCase
         $response->assertOk();
         $data = collect($response->json());
 
-        $this->assertTrue($data->contains(fn($i) => $i['colour'] === 'Rouge' && $i['stock'] === 5));
-        $this->assertTrue($data->contains(fn($i) => $i['colour'] === 'Blanc' && $i['stock'] === 2));
+        $this->assertTrue($data->contains(fn ($i) => $i['colour'] === 'Rouge' && $i['stock'] === 5));
+        $this->assertTrue($data->contains(fn ($i) => $i['colour'] === 'Blanc' && $i['stock'] === 2));
     }
 
     public function testCanStoreCellarItem()
@@ -248,7 +248,7 @@ class CellarItemControllerTest extends TestCase
                 return $arg->id === $cellarItem->id;
             }))
             ->andReturn($updatedItem);
-        
+
         $response = $this->actingAs($this->user)->postJson("api/cellar-items/{$cellarItem->id}/increment");
 
         $response->assertOk()
@@ -304,7 +304,7 @@ class CellarItemControllerTest extends TestCase
             ->for($bottle)
             ->for($vintage)
             ->create(['stock' => 3]);
-        
+
         $updatedItem = $cellarItem->replicate();
         $updatedItem->stock = 2;
 
@@ -357,7 +357,7 @@ class CellarItemControllerTest extends TestCase
             ->for(Bottle::factory())
             ->for(Vintage::factory())
             ->create(['stock' => 2]);
-        
+
         $updatedItem = $cellarItem->replicate();
         $updatedItem->stock = 8;
         $updatedItem->price = 20.0;

@@ -18,7 +18,8 @@ class CellarItemController extends Controller
         protected BottleService $bottleService,
         protected VintageService $vintageService,
         protected CellarItemService $cellarItemService
-    ) {}
+    ) {
+    }
 
     public function index(): JsonResponse
     {
@@ -88,7 +89,7 @@ class CellarItemController extends Controller
     public function show(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('view', $cellarItem);
-        // 
+        //
         $cellarItem->load(['bottle.colour', 'vintage']);
         return response()->json($cellarItem);
     }
@@ -102,7 +103,7 @@ class CellarItemController extends Controller
     public function incrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
-        
+
         $item = $this->cellarItemService->incrementStock($cellarItem);
         return response()->json($item);
     }
@@ -110,7 +111,7 @@ class CellarItemController extends Controller
     public function decrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
-        
+
         $item = $this->cellarItemService->decrementStock($cellarItem);
         return response()->json($item);
     }
@@ -139,10 +140,10 @@ class CellarItemController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-     public function destroy(CellarItem $cellarItem): JsonResponse
+    public function destroy(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('delete', $cellarItem);
-        
+
         $this->cellarItemService->delete($cellarItem);
         return response()->json(null, 204);
     }
