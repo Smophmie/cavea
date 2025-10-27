@@ -42,3 +42,10 @@ jobs:
     with:
       environment: prod
     secrets: inherit
+  
+  frontend-build:
+    needs: sonarqube
+    uses: ./.github/workflows/_frontend-build.yml
+    with:
+      profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+    secrets: inherit
