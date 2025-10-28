@@ -27,5 +27,4 @@ ingress:
   enabled: true
   tls: true
   tlsSecretName: cavea-back-dev-tls
-  path: /dev(/|$)(.*)
-  pathRewrite: true
+  path: /dev
