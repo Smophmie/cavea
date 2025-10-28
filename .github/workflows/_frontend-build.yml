@@ -60,7 +60,7 @@ jobs:
           # Lancer le build
           eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait --json > build-result.json
           
-          APK_URL=$(cat build-status.json | jq -r '.artifacts[0].artifactUrl // .artifacts.buildUrl // empty')
+          APK_URL=$(cat build-result.json | jq -r '.artifacts[0].artifactUrl // .artifacts.buildUrl // empty')
           
           if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
             echo "Erreur: Impossible de récupérer l'URL de l'APK."
