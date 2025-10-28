@@ -17,6 +17,7 @@ db_password: "CHANGE_ME"
 app_env: local
 app_debug: "true"
 app_url: "http://137.74.44.42/dev"
+app_key: "base64:CHANGEME_DEV_KEY"
 
 replicas: 1
 
