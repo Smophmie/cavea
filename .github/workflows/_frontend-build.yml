@@ -39,6 +39,18 @@ jobs:
         working-directory: cavea-front
         run: npm ci
 
+      - name: Set backend API URL
+        working-directory: cavea-front
+        run: |
+          if [ "${{ inputs.profile }}" = "production" ]; then
+            echo "EXPO_PUBLIC_API_URL_WEB=https://137.74.44.42/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_MOBILE=https://137.74.44.42/api" >> .env
+          else
+            echo "EXPO_PUBLIC_API_URL_WEB=https://137.74.44.42/dev/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_MOBILE=https://137.74.44.42/dev/api" >> .env
+          fi
+          echo "Backend URL configured for ${{ inputs.profile }}"
+
       - name: Build APK with EAS
         id: eas-build
         working-directory: cavea-front
@@ -48,7 +60,7 @@ jobs:
           # Lancer le build
           eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait --json > build-result.json
           
-          APK_URL=$(jq -r '.artifacts.buildUrl' build-result.json)
+          APK_URL=$(cat build-status.json | jq -r '.artifacts[0].artifactUrl // .artifacts.buildUrl // empty')
           
           if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
             echo "Erreur: Impossible de récupérer l'URL de l'APK."
