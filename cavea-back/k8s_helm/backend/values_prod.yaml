@@ -24,8 +24,8 @@ service:
 
 ingress:
   enabled: true
-  tls: true
-  tlsSecretName: cavea-back-prod-tls
+  tls: false
+  # tlsSecretName: cavea-back-prod-tls
   path: /
 
 replicas: 2
