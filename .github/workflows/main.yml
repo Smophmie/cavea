@@ -29,7 +29,7 @@ jobs:
 
   backend-deploy-dev:
     needs: backend-build
-    if: github.ref == 'refs/heads/dev'
+    # if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: dev
