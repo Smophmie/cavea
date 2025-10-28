@@ -19,7 +19,7 @@ class HandleDevPrefix
             $newUri = substr($uri, 4) ?: '/';
             $request->server->set('REQUEST_URI', $newUri);
         }
-        
+
         return $next($request);
     }
 }
