@@ -20,7 +20,7 @@ spec:
         image: smophmie/cavea-back:{{ .Values.image.tag }}
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 80
         {{- with .Values.resources }}
         resources:
           {{- toYaml . | nindent 10}}
