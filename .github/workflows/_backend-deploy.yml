@@ -86,7 +86,6 @@ jobs:
         run: |
           echo "Verifying MySQL is accepting connections..."
           
-          # Attendre que MySQL soit vraiment prêt (pas juste le pod)
           for i in {1..30}; do
             if kubectl exec deployment/database-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
                mysqladmin ping -h localhost -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} --silent; then

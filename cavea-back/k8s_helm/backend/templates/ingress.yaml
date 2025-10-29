@@ -8,14 +8,20 @@ metadata:
       {{- include "backend.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: traefik
+    {{- if .Values.ingress.tls }}
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    {{- end }}
 spec:
   ingressClassName: traefik
-  {{- if .Values.ingress.tls }}
+   {{- if .Values.ingress.tls }}
   tls:
-  - secretName: {{ .Values.ingress.tlsSecretName }}
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tlsSecretName }}
   {{- end }}
   rules:
-  - http:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
       paths:
       - path: {{ .Values.ingress.path }}
         pathType: Prefix
