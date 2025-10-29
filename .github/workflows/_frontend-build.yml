@@ -39,6 +39,17 @@ jobs:
         working-directory: cavea-front
         run: npm ci
 
+      - name: Debug - Show .env before modification
+        working-directory: cavea-front
+        run: |
+          echo "=== Contenu du .env AVANT modification ==="
+          if [ -f .env ]; then
+            cat .env
+          else
+            echo "Le fichier .env n'existe pas encore"
+          fi
+          echo "=========================================="
+
       - name: Set backend API URL
         working-directory: cavea-front
         run: |
@@ -50,6 +61,21 @@ jobs:
             echo "EXPO_PUBLIC_API_URL_MOBILE=http://137.74.44.42/dev/api" >> .env
           fi
           echo "Backend URL configured for ${{ inputs.profile }}"
+
+      - name: Debug - Show .env after modification
+        working-directory: cavea-front
+        run: |
+          echo "=== Contenu du .env APRÈS modification ==="
+          cat .env
+          echo "=========================================="
+
+      - name: Debug - Show environment variables
+        working-directory: cavea-front
+        run: |
+          echo "=== Variables d'environnement disponibles ==="
+          echo "EXPO_PUBLIC_API_URL_WEB: ${EXPO_PUBLIC_API_URL_WEB:-non défini}"
+          echo "EXPO_PUBLIC_API_URL_MOBILE: ${EXPO_PUBLIC_API_URL_MOBILE:-non défini}"
+          echo "=============================================="
 
       - name: Build APK with EAS
         id: eas-build
