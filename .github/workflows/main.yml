@@ -42,3 +42,19 @@ jobs:
     with:
       environment: prod
     secrets: inherit
+  
+  # frontend-build:
+  #   needs: sonarqube
+  #   if: github.ref == 'refs/heads/main'
+  #   uses: ./.github/workflows/_frontend-build.yml
+  #   with:
+  #     profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+  #   secrets: inherit
+
+  versioning:
+    needs: [backend-deploy-prod, frontend-build]
+    if: github.ref == 'refs/heads/main'
+    uses: benc-uk/workflow-dispatch@v1
+    with:
+      workflow: "Version Bump"
+      token: ${{ secrets.GITHUB_TOKEN }}

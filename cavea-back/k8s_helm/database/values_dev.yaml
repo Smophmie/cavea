@@ -6,7 +6,7 @@ resources:
     cpu: "200m"
   limits:
     memory: "1Gi"
-    cpu: "500m"
+    cpu: "600m"
   
 
 db_name: cavea_dev_db
