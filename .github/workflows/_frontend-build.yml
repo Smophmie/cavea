@@ -43,11 +43,11 @@ jobs:
         working-directory: cavea-front
         run: |
           if [ "${{ inputs.profile }}" = "production" ]; then
-            echo "EXPO_PUBLIC_API_URL_WEB=https://137.74.44.42/api" >> .env
-            echo "EXPO_PUBLIC_API_URL_MOBILE=https://137.74.44.42/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_WEB=http://137.74.44.42/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_MOBILE=http://137.74.44.42/api" >> .env
           else
-            echo "EXPO_PUBLIC_API_URL_WEB=https://137.74.44.42/dev/api" >> .env
-            echo "EXPO_PUBLIC_API_URL_MOBILE=https://137.74.44.42/dev/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_WEB=http://137.74.44.42/dev/api" >> .env
+            echo "EXPO_PUBLIC_API_URL_MOBILE=http://137.74.44.42/dev/api" >> .env
           fi
           echo "Backend URL configured for ${{ inputs.profile }}"
 
