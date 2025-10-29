@@ -54,7 +54,5 @@ jobs:
   versioning:
     needs: [backend-deploy-prod, frontend-build]
     if: github.ref == 'refs/heads/main'
-    uses: benc-uk/workflow-dispatch@v1
-    with:
-      workflow: "Version Bump"
-      token: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/_versioning.yml
+    secrets: inherit
