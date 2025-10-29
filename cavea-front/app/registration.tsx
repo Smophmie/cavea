@@ -26,8 +26,6 @@ export default function RegistrationPage() {
     setLoading(true);
     setMessage("");
 
-    const url = `${baseURL}/register`;
-    
     try {
       const response = await fetch(`${baseURL}/register`, {
         method: "POST",
@@ -50,12 +48,7 @@ export default function RegistrationPage() {
         setMessage(data.message || "Erreur lors de la création du compte");
       }
     } catch (error: any) {
-      let errorMessage = "Impossible de contacter le serveur.";
-      errorMessage += `\nURL : ${url}`;
-      if (error?.message) {
-        errorMessage += `\nDétail : ${error.message}`;
-      }
-      setMessage(errorMessage);
+      setMessage("Impossible de contacter le serveur.");
       console.error(error);
     } finally {
       setLoading(false);
