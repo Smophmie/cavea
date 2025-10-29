@@ -52,7 +52,8 @@ jobs:
   #   secrets: inherit
 
   versioning:
-    needs: [backend-deploy-prod, frontend-build]
+    # needs: [backend-deploy-prod, frontend-build]
+    needs: backend-deploy-prod
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/_versioning.yml
     secrets: inherit
