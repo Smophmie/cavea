@@ -1,8 +1,7 @@
-name: Version Bump
+name: Versioning
 
 on:
-  push:
-    branches: [ main ]
+  workflow_call:
 
 permissions:
   contents: write
@@ -22,22 +21,22 @@ jobs:
         id: bump
         run: |
           echo "Current version:"
-          cat VERSION
-          VERSION=$(cat VERSION)
+          cat version
+          VERSION=$(cat version)
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
           PATCH=$((PATCH + 1))
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
           echo "New version: $NEW_VERSION"
-          echo "$NEW_VERSION" > VERSION
+          echo "$NEW_VERSION" > version
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit and tag new version
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add VERSION
+          git add version
           git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
           git tag -a "v${{ steps.bump.outputs.new_version }}" -m "Release v${{ steps.bump.outputs.new_version }}" || echo "Tag already exists"
 
