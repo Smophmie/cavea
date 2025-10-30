@@ -6,8 +6,10 @@ on:
       environment:
         required: true
         default: 'dev'
+        type: string
       image_tag:
         required: false
+        type: string
 
 jobs:
   backend-deploy:
