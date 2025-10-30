@@ -32,10 +32,13 @@ jobs:
     secrets: inherit
 
   backend-build:
-    needs: versioning
+    needs: [sonarqube, versioning]
+    if: |
+      (github.ref == 'refs/heads/main' && needs.versioning.result == 'success') ||
+      (github.ref != 'refs/heads/main' && needs.sonarqube.result == 'success')
     uses: ./.github/workflows/_backend-build.yml
     with:
-      version: ${{ needs.versioning.outputs.new-version }}
+      version: ${{ github.ref == 'refs/heads/main' && needs.versioning.outputs.new-version || github.sha }}
     secrets: inherit
 
   backend-deploy-dev:

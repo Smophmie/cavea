@@ -23,7 +23,7 @@ jobs:
       - name: Determine image tag
         id: build
         run: |
-          IMAGE_TAG="${{ inputs.version || github.sha }}"
+          IMAGE_TAG="${{ inputs.version }}"
           echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
         
       - name: Login to DockerHub
