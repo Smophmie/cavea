@@ -45,7 +45,14 @@ export default function RegistrationPage() {
         setMessage(`Compte créé avec succès. Bienvenue ${data.user.firstname}, vous pouvez maintenant vous connecter !`);
         setTimeout(() => router.push("/login"), 2000);
       } else {
-        setMessage(data.message || "Erreur lors de la création du compte");
+        if (data.errors) {
+          const errorMessages = Object.values(data.errors)
+            .flat()
+            .join("\n");
+          setMessage(errorMessages);
+  } else {
+    setMessage(data.message || "Erreur lors de la création du compte");
+  }
       }
     } catch (error: any) {
       setMessage("Impossible de contacter le serveur.");
