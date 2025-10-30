@@ -2,6 +2,9 @@ name: Versioning
 
 on:
   workflow_call:
+    outputs:
+      new-version:
+        value: ${{ jobs.bump-version.outputs.new-version }}
 
 permissions:
   contents: write
@@ -20,8 +23,8 @@ jobs:
       - name: Read and bump version
         id: bump
         run: |
-          echo "Current version:"
-          cat version
+          echo "Current VERSION:"
+          cat VERSION
           VERSION=$(cat version)
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
@@ -29,7 +32,7 @@ jobs:
           PATCH=$((PATCH + 1))
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
           echo "New version: $NEW_VERSION"
-          echo "$NEW_VERSION" > version
+          echo "$NEW_VERSION" > VERSION
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit and tag new version
