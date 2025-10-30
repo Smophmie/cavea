@@ -2,7 +2,7 @@ name: Backend and frontend CI/CD
 
 on:
   push:
-    branches: [ main, dev, feature/ci-cd ]
+    branches: [ main, dev ]
   pull_request:
     branches: [ main ]
 
@@ -49,7 +49,7 @@ jobs:
 
   backend-deploy-dev:
     needs: backend-build-dev
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref != 'refs/heads/dev'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: dev
