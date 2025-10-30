@@ -21,11 +21,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/cellar-items', [CellarItemController::class, 'index']);
-    Route::get('/cellar-items/{id}', [CellarItemController::class, 'show']);
+    Route::get('/cellar-items/last', [CellarItemController::class, 'getLastAdded']);
+    Route::get('/cellar-items/total-stock', [CellarItemController::class, 'getTotalStock']);
+    Route::get('/cellar-items/stock-by-colour', [CellarItemController::class, 'getStockByColour']);
+    Route::get('/cellar-items/{cellarItem}', [CellarItemController::class, 'show']);
     Route::get('/cellar-items/colour/{colourId}', [CellarItemController::class, 'filterByColour']);
     Route::post('/cellar-items', [CellarItemController::class, 'store']);
-    Route::put('/cellar-items/{id}', [CellarItemController::class, 'update']);
-    Route::post('/cellar-items/{id}/increment', [CellarItemController::class, 'incrementStock']);
-    Route::post('/cellar-items/{id}/decrement', [CellarItemController::class, 'decrementStock']);
-    Route::delete('/cellar-items/{id}', [CellarItemController::class, 'destroy']);
+    Route::put('/cellar-items/{cellarItem}', [CellarItemController::class, 'update']);
+    Route::post('/cellar-items/{cellarItem}/increment', [CellarItemController::class, 'incrementStock']);
+    Route::post('/cellar-items/{cellarItem}/decrement', [CellarItemController::class, 'decrementStock']);
+    Route::delete('/cellar-items/{cellarItem}', [CellarItemController::class, 'destroy']);
 });
