@@ -4,10 +4,10 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'Environment to deploy to (dev or prod)'
         required: true
-        type: string
         default: 'dev'
+      image_tag:
+        required: false
 
 jobs:
   backend-deploy:
@@ -16,12 +16,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Get version from Git SHA
-        id: version
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
 
       - name: Set environment variables
         id: env
@@ -66,7 +60,7 @@ jobs:
             --create-namespace \
             --install \
             --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            --set image.tag=${{ steps.version.outputs.SHORT_SHA }} \
+            --set image.tag=${{ inputs.image_tag || 'latest' }} \
             --set app_key=${{ secrets.APP_KEY }}
 
       - name: Wait for backend pod to be ready
