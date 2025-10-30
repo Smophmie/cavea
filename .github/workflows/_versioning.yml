@@ -25,7 +25,7 @@ jobs:
         run: |
           echo "Current VERSION:"
           cat VERSION
-          VERSION=$(cat version)
+          VERSION=$(cat VERSION)
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
@@ -33,15 +33,15 @@ jobs:
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
           echo "New version: $NEW_VERSION"
           echo "$NEW_VERSION" > VERSION
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit and tag new version
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version
-          git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
-          git tag -a "v${{ steps.bump.outputs.new_version }}" -m "Release v${{ steps.bump.outputs.new_version }}" || echo "Tag already exists"
+          git add VERSION
+          git commit -m "Bump version to ${{ steps.bump.outputs.new-version }}" || echo "No changes to commit"
+          git tag -a "v${{ steps.bump.outputs.new-version }}" -m "Release v${{ steps.bump.outputs.new-version }}" || echo "Tag already exists"
 
       - name: Push changes and tags
         env:
