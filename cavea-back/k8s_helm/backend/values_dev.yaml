@@ -16,7 +16,8 @@ db_password: "CHANGE_ME"
 
 app_env: local
 app_debug: "true"
-app_url: "https://137.74.44.42"
+app_url: "https://api-dev.cavea.ovh"
+app_key: "base64:CHANGEME_DEV_KEY"
 
 replicas: 1
 
@@ -27,3 +28,5 @@ ingress:
   enabled: true
   tls: true
   tlsSecretName: cavea-back-dev-tls
+  path: /
+  host: "api-dev.cavea.ovh"

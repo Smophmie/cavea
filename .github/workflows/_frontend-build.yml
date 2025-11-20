@@ -1,0 +1,92 @@
+name: Frontend Build APK
+
+on:
+  workflow_call:
+    inputs:
+      profile:
+        required: true
+        type: string
+        default: 'preview'
+    outputs:
+      apk-url:
+        value: ${{ jobs.build-android.outputs.apk-url }}
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    outputs:
+      apk-url: ${{ steps.eas-build.outputs.APK_URL }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: cavea-front/package-lock.json
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: cavea-front
+        run: npm ci
+
+      - name: Build APK with EAS
+        id: eas-build
+        working-directory: cavea-front
+        run: |
+          echo "Starting EAS Build for Android (${{ inputs.profile }})..."
+          
+          # Lancer le build
+          eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait --json > build-result.json
+          
+          APK_URL=$(cat build-result.json | jq -r '.artifacts[0].artifactUrl // .artifacts.buildUrl // empty')
+          
+          if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
+            echo "Erreur: Impossible de récupérer l'URL de l'APK."
+            cat build-result.json
+            exit 1
+          fi
+          
+          echo "Build completed successfully!"
+          echo "APK URL: $APK_URL"
+          echo "APK_URL=$APK_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with APK link
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Android APK Ready!\n\n**Download:** ${{ steps.eas-build.outputs.APK_URL }}\n\n### Installation sur Samsung:\n1. Téléchargez le fichier APK\n2. Autorisez l'installation depuis sources inconnues\n3. Installez l'APK\n4. Lancez l'app!\n\n*Build profile: ${{ inputs.profile }}*`
+            })
+
+      - name: Create build summary
+        if: success()
+        run: |
+          echo "## Android Build Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Profile:** ${{ inputs.profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform:** Android (APK)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Download APK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [${{ steps.eas-build.outputs.APK_URL }}](${{ steps.eas-build.outputs.APK_URL }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation sur Android" >> $GITHUB_STEP_SUMMARY
+          echo "1. Téléchargez le fichier APK depuis le lien ci-dessus" >> $GITHUB_STEP_SUMMARY
+          echo "2. Sur votre Android: Paramètres → Sécurité → Sources inconnues (activer)" >> $GITHUB_STEP_SUMMARY
+          echo "3. Ouvrez le fichier APK téléchargé" >> $GITHUB_STEP_SUMMARY
+          echo "4. Installez l'application" >> $GITHUB_STEP_SUMMARY
+          echo "5. Lancez l'app!" >> $GITHUB_STEP_SUMMARY

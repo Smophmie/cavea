@@ -4,10 +4,12 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'Environment to deploy to (dev or prod)'
         required: true
-        type: string
         default: 'dev'
+        type: string
+      image_tag:
+        required: false
+        type: string
 
 jobs:
   backend-deploy:
@@ -16,12 +18,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Get version from Git SHA
-        id: version
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_OUTPUT
 
       - name: Set environment variables
         id: env
@@ -66,7 +62,8 @@ jobs:
             --create-namespace \
             --install \
             --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            --set image.tag=${{ steps.version.outputs.SHORT_SHA }}
+            --set image.tag=${{ inputs.image_tag || 'latest' }} \
+            --set app_key=${{ secrets.APP_KEY }}
 
       - name: Wait for backend pod to be ready
         run: |
@@ -85,7 +82,6 @@ jobs:
         run: |
           echo "Verifying MySQL is accepting connections..."
           
-          # Attendre que MySQL soit vraiment prêt (pas juste le pod)
           for i in {1..30}; do
             if kubectl exec deployment/database-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
                mysqladmin ping -h localhost -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} --silent; then

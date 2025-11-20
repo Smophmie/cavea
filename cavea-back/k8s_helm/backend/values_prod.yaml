@@ -16,7 +16,8 @@ db_password: "CHANGE_ME"
 
 app_env: production
 app_debug: "false"
-app_url: "https://137.74.44.42"
+app_url: "https://api.cavea.ovh"
+app_key: "base64:CHANGEME_PROD_KEY"
 
 service:
   type: ClusterIP
@@ -25,5 +26,7 @@ ingress:
   enabled: true
   tls: true
   tlsSecretName: cavea-back-prod-tls
+  path: /
+  host: "api.cavea.ovh"
 
 replicas: 2

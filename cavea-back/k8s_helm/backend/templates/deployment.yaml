@@ -20,7 +20,7 @@ spec:
         image: smophmie/cavea-back:{{ .Values.image.tag }}
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 80
         {{- with .Values.resources }}
         resources:
           {{- toYaml . | nindent 10}}
@@ -32,6 +32,8 @@ spec:
           value: {{ .Values.app_debug | default "false" | quote }}
         - name: APP_URL
           value: {{ .Values.app_url | default "http://localhost" | quote }}
+        - name: APP_KEY
+          value: {{ .Values.app_key | quote }}
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-config

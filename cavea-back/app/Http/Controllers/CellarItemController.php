@@ -4,44 +4,64 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CellarItem;
+use App\Policies\CellarItemPolicy;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
 use App\Services\VintageService;
+use App\Services\CellarItemService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class CellarItemController extends Controller
 {
-    protected BottleService $bottleService;
-    protected VintageService $vintageService;
-
-    public function __construct(BottleService $bottleService, VintageService $vintageService)
-    {
-        $this->bottleService = $bottleService;
-        $this->vintageService = $vintageService;
+    public function __construct(
+        protected BottleService $bottleService,
+        protected VintageService $vintageService,
+        protected CellarItemService $cellarItemService
+    ) {
     }
 
-
-    public function index()
+    public function index(): JsonResponse
     {
-        return auth()->user()
-            ->cellarItems()
-            ->with(['bottle.colour', 'vintage'])
-            ->get();
+        $items = $this->cellarItemService->getUserItems(auth()->id());
+        return response()->json($items);
+    }
+
+    /**
+     * Get the ten last added cellar items.
+     */
+    public function getLastAdded(): JsonResponse
+    {
+        $items = $this->cellarItemService->getLastAdded(auth()->id());
+        return response()->json($items);
+    }
+
+    /**
+     * Get the stock of bottles.
+     */
+    public function getTotalStock(): JsonResponse
+    {
+        $total = $this->cellarItemService->getTotalStock(auth()->id());
+        return response()->json(['total_stock' => $total]);
+    }
+
+    public function getStockByColour(): JsonResponse
+    {
+        $stocks = $this->cellarItemService->getStockByColour(auth()->id());
+        return response()->json($stocks);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'bottle.name' => 'required|string|max:255',
             'bottle.domain' => 'nullable|string|max:255',
             'bottle.PDO' => 'nullable|string|max:255',
             'bottle.colour_id' => 'required|exists:colours,id',
-
-
             'vintage.year' => 'required|integer|digits:4|min:1900|max:2100',
-
             'stock' => 'required|integer|min:0',
             'rating' => 'nullable|numeric|min:0|max:5',
             'price' => 'nullable|numeric|min:0',
@@ -52,97 +72,56 @@ class CellarItemController extends Controller
         ]);
 
         $bottle = $this->bottleService->findOrCreate($validated['bottle']);
-
         $vintage = $this->vintageService->findOrCreate($validated['vintage']);
 
-        $cellarItem = CellarItem::create([
-            'user_id' => auth()->id(),
+        $cellarItem = $this->cellarItemService->create([
             'bottle_id' => $bottle->id,
             'vintage_id' => $vintage->id,
-            'stock' => $validated['stock'],
-            'rating' => $validated['rating'] ?? null,
-            'price' => $validated['price'] ?? null,
-            'shop' => $validated['shop'] ?? null,
-            'offered_by' => $validated['offered_by'] ?? null,
-            'drinking_window_start' => $validated['drinking_window_start'] ?? null,
-            'drinking_window_end' => $validated['drinking_window_end'] ?? null,
-        ]);
+            ...$validated
+        ], auth()->id());
 
-        return response()->json(
-            $cellarItem->load(['bottle.colour', 'vintage']),
-            201
-        );
+        return response()->json($cellarItem, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(CellarItem $cellarItem): JsonResponse
     {
-        $cellarItem = CellarItem::with(['bottle.colour', 'vintage'])->find($id);
-
-        if (! $cellarItem) {
-            return response()->json(['error' => 'Elément inexistant'], 404);
-        }
-
-        if ($cellarItem->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Action non autorisée'], 403);
-        }
-
+        $this->authorize('view', $cellarItem);
+        //
+        $cellarItem->load(['bottle.colour', 'vintage']);
         return response()->json($cellarItem);
     }
 
-    public function filterByColour($colourId)
+    public function filterByColour(int $colourId): JsonResponse
     {
-        $userId = auth()->id();
-
-        $cellarItems = CellarItem::with(['bottle.colour', 'vintage'])
-            ->where('user_id', $userId)
-            ->whereHas('bottle', function ($query) use ($colourId) {
-                $query->where('colour_id', $colourId);
-            })
-            ->get();
-
-        return response()->json($cellarItems);
+        $items = $this->cellarItemService->filterByColour(auth()->id(), $colourId);
+        return response()->json($items);
     }
 
-    public function incrementStock($id)
+    public function incrementStock(CellarItem $cellarItem): JsonResponse
     {
-        $item = CellarItem::where('user_id', auth()->id())->findOrFail($id);
-        $item->increment('stock');
+        $this->authorize('update', $cellarItem);
 
-        return response()->json($item, 200);
+        $item = $this->cellarItemService->incrementStock($cellarItem);
+        return response()->json($item);
     }
 
-    public function decrementStock($id)
+    public function decrementStock(CellarItem $cellarItem): JsonResponse
     {
-        $item = CellarItem::where('user_id', auth()->id())->findOrFail($id);
+        $this->authorize('update', $cellarItem);
 
-        if ($item->stock > 0) {
-            $item->decrement('stock');
-        }
-
-        return response()->json($item, 200);
+        $item = $this->cellarItemService->decrementStock($cellarItem);
+        return response()->json($item);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, CellarItem $cellarItem): JsonResponse
     {
-        $cellarItem = CellarItem::find($id);
-
-        if (!$cellarItem) {
-            return response()->json([
-                'message' => 'Elément inexistant'
-            ], 404);
-        }
-
-        if ($cellarItem->user_id !== auth()->id()) {
-            return response()->json([
-                'message' => 'Action non autorisée'
-            ], 403);
-        }
+        $this->authorize('update', $cellarItem);
 
         $validated = $request->validate([
             'stock' => 'integer|min:0',
@@ -151,26 +130,21 @@ class CellarItemController extends Controller
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',
             'drinking_window_start' => 'nullable|integer|digits:4|min:1900|max:2100',
-            'drinking_window_end'   => 'nullable|integer|digits:4|min:1900|max:2100|gte:drinking_window_start',
+            'drinking_window_end' => 'nullable|integer|digits:4|min:1900|max:2100|gte:drinking_window_start',
         ]);
 
-        $cellarItem->update($validated);
-
-        return response()->json($cellarItem, 200);
+        $item = $this->cellarItemService->update($cellarItem, $validated);
+        return response()->json($item);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(CellarItem $cellarItem): JsonResponse
     {
-        $cellarItem = CellarItem::find($id);
-        if ($cellarItem->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Action non autorisée'], 403);
-        }
+        $this->authorize('delete', $cellarItem);
 
-        $cellarItem->delete();
-
+        $this->cellarItemService->delete($cellarItem);
         return response()->json(null, 204);
     }
 }

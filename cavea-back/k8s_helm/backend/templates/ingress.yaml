@@ -7,18 +7,23 @@ metadata:
   labels:
       {{- include "backend.labels" . | nindent 4 }}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/ingress.class: traefik
+    {{- if .Values.ingress.tls }}
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    {{- end }}
 spec:
-  ingressClassName: nginx
-  {{- if .Values.ingress.tls }}
+  ingressClassName: traefik
+   {{- if .Values.ingress.tls }}
   tls:
-  - secretName: {{ .Values.ingress.tlsSecretName }}
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tlsSecretName }}
   {{- end }}
   rules:
-  - http:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
       paths:
-      - path: /
+      - path: {{ .Values.ingress.path }}
         pathType: Prefix
         backend:
           service:

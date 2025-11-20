@@ -2,9 +2,12 @@ name: Backend and frontend CI/CD
 
 on:
   push:
-    branches: [ main, dev, feature/ci-cd ]
+    branches: [ main, dev ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
   lint:
@@ -22,23 +25,50 @@ jobs:
     uses: ./.github/workflows/_repo-sonarqube.yml
     secrets: inherit
 
-  backend-build:
+  versioning:
     needs: sonarqube
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/_versioning.yml
+    secrets: inherit
+
+  backend-build-dev:
+    needs: sonarqube
+    if: github.ref != 'refs/heads/main'
     uses: ./.github/workflows/_backend-build.yml
+    with:
+      version: ${{ github.sha }}
+    secrets: inherit
+
+  backend-build-prod:
+    needs: versioning
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/_backend-build.yml
+    with:
+      version: ${{ needs.versioning.outputs.new-version }}
     secrets: inherit
 
   backend-deploy-dev:
-    needs: backend-build
-    if: github.ref == 'refs/heads/dev'
+    needs: backend-build-dev
+    if: github.ref != 'refs/heads/dev'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: dev
+      image_tag: ${{ github.sha }}
     secrets: inherit
 
   backend-deploy-prod:
-    needs: backend-build
+    needs: backend-build-prod
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: prod
+      image_tag: ${{ needs.backend-build-prod.outputs.image_tag || needs.versioning.outputs.new-version }}
     secrets: inherit
+  
+  # frontend-build:
+  #   needs: sonarqube
+  #   if: github.ref == 'refs/heads/main'
+  #   uses: ./.github/workflows/_frontend-build.yml
+  #   with:
+  #     profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+  #   secrets: inherit
