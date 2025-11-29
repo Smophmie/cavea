@@ -4,8 +4,8 @@ on:
   workflow_call:
 
 jobs:
-  php-cs-fixer:
-    name: PHP Code Style
+  lint:
+    name: Code Linting (PHP CS Fixer)
     runs-on: ubuntu-latest
     
     steps:

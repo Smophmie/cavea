@@ -12,6 +12,7 @@ on:
 
 jobs:
   backend-build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ steps.build.outputs.image_tag }}
