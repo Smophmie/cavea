@@ -2,16 +2,15 @@ name: Backend and frontend CI/CD
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, feature/** ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 permissions:
   contents: write
 
 jobs:
   lint:
-    name: Code Style Check
     uses: ./.github/workflows/_backend-lint.yml
     secrets: inherit
 
@@ -27,13 +26,13 @@ jobs:
 
   versioning:
     needs: sonarqube
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     uses: ./.github/workflows/_versioning.yml
     secrets: inherit
 
   backend-build-dev:
     needs: sonarqube
-    if: github.ref != 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     uses: ./.github/workflows/_backend-build.yml
     with:
       version: ${{ github.sha }}
@@ -41,7 +40,7 @@ jobs:
 
   backend-build-prod:
     needs: versioning
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     uses: ./.github/workflows/_backend-build.yml
     with:
       version: ${{ needs.versioning.outputs.new-version }}
@@ -49,7 +48,7 @@ jobs:
 
   backend-deploy-dev:
     needs: backend-build-dev
-    if: github.ref != 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: dev
@@ -58,7 +57,7 @@ jobs:
 
   backend-deploy-prod:
     needs: backend-build-prod
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: prod
@@ -67,7 +66,7 @@ jobs:
   
   # frontend-build:
   #   needs: sonarqube
-  #   if: github.ref == 'refs/heads/main'
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.ref == 'refs/heads/dev' && github.event_name == 'push'
   #   uses: ./.github/workflows/_frontend-build.yml
   #   with:
   #     profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}

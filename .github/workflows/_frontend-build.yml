@@ -12,8 +12,8 @@ on:
         value: ${{ jobs.build-android.outputs.apk-url }}
 
 jobs:
-  build-android:
-    name: Build Android APK
+  build-package:
+    name: Build Android and IOS packages
     runs-on: ubuntu-latest
     outputs:
       apk-url: ${{ steps.eas-build.outputs.APK_URL }}

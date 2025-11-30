@@ -4,7 +4,8 @@ on:
   workflow_call:
 
 jobs:
-  repo-sonarqube:
+  sonarqube:
+    name: Code Quality Analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

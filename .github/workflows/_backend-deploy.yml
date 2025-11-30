@@ -13,6 +13,7 @@ on:
 
 jobs:
   backend-deploy:
+    name: Deploy to Kubernetes (${{ inputs.environment }})
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -54,21 +55,6 @@ jobs:
             --install \
             --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
-      - name: Deploy backend with Helm
-        run: |
-          helm upgrade back ./cavea-back/k8s_helm/backend \
-            -f ./cavea-back/k8s_helm/backend/${{ steps.env.outputs.VALUES_FILE }} \
-            --namespace ${{ steps.env.outputs.NAMESPACE }} \
-            --create-namespace \
-            --install \
-            --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            --set image.tag=${{ inputs.image_tag || 'latest' }} \
-            --set app_key=${{ secrets.APP_KEY }}
-
-      - name: Wait for backend pod to be ready
-        run: |
-          kubectl rollout status deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }}
-
       - name: Wait for database pod to be ready
         run: |
           echo "Waiting for MySQL database to be ready..."
@@ -94,7 +80,41 @@ jobs:
           
           echo "MySQL failed to become ready after 5 minutes"
           exit 1
+
+      - name: Deploy backend with Helm
+        run: |
+          helm upgrade back ./cavea-back/k8s_helm/backend \
+            -f ./cavea-back/k8s_helm/backend/${{ steps.env.outputs.VALUES_FILE }} \
+            --namespace ${{ steps.env.outputs.NAMESPACE }} \
+            --create-namespace \
+            --install \
+            --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --set image.tag=${{ inputs.image_tag || 'latest' }} \
+            --set app_key=${{ secrets.APP_KEY }}
+
+      - name: Wait for backend pod to be ready
+        run: |
+          kubectl rollout status deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }}
       
+      - name: Verify backend can connect to database
+        run: |          
+          for i in {1..10}; do
+            if kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
+               php artisan db:show --database=mysql 2>/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          
+          echo "Backend failed to connect to database"
+          echo ""
+          echo "Backend logs:"
+          kubectl logs deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} --tail=50
+          echo ""
+          echo "Database logs:"
+          kubectl logs deployment/database-deployment -n ${{ steps.env.outputs.NAMESPACE }} --tail=50
+          exit 1
+          
       - name: Run Laravel migrations on cluster
         run: |
           kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
