@@ -10,7 +10,7 @@ resources:
     cpu: "800m"
 
 db_name: cavea_prod_db
-mysql_root_password: "CHANGE_ME"
+mysql_root_password: ""
 
 storage:
   size: "20Gi"

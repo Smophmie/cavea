@@ -29,9 +29,10 @@ spec:
         resources:
           {{- toYaml . | nindent 10}}
         {{- end }}
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.mysql_root_password | quote }}
         envFrom:
-        - secretRef:
-            name: {{ .Release.Name }}-secrets
         - configMapRef:
             name: {{ .Release.Name }}-config
       volumes:
