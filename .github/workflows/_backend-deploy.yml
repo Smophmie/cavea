@@ -100,7 +100,12 @@ jobs:
         run: |          
           EXPECTED_DB_HOST="database-service.${{ steps.env.outputs.NAMESPACE }}.svc.cluster.local"
           EXPECTED_DB_USER="root"
-          EXPECTED_DB_NAME="cavea_prod_db" 
+          if [ "$NAMESPACE" == "cavea-back-prod" ]; then
+            EXPECTED_DB_NAME="cavea_prod_db" 
+          else
+            # Si le namespace est cavea-back-dev, on utilise cavea_dev_db
+            EXPECTED_DB_NAME="cavea_dev_db" 
+          fi 
 
           echo "Verifying connection using basic PHP PDO test..."
           
