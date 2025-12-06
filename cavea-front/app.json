@@ -4,7 +4,7 @@
     "slug": "cavea-front",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logo-fond-rouge.png",
     "scheme": "caveafront",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,15 +15,15 @@
       "package": "com.cavea.app",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/logo-fond-rouge.png",
+        "backgroundColor": "#bb2700"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/cavea-logo.png"
     },
     "plugins": [
       "expo-router",
