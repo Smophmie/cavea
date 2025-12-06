@@ -32,7 +32,7 @@ jobs:
 
   backend-build-dev:
     needs: sonarqube
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/_backend-build.yml
     with:
       version: ${{ github.sha }}
@@ -48,7 +48,7 @@ jobs:
 
   backend-deploy-dev:
     needs: backend-build-dev
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/_backend-deploy.yml
     with:
       environment: dev
