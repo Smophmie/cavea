@@ -64,10 +64,10 @@ jobs:
       image_tag: ${{ needs.backend-build-prod.outputs.image_tag || needs.versioning.outputs.new-version }}
     secrets: inherit
   
-  # frontend-build:
-  #   needs: sonarqube
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.ref == 'refs/heads/dev' && github.event_name == 'push'
-  #   uses: ./.github/workflows/_frontend-build.yml
-  #   with:
-  #     profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
-  #   secrets: inherit
+  frontend-build:
+    needs: sonarqube
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    uses: ./.github/workflows/_frontend-build.yml
+    with:
+      profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+    secrets: inherit
