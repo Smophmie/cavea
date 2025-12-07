@@ -97,34 +97,40 @@ jobs:
           kubectl rollout status deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }}
       
       - name: Verify backend can connect to database
-        run: |          
-          EXPECTED_DB_HOST="database-service.${{ steps.env.outputs.NAMESPACE }}.svc.cluster.local"
-          EXPECTED_DB_USER="root"
-          if [ "$NAMESPACE" == "cavea-back-prod" ]; then
-            EXPECTED_DB_NAME="cavea_prod_db" 
-          else
-            # Si le namespace est cavea-back-dev, on utilise cavea_dev_db
-            EXPECTED_DB_NAME="cavea_dev_db" 
-          fi 
-
-          echo "Verifying connection using basic PHP PDO test..."
+        run: |  
+          NAMESPACE="${{ steps.env.outputs.NAMESPACE }}"
+          echo "Testing database connection from backend pod..."
+          echo "Namespace: $NAMESPACE"
+          echo ""
+          echo "Backend environment variables:"
+          kubectl exec deploy/back-deployment -n $NAMESPACE -- env | grep -E "DB_|APP_" || true
+          echo ""
           
           for i in {1..10}; do
-            if kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
-               php -r "try { new PDO('mysql:host=$EXPECTED_DB_HOST;dbname=$EXPECTED_DB_NAME;charset=utf8mb4', '$EXPECTED_DB_USER', '${{ secrets.MYSQL_ROOT_PASSWORD }}'); echo 'Connexion BDD OK'; exit(0); } catch (PDOException \$e) { exit(1); }"; then
+            echo "Attempt $i/10..."
+            if kubectl exec deploy/back-deployment -n $NAMESPACE -- php -r "\$host = getenv('DB_HOST'); \$db = getenv('DB_DATABASE'); \$user = getenv('DB_USERNAME'); \$pass = getenv('DB_PASSWORD'); echo \"Connecting to: \$host / \$db as \$user\n\"; try { \$pdo = new PDO(\"mysql:host=\$host;dbname=\$db;charset=utf8mb4\", \$user, \$pass); echo \"Connection successful!\n\"; exit(0); } catch (PDOException \$e) { echo \"Connection failed: \" . \$e->getMessage() . \"\n\"; exit(1); }"; then
+              echo "Database connection verified!"
               exit 0
             fi
-            echo "Attempt $i/10: Connexion BDD échouée, attente 5s..."
+            echo "Waiting 5s before retry..."
             sleep 5
           done
           
-          echo "Backend failed to connect to database"
           echo ""
-          echo "Backend logs:"
-          kubectl logs deployment/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} --tail=50
+          echo "Failed to connect to database after 10 attempts"
           echo ""
-          echo "Database logs:"
-          kubectl logs deployment/database-deployment -n ${{ steps.env.outputs.NAMESPACE }} --tail=50
+          echo "=== Backend Environment ==="
+          kubectl exec deploy/back-deployment -n $NAMESPACE -- env | grep DB_ || true
+          echo ""
+          echo "=== Backend Logs ==="
+          kubectl logs deployment/back-deployment -n $NAMESPACE --tail=30 || true
+          echo ""
+          echo "=== Database Logs ==="
+          kubectl logs deployment/database-deployment -n $NAMESPACE --tail=30 || true
+          echo ""
+          echo "=== Services ==="
+          kubectl get svc -n $NAMESPACE || true
+          
           exit 1
           
       - name: Run Laravel migrations on cluster
