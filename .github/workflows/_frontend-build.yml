@@ -9,7 +9,7 @@ on:
         default: 'preview'
     outputs:
       apk-url:
-        value: ${{ jobs.build-android.outputs.apk-url }}
+        value: ${{ jobs.build-package.outputs.apk-url }}
 
 jobs:
   build-package:
@@ -48,20 +48,31 @@ jobs:
           # Lancer le build
           eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait --json > build-result.json
           
+          # Extraction robuste de l'URL avec jq (solutionne l'erreur de tableau/objet)
           APK_URL=$(cat build-result.json | jq -r '
-            .[0].artifacts[0].artifactUrl // 
-            .[0].buildUrl // 
-            empty
-          ')
+            # S'assurer que le contenu est un tableau
+            (if type == "array" then . else [.] end) | 
+            # Chercher l'URL de l'artefact ou l'URL du build dans chaque élément
+            map(
+                .artifacts[0].artifactUrl // 
+                .buildUrl // 
+                empty
+            ) |
+            # Prendre le premier résultat non-vide et l'imprimer
+            .[] | select(. != null) | .
+          ' | head -n 1)
           
           if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
-            echo "Erreur: Impossible de récupérer l'URL de l'APK."
+            echo "Avertissement: Impossible de récupérer l'URL de l'APK."
+            echo "Le contenu JSON est ci-dessous :"
             cat build-result.json
-            exit 1
+            
+            APK_URL="URL_NOT_FOUND" 
+          else
+            echo "Build completed successfully!"
+            echo "APK URL: $APK_URL"
           fi
           
-          echo "Build completed successfully!"
-          echo "APK URL: $APK_URL"
           echo "APK_URL=$APK_URL" >> $GITHUB_OUTPUT
 
       - name: Comment PR with APK link
@@ -69,28 +80,44 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const apkUrl = '${{ steps.eas-build.outputs.APK_URL }}';
+            let bodyText;
+
+            if (apkUrl === 'URL_NOT_FOUND') {
+              bodyText = `## Android APK Build Terminé! \n\n**Statut:** Le build EAS a réussi, mais l'URL de l'APK n'a pas pu être extraite du JSON. Veuillez vérifier les logs EAS pour le lien de téléchargement.\n\n*Build profile: ${{ inputs.profile }}*`;
+            } else {
+              bodyText = `## Android APK Ready! \n\n**Download:** ${apkUrl}\n\n### Installation sur Samsung:\n1. Téléchargez le fichier APK\n2. Autorisez l'installation depuis sources inconnues\n3. Installez l'APK\n4. Lancez l'app!\n\n*Build profile: ${{ inputs.profile }}*`;
+            }
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Android APK Ready!\n\n**Download:** ${{ steps.eas-build.outputs.APK_URL }}\n\n### Installation sur Samsung:\n1. Téléchargez le fichier APK\n2. Autorisez l'installation depuis sources inconnues\n3. Installez l'APK\n4. Lancez l'app!\n\n*Build profile: ${{ inputs.profile }}*`
+              body: bodyText
             })
 
       - name: Create build summary
         if: success()
         run: |
+          APK_URL="${{ steps.eas-build.outputs.APK_URL }}"
           echo "## Android Build Successful!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Profile:** ${{ inputs.profile }}" >> $GITHUB_STEP_SUMMARY
           echo "**Platform:** Android (APK)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Download APK" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 [${{ steps.eas-build.outputs.APK_URL }}](${{ steps.eas-build.outputs.APK_URL }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Installation sur Android" >> $GITHUB_STEP_SUMMARY
-          echo "1. Téléchargez le fichier APK depuis le lien ci-dessus" >> $GITHUB_STEP_SUMMARY
-          echo "2. Sur votre Android: Paramètres → Sécurité → Sources inconnues (activer)" >> $GITHUB_STEP_SUMMARY
-          echo "3. Ouvrez le fichier APK téléchargé" >> $GITHUB_STEP_SUMMARY
-          echo "4. Installez l'application" >> $GITHUB_STEP_SUMMARY
-          echo "5. Lancez l'app!" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$APK_URL" = "URL_NOT_FOUND" ]; then
+            echo "### URL de l'APK non trouvée" >> $GITHUB_STEP_SUMMARY
+            echo "Le build EAS a réussi, mais l'URL n'a pas pu être extraite du JSON de sortie. Veuillez consulter les logs EAS pour le lien de téléchargement." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Download APK" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 [Télécharger l'APK]($APK_URL)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Installation sur Android" >> $GITHUB_STEP_SUMMARY
+            echo "1. Téléchargez le fichier APK depuis le lien ci-dessus" >> $GITHUB_STEP_SUMMARY
+            echo "2. Sur votre Android: Paramètres → Sécurité → Sources inconnues (activer)" >> $GITHUB_STEP_SUMMARY
+            echo "3. Ouvrez le fichier APK téléchargé" >> $GITHUB_STEP_SUMMARY
+            echo "4. Installez l'application" >> $GITHUB_STEP_SUMMARY
+            echo "5. Lancez l'app!" >> $GITHUB_STEP_SUMMARY
+          fi
