@@ -48,5 +48,37 @@ export const cellarService = {
 
     const data = await response.json();
     return data;
-  }
+  },
+
+  getAllCellarItems: async (token: string) => {
+    const response = await fetch(`${baseURL}/cellar-items`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des bouteilles");
+    } 
+
+    const data = await response.json();
+    return data;
+  },
+
+  getCellarItemsByColour: async (token: string, selectedColour: number | null) => {
+    const response = await fetch(`${baseURL}/cellar-items/colour/${selectedColour}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des bouteilles");
+    } 
+
+    const data = await response.json();
+    return data;
+  },
 };

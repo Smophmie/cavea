@@ -9,6 +9,7 @@ type BottleCardProps = {
   quantity: number;
   price?: number;
   color?: string;
+  vintage: number;
 };
 
 const colourMap: { [key: string]: string } = {
@@ -26,7 +27,8 @@ export default function BottleCard({
   region, 
   quantity, 
   price,
-  color
+  color,
+  vintage
 }: BottleCardProps) {
   const iconColor = color ? (colourMap[color] || colourMap["Autre"]) : "#bb2700";
 
@@ -38,7 +40,7 @@ export default function BottleCard({
       </View>
 
       <View className="flex-1">
-        <Text className="text-base font-semibold text-black">{bottleName}</Text>
+        <Text className="text-base font-semibold text-black">{bottleName} {vintage}</Text>
         <Text className="text-sm text-gray">{domainName}</Text>
         <Text className="text-sm text-gray">{region}</Text>
       </View>

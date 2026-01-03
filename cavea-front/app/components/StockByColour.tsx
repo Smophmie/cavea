@@ -32,14 +32,19 @@ export default function StockByColour({ data, loading }: StockByColourProps) {
   return (
     <View className="mt-4">
       {data.map((item, index) => (
-        <View key={index} className="flex-row items-center mb-2">
+        <View key={index} className="flex-row items-center mb-2 mx-4">
           <View 
-            className="w-3 h-3 rounded-full mr-3"
+            className="w-3 h-3 rounded-full mr-10"
             style={{ backgroundColor: colourMap[item.colour] || colourMap["Autre"] }}
           />
-          <Text className="text-base">
-            {item.colour}   {item.stock}
-          </Text>
+          <View className="flex-1">
+            <Text className="text-base">{item.colour}</Text>
+          </View>
+          <View>
+            <Text className="text-base">
+              {item.stock}
+            </Text>
+          </View>
         </View>
       ))}
     </View>

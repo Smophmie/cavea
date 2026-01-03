@@ -26,11 +26,14 @@ interface LastAddedItem {
       name: string;
     };
   };
+  vintage: {
+    year: number;
+  }
 }
 
 export default function DashboardPage() {
 
-  const { username, token } = useAuth();
+  const { token } = useAuth();
   const [totalStock, setTotalStock] = useState<number>(0);
   const [stockByColour, setStockByColour] = useState<StockByColour[]>([]);
   const [lastAdded, setLastAdded] = useState<LastAddedItem[]>([]);
@@ -73,7 +76,7 @@ export default function DashboardPage() {
 
         <PageTitle text="Ma cave" color="white" />
         <Text className="text-white text-lg mb-8">
-          Bonjour {username ?? "invité"} !
+          En un coup d'œil !
         </Text>
 
         <View className="flex-row justify-between">
@@ -108,10 +111,11 @@ export default function DashboardPage() {
                 key={item.id}
                 bottleName={item.bottle.name}
                 domainName={item.bottle.domain}
-                region={item.bottle.region || "Région non spécifié"}
+                region={item.bottle.region || "Région non spécifiée"}
                 quantity={item.stock}
                 price={item.price}
                 color={item.bottle.colour.name}
+                vintage={item.vintage.year}
               />
             ))}
           </View>
