@@ -3,7 +3,7 @@ import { Text } from "react-native";
 
 type SubTitleProps = {
   text: string;
-  color?: "wine" | "white" | "gray";
+  color?: "wine" | "white" | "gray" | "black";
 };
 
 export default function SubTitle({ text, color = "gray" }: SubTitleProps) {
