@@ -101,7 +101,7 @@ export default function DashboardPage() {
       </View> */}
 
       <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
-        <SubTitle text="Vos derniers ajouts" color="black" />
+        <SubTitle text="Mes derniers ajouts" color="black" />
         {loading ? (
           <Text className="text-gray-500 mt-2">Chargement...</Text>
         ) : lastAdded.length > 0 ? (
