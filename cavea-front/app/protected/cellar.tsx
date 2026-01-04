@@ -75,32 +75,31 @@ export default function CellarPage() {
         <Text className="text-white text-lg mb-8">
           Toutes mes bouteilles
         </Text>
+        <View className="py-4">
+          <Text className="text-white text-lg mb-3">Filtrer par couleur</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row gap-2">
+              {colours.map((colour) => (
+                <TouchableOpacity
+                  key={colour.id || "all"}
+                  onPress={() => setSelectedColour(colour.id)}
+                  className={`px-4 py-2 rounded-lg border ${
+                    selectedColour === colour.id 
+                      ? "bg-darkwine border-darkwine"
+                      : "bg-wine border-lightgray"
+                  }`}
+                >
+                  <Text className={selectedColour === colour.id ? "font-bold text-white" : "text-white"}>
+                    {colour.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </View>
 
-      <View className="px-6 py-4">
-        <Text className="text-base font-semibold mb-3">Filtrer par couleur</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {colours.map((colour) => (
-              <TouchableOpacity
-                key={colour.id || "all"}
-                onPress={() => setSelectedColour(colour.id)}
-                className={`px-4 py-2 rounded-full border ${
-                  selectedColour === colour.id 
-                    ? "bg-wine border-wine" 
-                    : "bg-white border-lightgray"
-                }`}
-              >
-                <Text className={selectedColour === colour.id ? "text-white" : "text-gray"}>
-                  {colour.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-
-      <View className="px-6 pb-6">
+      <View className="px-6 py-6">
         {loading ? (
           <Text className="text-gray-500 text-center mt-4">Chargement...</Text>
         ) : cellarItems.length > 0 ? (
