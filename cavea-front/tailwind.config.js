@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         app: "#faf9f6",
         wine: "#bb2700",
+        darkwine: "#8B1E00",
         gray: "#6B7280",
         lightgray: "#e2e8f0",
       },
