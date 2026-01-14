@@ -4,6 +4,7 @@ import BottleCard from "../components/BottleCard";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 interface CellarItem {
   id: number;
@@ -63,6 +64,7 @@ export default function CellarPage() {
 
   return (
     <ScrollView className="flex-1 bg-app">
+      <OfflineIndicator />
       <View className="w-full flex-3 bg-wine px-10 py-14">
         <View className="w-full items-center my-8">
           <Image
