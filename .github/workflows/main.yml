@@ -14,13 +14,18 @@ jobs:
     uses: ./.github/workflows/_backend-lint.yml
     secrets: inherit
 
-  tests:
+  backend-tests:
     needs: lint
     uses: ./.github/workflows/_backend-tests.yml
     secrets: inherit
 
+  frontend-tests:
+    needs: lint
+    uses: ./.github/workflows/_frontend-tests.yml
+    secrets: inherit
+
   sonarqube:
-    needs: tests
+    needs: [backend-tests, frontend-tests]
     uses: ./.github/workflows/_repo-sonarqube.yml
     secrets: inherit
 

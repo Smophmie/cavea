@@ -13,11 +13,17 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
-      - name: Download coverage artifact
+      - name: Download backendcoverage artifact
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
           path: cavea-back/build/logs
+
+      - name: Download frontend coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: cavea-front/coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@1a6d90ebcb0e6a6b1d87e37ba693fe453195ae25
@@ -37,9 +43,12 @@ jobs:
 
             -Dfrontend.sonar.projectName=Frontend
             -Dfrontend.sonar.projectBaseDir=cavea-front
-            -Dfrontend.sonar.sources=app,authentication,api.ts
-            -Dfrontend.sonar.exclusions=**/node_modules/**,**/assets/**,**/.expo/**
-            
+            -Dfrontend.sonar.sources=app,authentication,services,hooks
+            -Dfrontend.sonar.tests=app,authentication,services,hooks
+            -Dfrontend.sonar.test.inclusions=**/__tests__/**/*.test.ts,**/__tests__/**/*.test.tsx
+            -Dfrontend.sonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dfrontend.sonar.exclusions=**/node_modules/**,**/assets/**,**/.expo/**,**/__mocks__/**,**/coverage/**,**/__tests__/**
+            -Dfrontend.sonar.test.exclusions=**/node_modules/**            
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

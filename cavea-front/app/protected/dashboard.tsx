@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { cellarService } from "@/services/CellarService";
 import BottleCard from "../components/BottleCard";
 import StockByColour from "../components/StockByColour";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 interface StockByColour {
   colour: string;
@@ -64,6 +65,7 @@ export default function DashboardPage() {
 
   return (
     <ScrollView className="flex-1 bg-app">
+      <OfflineIndicator />
       <View className="w-full flex-3 bg-wine px-10 py-14">
         
         <View className="w-full items-center my-8">
