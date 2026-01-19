@@ -44,12 +44,11 @@ jobs:
             -Dfrontend.sonar.projectName=Frontend
             -Dfrontend.sonar.projectBaseDir=cavea-front
             -Dfrontend.sonar.sources=app,authentication,services,hooks
-            -Dfrontend.sonar.tests=app/**/__tests__,authentication/**/__tests__,services/**/__tests__,hooks/**/__tests__
-            -Dfrontend.sonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+            -Dfrontend.sonar.tests=app,authentication,services,hooks
+            -Dfrontend.sonar.test.inclusions=**/__tests__/**/*.test.ts,**/__tests__/**/*.test.tsx
             -Dfrontend.sonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dfrontend.sonar.testExecutionReportPaths=coverage/test-report.xml
-            -Dfrontend.sonar.exclusions=**/node_modules/**,**/assets/**,**/.expo/**,**/__mocks__/**,**/coverage/**
-            
+            -Dfrontend.sonar.exclusions=**/node_modules/**,**/assets/**,**/.expo/**,**/__mocks__/**,**/coverage/**,**/__tests__/**
+            -Dfrontend.sonar.test.exclusions=**/node_modules/**            
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
