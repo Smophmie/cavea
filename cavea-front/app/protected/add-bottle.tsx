@@ -1,26 +1,51 @@
-import { View, Text, Image, ScrollView } from "react-native";
-import PageTitle from "../components/PageTitle";
-import OfflineIndicator from "../components/OfflineIndicator";
+import { View, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
+import { cellarService } from "@/services/CellarService";
 
 export default function AddBottlePage() {
+  const router = useRouter();
+  const { token } = useAuth();
+
+  const handleSubmit = async (formData: any) => {
+    if (!token) {
+      Alert.alert("Erreur", "Vous devez être connecté");
+      return;
+    }
+
+    try {
+      await cellarService.createCellarItem(token, formData);
+      
+      Alert.alert(
+        "Succès",
+        "Bouteille ajoutée avec succès !",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back()
+          }
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert(
+        "Erreur",
+        error.message || "Impossible d'ajouter la bouteille"
+      );
+    }
+  };
+
+  const handleCancel = () => {
+    router.back();
+  };
 
   return (
-    <ScrollView className="flex-1 bg-app">
-      <OfflineIndicator />
-      <View className="w-full flex-3 bg-wine px-10 py-14">
-        
-        <View className="w-full items-center my-8">
-          <Image
-            source={require("../../assets/images/cavea-white-logo.png")}
-            style={{ width: "70%", height: 100 }}
-            resizeMode="contain"            
-          />
-        </View>
-
-        <PageTitle text="Ajouter une bouteille" color="white" />
-      </View>
-      <AddOrUpdateBottleForm />
-    </ScrollView>
+    <View className="flex-1 bg-white">
+      <AddOrUpdateBottleForm
+        mode="add"
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+      />
+    </View>
   );
 }
