@@ -131,4 +131,59 @@ export const cellarService = {
       return data;
     });
   },
+  
+  createCellarItem: async (token: string, formData: any) => {
+    const response = await fetch(`${baseURL}/cellar-items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Erreur lors de la création");
+    }
+
+    const data = await response.json();
+    return data;
+  },
+
+  updateCellarItem: async (token: string, cellarItemId: number, formData: any) => {
+    const response = await fetch(`${baseURL}/cellar-items/${cellarItemId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Erreur lors de la modification");
+    }
+
+    const data = await response.json();
+    return data;
+  },
+
+  getCellarItem: async (token: string, cellarItemId: number) => {
+    const response = await fetch(`${baseURL}/cellar-items/${cellarItemId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération de la bouteille");
+    }
+
+    const data = await response.json();
+    return data;
+  },
 };
