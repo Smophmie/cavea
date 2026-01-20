@@ -1,4 +1,4 @@
-import { View, Alert } from "react-native";
+import { ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
@@ -40,12 +40,12 @@ export default function AddBottlePage() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <ScrollView className="flex-1 bg-app">
       <AddOrUpdateBottleForm
         mode="add"
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
-    </View>
+    </ScrollView>
   );
 }
