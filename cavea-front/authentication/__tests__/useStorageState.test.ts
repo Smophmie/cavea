@@ -14,6 +14,16 @@ describe('useStorageState', () => {
     expect(result.current[2]).toBe(true);
   });
 
+  it('should finish loading after fetching from storage', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+    
+    const { result } = renderHook(() => useStorageState('test-key'));
+    
+    await waitFor(() => {
+      expect(result.current[2]).toBe(false);
+    });
+  });
+
   it('should load existing value from AsyncStorage', async () => {
     (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce('stored-value');
 

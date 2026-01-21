@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useNetworkStatus } from '../useNetworkStatus';
 
@@ -9,7 +9,7 @@ describe('useNetworkStatus', () => {
     jest.clearAllMocks();
   });
 
-  it('should initialize as checking and online', () => {
+  it('should initialize as checking and online', async () => {
     const mockFetch = jest.fn().mockResolvedValue({ isConnected: true });
     const mockAddEventListener = jest.fn().mockReturnValue(jest.fn());
 
@@ -20,6 +20,10 @@ describe('useNetworkStatus', () => {
 
     expect(result.current.isChecking).toBe(true);
     expect(result.current.isOnline).toBe(true);
+    
+    await waitFor(() => {
+      expect(result.current.isChecking).toBe(false);
+    });
   });
 
   it('should detect online status after initial fetch', async () => {
@@ -56,13 +60,10 @@ describe('useNetworkStatus', () => {
     let networkListener: ((state: { isConnected: boolean }) => void) | undefined;
 
     const mockFetch = jest.fn().mockResolvedValue({ isConnected: true });
-
-    const mockAddEventListener = jest.fn(
-        (listener: (state: { isConnected: boolean }) => void) => {
-        networkListener = listener;
-        return jest.fn();
-        }
-    );
+    const mockAddEventListener = jest.fn((listener) => {
+      networkListener = listener;
+      return jest.fn();
+    });
 
     (NetInfo.fetch as jest.Mock).mockImplementation(mockFetch);
     (NetInfo.addEventListener as jest.Mock).mockImplementation(mockAddEventListener);
@@ -70,16 +71,18 @@ describe('useNetworkStatus', () => {
     const { result } = renderHook(() => useNetworkStatus());
 
     await waitFor(() => {
-        expect(result.current.isOnline).toBe(true);
+      expect(result.current.isOnline).toBe(true);
     });
 
-    // Simulate network change
-    networkListener?.({ isConnected: false });
+    // Wrapper dans act
+    await act(async () => {
+      networkListener?.({ isConnected: false });
+    });
 
     await waitFor(() => {
-        expect(result.current.isOnline).toBe(false);
+      expect(result.current.isOnline).toBe(false);
     });
-    });
+  });
 
 
   it('should unsubscribe on unmount', () => {

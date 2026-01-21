@@ -228,6 +228,184 @@ describe('CellarService', () => {
     });
   });
 
+  describe('createCellarItem', () => {
+    const mockFormData = {
+      bottle: {
+        name: 'Test Wine',
+        domain: 'Test Domain',
+        PDO: 'Test PDO',
+        colour_id: 1,
+      },
+      vintage: {
+        year: 2020,
+      },
+      stock: 6,
+      price: 25.50,
+    };
+
+    it('should create a new cellar item', async () => {
+      const mockResponse = { id: 1, ...mockFormData };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await cellarService.createCellarItem(mockToken, mockFormData);
+
+      expect(result).toEqual(mockResponse);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/cellar-items'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${mockToken}`,
+          }),
+          body: JSON.stringify(mockFormData),
+        })
+      );
+    });
+
+    it('should invalidate relevant caches after creation', async () => {
+      const mockResponse = { id: 1 };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      await cellarService.createCellarItem(mockToken, mockFormData);
+
+      expect(cacheService.clear).toHaveBeenCalledWith('cache_total_stock');
+      expect(cacheService.clear).toHaveBeenCalledWith('cache_stock_by_colour');
+      expect(cacheService.clear).toHaveBeenCalledWith('cache_last_added');
+      expect(cacheService.clear).toHaveBeenCalledWith('cache_all_items');
+    });
+
+    it('should handle creation errors', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ message: 'Validation failed' }),
+      });
+
+      await expect(
+        cellarService.createCellarItem(mockToken, mockFormData)
+      ).rejects.toThrow('Validation failed');
+    });
+
+    it('should send correct data types', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 1 }),
+      });
+
+      await cellarService.createCellarItem(mockToken, mockFormData);
+
+      const callArgs = (global.fetch as jest.Mock).mock.calls[0];
+      const bodyData = JSON.parse(callArgs[1].body);
+
+      expect(typeof bodyData.stock).toBe('number');
+      expect(typeof bodyData.vintage.year).toBe('number');
+      expect(typeof bodyData.bottle.colour_id).toBe('number');
+    });
+  });
+
+  describe('updateCellarItem', () => {
+    const cellarItemId = 5;
+    const mockUpdateData = {
+      stock: 3,
+      rating: 4.5,
+      price: 30,
+    };
+
+    it('should update an existing cellar item', async () => {
+      const mockResponse = { id: cellarItemId, ...mockUpdateData };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await cellarService.updateCellarItem(
+        mockToken,
+        cellarItemId,
+        mockUpdateData
+      );
+
+      expect(result).toEqual(mockResponse);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining(`/cellar-items/${cellarItemId}`),
+        expect.objectContaining({
+          method: 'PUT',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${mockToken}`,
+          }),
+          body: JSON.stringify(mockUpdateData),
+        })
+      );
+    });
+
+    it('should handle update errors', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ message: 'Item not found' }),
+      });
+
+      await expect(
+        cellarService.updateCellarItem(mockToken, cellarItemId, mockUpdateData)
+      ).rejects.toThrow('Item not found');
+    });
+
+    it('should use PUT method for updates', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: cellarItemId }),
+      });
+
+      await cellarService.updateCellarItem(mockToken, cellarItemId, mockUpdateData);
+
+      const callArgs = (global.fetch as jest.Mock).mock.calls[0];
+      expect(callArgs[1].method).toBe('PUT');
+    });
+  });
+
+  describe('getCellarItem', () => {
+    const cellarItemId = 10;
+
+    it('should fetch a single cellar item', async () => {
+      const mockItem = {
+        id: cellarItemId,
+        bottle: { name: 'Specific Wine' },
+        stock: 5,
+      };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockItem,
+      });
+
+      const result = await cellarService.getCellarItem(mockToken, cellarItemId);
+
+      expect(result).toEqual(mockItem);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining(`/cellar-items/${cellarItemId}`),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${mockToken}`,
+          }),
+        })
+      );
+    });
+
+    it('should handle not found errors', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+      });
+
+      await expect(
+        cellarService.getCellarItem(mockToken, cellarItemId)
+      ).rejects.toThrow('Erreur lors de la récupération de la bouteille');
+    });
+  });
+
   describe('Network resilience', () => {
     it('should retry with cache when API is temporarily unavailable', async () => {
       const cachedData = { total_stock: 50 };
@@ -269,6 +447,22 @@ describe('CellarService', () => {
 
       await expect(cellarService.getTotalStock(mockToken)).rejects.toThrow();
       expect(cacheService.set).not.toHaveBeenCalled();
+    });
+
+    it('should clear specific caches after create, not all', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 1 }),
+      });
+
+      await cellarService.createCellarItem(mockToken, {
+        bottle: { name: 'Test', colour_id: 1 },
+        vintage: { year: 2020 },
+        stock: 1,
+      });
+
+      expect(cacheService.clear).toHaveBeenCalledTimes(4);
+      expect(cacheService.clear).not.toHaveBeenCalledWith('authToken');
     });
   });
 });
