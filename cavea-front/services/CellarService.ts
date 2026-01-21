@@ -148,6 +148,15 @@ export const cellarService = {
     }
 
     const data = await response.json();
+
+    // Invalidate only relevant caches
+    await Promise.all([
+      cacheService.clear(CACHE_KEYS.TOTAL_STOCK),
+      cacheService.clear(CACHE_KEYS.STOCK_BY_COLOUR),
+      cacheService.clear(CACHE_KEYS.LAST_ADDED),
+      cacheService.clear(CACHE_KEYS.ALL_ITEMS),
+    ]);
+
     return data;
   },
 
@@ -167,6 +176,15 @@ export const cellarService = {
     }
 
     const data = await response.json();
+
+    // Invalidate relevant caches after update
+    await Promise.all([
+      cacheService.clear(CACHE_KEYS.TOTAL_STOCK),
+      cacheService.clear(CACHE_KEYS.STOCK_BY_COLOUR),
+      cacheService.clear(CACHE_KEYS.LAST_ADDED),
+      cacheService.clear(CACHE_KEYS.ALL_ITEMS),
+    ]);
+
     return data;
   },
 

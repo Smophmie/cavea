@@ -1,11 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { ChevronDown, Star } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
 
 interface BottleFormData {
+  bottle: {
+    name: string;
+    domain?: string;
+    PDO?: string;
+    colour_id: number;
+  };
+  vintage: {
+    year: number;
+  };
+  stock: number;
+  rating?: number;
+  price?: number;
+  shop?: string;
+  offered_by?: string;
+  drinking_window_start?: number;
+  drinking_window_end?: number;
+}
+
+interface BottleFormInput {
   bottle: {
     name: string;
     domain: string;
@@ -26,7 +45,7 @@ interface BottleFormData {
 
 interface AddOrUpdateFormProps {
   mode: 'add' | 'update';
-  initialData?: Partial<BottleFormData>;
+  initialData?: Partial<BottleFormInput>;
   onSubmit: (data: BottleFormData) => Promise<void>;
   onCancel?: () => void;
 }
@@ -40,7 +59,7 @@ const COLOURS = [
   { id: 6, name: "Autre" }
 ];
 
-export default function AddOrUpdateForm({ 
+export default function AddOrUpdateBottleForm({ 
   mode, 
   initialData, 
   onSubmit, 
@@ -50,7 +69,7 @@ export default function AddOrUpdateForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showColourPicker, setShowColourPicker] = useState(false);
 
-  const [formData, setFormData] = useState<BottleFormData>({
+  const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
       name: initialData?.bottle?.name || "",
       domain: initialData?.bottle?.domain || "",
@@ -126,9 +145,32 @@ export default function AddOrUpdateForm({
 
     setLoading(true);
     try {
-      await onSubmit(formData);
+      const bottleData: BottleFormData = {
+        bottle: {
+          name: formData.bottle.name,
+          ...(formData.bottle.domain && { domain: formData.bottle.domain }),
+          ...(formData.bottle.PDO && { PDO: formData.bottle.PDO }),
+          colour_id: formData.bottle.colour_id!,
+        },
+        vintage: {
+          year: parseInt(formData.vintage.year),
+        },
+        stock: parseInt(formData.stock),
+        ...(formData.rating && { rating: parseFloat(formData.rating) }),
+        ...(formData.price && { price: parseFloat(formData.price) }),
+        ...(formData.shop && { shop: formData.shop }),
+        ...(formData.offered_by && { offered_by: formData.offered_by }),
+        ...(formData.drinking_window_start && { 
+          drinking_window_start: parseInt(formData.drinking_window_start) 
+        }),
+        ...(formData.drinking_window_end && { 
+          drinking_window_end: parseInt(formData.drinking_window_end) 
+        }),
+      };
+      
+      await onSubmit(bottleData);
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error("Erreur lors de la soumission:", error);
     } finally {
       setLoading(false);
     }
@@ -339,7 +381,7 @@ export default function AddOrUpdateForm({
 
       <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
         <Text className="font-bold text-xl pb-4">Notes personnelles</Text>
-        <Text className="text-base font-semibold text-gray mb-3">Note globale</Text>
+        <Text className="text-base font-semibold text-gray mb-3">Ma note</Text>
         <View className="flex-row items-center gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <TouchableOpacity

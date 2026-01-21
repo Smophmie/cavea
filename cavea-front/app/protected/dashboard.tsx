@@ -3,11 +3,12 @@ import PageTitle from "../components/PageTitle";
 import { useAuth } from "@/authentication/AuthContext";
 import SubTitle from "../components/SubTitle";
 import CardIconText from "../components/CardIconText";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cellarService } from "@/services/CellarService";
 import BottleCard from "../components/BottleCard";
 import StockByColour from "../components/StockByColour";
 import OfflineIndicator from "../components/OfflineIndicator";
+import { useFocusEffect } from "expo-router";
 
 interface StockByColour {
   colour: string;
@@ -39,29 +40,35 @@ export default function DashboardPage() {
   const [stockByColour, setStockByColour] = useState<StockByColour[]>([]);
   const [lastAdded, setLastAdded] = useState<LastAddedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchData = async (silent = false) => {
     if (!token) return;
+    if (!silent) setLoading(true);
+    try {
+      const [stock, stockColour, lastAdded] = await Promise.all([
+        cellarService.getTotalStock(token),
+        cellarService.getStockByColour(token),
+        cellarService.getLastAdded(token)
+      ]);
+      setTotalStock(stock);
+      setStockByColour(stockColour);
+      setLastAdded(lastAdded);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-    const fetchData = async () => {
-      try {
-        const [stock, stockColour, lastAdded] = await Promise.all([
-          cellarService.getTotalStock(token),
-          cellarService.getStockByColour(token),
-          cellarService.getLastAdded(token)
-        ]);
-        setTotalStock(stock);
-        setStockByColour(stockColour);
-        setLastAdded(lastAdded);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshing(true);
+      fetchData(true);
+    }, [token])
+  );
 
-    fetchData();
-  }, [token]);
 
   return (
     <ScrollView className="flex-1 bg-app">

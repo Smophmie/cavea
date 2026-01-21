@@ -23,15 +23,21 @@ export default function AddBottlePage() {
         [
           {
             text: "OK",
-            onPress: () => router.back()
+            onPress: () => router.replace("/protected/dashboard")
           }
         ]
       );
     } catch (error: any) {
-      Alert.alert(
-        "Erreur",
-        error.message || "Impossible d'ajouter la bouteille"
-      );
+      let errorMessage = "Impossible d'ajouter la bouteille";
+  
+      if (error.response?.status === 422) {
+        const validationErrors = error.response.data.errors;
+        errorMessage = Object.values(validationErrors).flat().join("\n");
+      } else {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert("Erreur", errorMessage);
     }
   };
 
