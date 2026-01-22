@@ -137,8 +137,3 @@ jobs:
         run: |
           kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
           php artisan migrate --force
-
-      - name: Run Laravel seeds on cluster
-        run: |
-          kubectl exec deploy/back-deployment -n ${{ steps.env.outputs.NAMESPACE }} -- \
-          php artisan db:seed --force
