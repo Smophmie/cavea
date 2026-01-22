@@ -193,7 +193,7 @@ class CellarItemControllerTest extends TestCase
     {
         $colour = Colour::firstOrCreate(['name' => 'Rosé']);
         $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
-        
+
         $cellarItem = CellarItem::factory()
         ->for($this->user)
         ->for($bottle)
@@ -363,7 +363,7 @@ class CellarItemControllerTest extends TestCase
     {
         $colour = Colour::firstOrCreate(['name' => 'Blanc']);
         $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
-        
+
         $cellarItem = CellarItem::factory()
             ->for($this->user)
             ->for($bottle)
@@ -394,7 +394,7 @@ class CellarItemControllerTest extends TestCase
     {
         $colour = Colour::firstOrCreate(['name' => 'Rosé']);
         $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
-        
+
         $cellarItem = CellarItem::factory()
             ->for($this->user)
             ->for($bottle)

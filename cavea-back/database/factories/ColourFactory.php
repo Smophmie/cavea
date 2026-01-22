@@ -32,7 +32,7 @@ class ColourFactory extends Factory
     public function create($attributes = [], ?Model $parent = null)
     {
         $name = $attributes['name'] ?? fake()->randomElement(['Rouge', 'Blanc', 'Rosé', 'Pétillant', 'Orange', 'Autre']);
-        
+
         return Colour::firstOrCreate(['name' => $name]);
     }
 
@@ -42,7 +42,7 @@ class ColourFactory extends Factory
     public function createOne($attributes = []): Colour
     {
         $name = $attributes['name'] ?? fake()->randomElement(['Rouge', 'Blanc', 'Rosé', 'Pétillant', 'Orange', 'Autre']);
-        
+
         return Colour::firstOrCreate(['name' => $name]);
     }
 
