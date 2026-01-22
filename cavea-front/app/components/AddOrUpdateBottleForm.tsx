@@ -8,7 +8,7 @@ import PageTitle from "./PageTitle";
 interface BottleFormData {
   bottle: {
     name: string;
-    domain?: string;
+    domain: string;
     PDO?: string;
     colour_id: number;
   };
@@ -95,6 +95,9 @@ export default function AddOrUpdateBottleForm({
       if (!formData.bottle.name.trim()) {
         newErrors['bottle.name'] = "Le nom de la bouteille est requis";
       }
+      if (!formData.bottle.domain.trim()) {
+        newErrors['bottle.domain'] = "Le domaine est requis";
+      }
       if (!formData.bottle.colour_id) {
         newErrors['bottle.colour_id'] = "La couleur est requise";
       }
@@ -148,7 +151,7 @@ export default function AddOrUpdateBottleForm({
       const bottleData: BottleFormData = {
         bottle: {
           name: formData.bottle.name,
-          ...(formData.bottle.domain && { domain: formData.bottle.domain }),
+          domain: formData.bottle.domain,
           ...(formData.bottle.PDO && { PDO: formData.bottle.PDO }),
           colour_id: formData.bottle.colour_id!,
         },
@@ -237,13 +240,16 @@ export default function AddOrUpdateBottleForm({
               <Text className="text-red-600 text-sm mb-4">{errors['bottle.name']}</Text>
             )}
 
-            <Text className="text-base font-semibold text-gray mb-2">Domaine</Text>
+            <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
             <TextInput
               value={formData.bottle.domain}
               onChangeText={(value) => updateField('bottle.domain', value)}
               placeholder="Ex: Mas de la Seranne"
               className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
             />
+             {errors['bottle.domain'] && (
+              <Text className="text-red-600 text-sm mb-4">{errors['bottle.domain']}</Text>
+            )}
 
             <Text className="text-base font-semibold text-gray mb-2">Appellation</Text>
             <TextInput
