@@ -22,7 +22,7 @@ describe('AddOrUpdateBottleForm', () => {
 
       expect(screen.getByText('Ajouter une bouteille')).toBeTruthy();
       expect(screen.getByText('Nom de la bouteille *')).toBeTruthy();
-      expect(screen.getByText('Domaine')).toBeTruthy();
+      expect(screen.getByText('Domaine *')).toBeTruthy();
       expect(screen.getByText('Appellation')).toBeTruthy();
     });
 
@@ -180,6 +180,7 @@ describe('AddOrUpdateBottleForm', () => {
         fireEvent.press(screen.getByText('Rouge'));
 
         fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+        fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
         fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
         fireEvent.changeText(screen.getByPlaceholderText('Ex: 15.50'), '25.50');
 
@@ -191,6 +192,7 @@ describe('AddOrUpdateBottleForm', () => {
                 expect.objectContaining({
                     bottle: expect.objectContaining({
                     name: 'Test Wine',
+                    domain: 'Domaine test',
                     colour_id: 1,
                     }),
                     vintage: expect.objectContaining({
@@ -215,6 +217,7 @@ describe('AddOrUpdateBottleForm', () => {
         screen.getByPlaceholderText("Ex: A l'ombre du figuier"),
         'Test'
       );
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
@@ -241,6 +244,7 @@ describe('AddOrUpdateBottleForm', () => {
         screen.getByPlaceholderText("Ex: A l'ombre du figuier"),
         'Test Wine'
       );
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
@@ -250,7 +254,6 @@ describe('AddOrUpdateBottleForm', () => {
 
       await waitFor(() => {
         const callArg = mockOnSubmit.mock.calls[0][0];
-        expect(callArg.bottle.domain).toBeUndefined();
         expect(callArg.bottle.PDO).toBeUndefined();
         expect(callArg.price).toBeUndefined();
         expect(callArg.shop).toBeUndefined();
