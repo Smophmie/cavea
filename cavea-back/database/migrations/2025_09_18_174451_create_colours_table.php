@@ -15,6 +15,17 @@ return new class () extends Migration {
             $table->string('name')->unique();
             $table->timestamps();
         });
+
+        $colours = ['Rouge', 'Blanc', 'Rosé', 'Pétillant', 'Orange', 'Autre'];
+        $now = now();
+
+        foreach ($colours as $colour) {
+            DB::table('colours')->insert([
+                'name' => $colour,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
     }
 
     /**
