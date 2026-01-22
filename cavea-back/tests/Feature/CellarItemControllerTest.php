@@ -50,7 +50,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanShowUsersCellarItems()
     {
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Rouge']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -74,7 +75,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanGetLastAddedCellarItems()
     {
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Blanc']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $items = CellarItem::factory()
@@ -144,7 +146,7 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanStoreCellarItem()
     {
-        $colour = Colour::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Rouge']);
         $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
@@ -189,9 +191,12 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanShowCellarItem()
     {
+        $colour = Colour::firstOrCreate(['name' => 'Rosé']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
+        
         $cellarItem = CellarItem::factory()
         ->for($this->user)
-        ->for(Bottle::factory())
+        ->for($bottle)
         ->for(Vintage::factory())
         ->create();
 
@@ -211,7 +216,8 @@ class CellarItemControllerTest extends TestCase
     public function testShowReturns403IfNotOwner()
     {
         $otherUser = User::factory()->create();
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Pétillant']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -227,7 +233,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanIncrementStock()
     {
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Orange']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -257,8 +264,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanFilterCellarItemsByColour()
     {
-        $red = Colour::factory()->create(['name' => 'Red']);
-        $white = Colour::factory()->create(['name' => 'White']);
+        $red = Colour::firstOrCreate(['name' => 'Red']);
+        $white = Colour::firstOrCreate(['name' => 'White']);
 
         $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
         $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
@@ -296,7 +303,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanDecrementStock()
     {
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Autre']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -325,7 +333,8 @@ class CellarItemControllerTest extends TestCase
 
     public function testCannotDecrementStockBelowZero()
     {
-        $bottle = Bottle::factory()->create();
+        $colour = Colour::firstOrCreate(['name' => 'Rouge']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -352,9 +361,12 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanUpdateCellarItem()
     {
+        $colour = Colour::firstOrCreate(['name' => 'Blanc']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
+        
         $cellarItem = CellarItem::factory()
             ->for($this->user)
-            ->for(Bottle::factory())
+            ->for($bottle)
             ->for(Vintage::factory())
             ->create(['stock' => 2]);
 
@@ -380,9 +392,12 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanDeleteCellarItem()
     {
+        $colour = Colour::firstOrCreate(['name' => 'Rosé']);
+        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
+        
         $cellarItem = CellarItem::factory()
             ->for($this->user)
-            ->for(Bottle::factory())
+            ->for($bottle)
             ->for(Vintage::factory())
             ->create();
 

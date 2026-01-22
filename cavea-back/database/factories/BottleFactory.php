@@ -21,7 +21,7 @@ class BottleFactory extends Factory
         return [
             'name' => fake()->name(),
             'domain' => Str::random(10),
-            'colour_id' => Colour::inRandomOrder()->first()->id ?? Colour::factory(),
+            'colour_id' => Colour::inRandomOrder()->first()?->id ?? Colour::firstOrCreate(['name' => 'Rouge'])->id,
         ];
     }
 }
