@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CellarItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CellarItemService
 {
@@ -84,20 +85,54 @@ class CellarItemService
      */
     public function create(array $data, int $userId): CellarItem
     {
-        $cellarItem = CellarItem::create([
+        Log::info('[CELLAR_ITEM_SERVICE] Creating cellar item', [
             'user_id' => $userId,
-            'bottle_id' => $data['bottle_id'],
-            'vintage_id' => $data['vintage_id'],
-            'stock' => $data['stock'],
-            'rating' => $data['rating'] ?? null,
-            'price' => $data['price'] ?? null,
-            'shop' => $data['shop'] ?? null,
-            'offered_by' => $data['offered_by'] ?? null,
-            'drinking_window_start' => $data['drinking_window_start'] ?? null,
-            'drinking_window_end' => $data['drinking_window_end'] ?? null,
+            'bottle_id' => $data['bottle_id'] ?? null,
+            'vintage_id' => $data['vintage_id'] ?? null,
+            'stock' => $data['stock'] ?? null,
+            'data' => $data,
         ]);
 
-        return $cellarItem->load(['bottle.colour', 'vintage']);
+        try {
+            $cellarItem = CellarItem::create([
+                'user_id' => $userId,
+                'bottle_id' => $data['bottle_id'],
+                'vintage_id' => $data['vintage_id'],
+                'stock' => $data['stock'],
+                'rating' => $data['rating'] ?? null,
+                'price' => $data['price'] ?? null,
+                'shop' => $data['shop'] ?? null,
+                'offered_by' => $data['offered_by'] ?? null,
+                'drinking_window_start' => $data['drinking_window_start'] ?? null,
+                'drinking_window_end' => $data['drinking_window_end'] ?? null,
+            ]);
+
+            Log::info('[CELLAR_ITEM_SERVICE] Cellar item created in database', [
+                'user_id' => $userId,
+                'cellar_item_id' => $cellarItem->id,
+            ]);
+
+            $cellarItem->load(['bottle.colour', 'vintage']);
+
+            Log::info('[CELLAR_ITEM_SERVICE] Relationships loaded successfully', [
+                'user_id' => $userId,
+                'cellar_item_id' => $cellarItem->id,
+                'bottle_name' => $cellarItem->bottle->name ?? null,
+                'colour_name' => $cellarItem->bottle->colour->name ?? null,
+                'vintage_year' => $cellarItem->vintage->year ?? null,
+            ]);
+
+            return $cellarItem;
+        } catch (\Exception $e) {
+            Log::error('[CELLAR_ITEM_SERVICE] Failed to create cellar item', [
+                'user_id' => $userId,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'data' => $data,
+            ]);
+
+            throw $e;
+        }
     }
 
     /**

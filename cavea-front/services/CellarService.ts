@@ -31,23 +31,57 @@ const fetchAPI = async (
   body?: any,
   errorMessage?: string
 ) => {
-  const response = await fetch(`${baseURL}${endpoint}`, {
+  const requestUrl = `${baseURL}${endpoint}`;
+  const requestHeaders = buildHeaders(token);
+
+  console.log(`[FETCH_API] ${method} request to ${requestUrl}`, {
+    endpoint,
     method,
-    headers: buildHeaders(token),
-    ...(body && { body: JSON.stringify(body) }),
+    headers: {
+      ...requestHeaders,
+      Authorization: requestHeaders.Authorization ? 'Bearer ***' : undefined,
+    },
+    body: body ? JSON.stringify(body, null, 2) : undefined,
   });
 
-  if (!response.ok) {
-    let errorData: any = {};
-    try {
-      errorData = await response.json();
-    } catch {
-      // Response body is not JSON or json() not available
-    }
-    throw new Error(errorData.message || errorMessage || `Erreur lors de l'opération ${method}`);
-  }
+  try {
+    const response = await fetch(requestUrl, {
+      method,
+      headers: requestHeaders,
+      ...(body && { body: JSON.stringify(body) }),
+    });
 
-  return response.json();
+    console.log(`[FETCH_API] ${method} response from ${requestUrl}`, {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
+    if (!response.ok) {
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+        console.error(`[FETCH_API] ${method} error response body:`, errorData);
+      } catch (e) {
+        console.error(`[FETCH_API] ${method} could not parse error response as JSON`, e);
+      }
+
+      const error = new Error(errorData.message || errorMessage || `Erreur lors de l'opération ${method}`);
+      (error as any).response = { status: response.status, data: errorData };
+      throw error;
+    }
+
+    const responseData = await response.json();
+    console.log(`[FETCH_API] ${method} success response:`, responseData);
+    return responseData;
+  } catch (error) {
+    console.error(`[FETCH_API] ${method} request failed:`, {
+      endpoint,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
 };
 
 const fetchWithCache = async (
@@ -119,9 +153,32 @@ export const cellarService = {
   },
   
   createCellarItem: async (token: string, formData: any) => {
-    const data = await fetchAPI('/cellar-items', token, 'POST', formData);
-    await invalidateCaches();
-    return data;
+    console.log('[CELLAR_SERVICE] Creating cellar item', {
+      formData,
+      timestamp: new Date().toISOString(),
+    });
+
+    try {
+      const data = await fetchAPI('/cellar-items', token, 'POST', formData);
+
+      console.log('[CELLAR_SERVICE] Cellar item created successfully', {
+        cellarItem: data,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('[CELLAR_SERVICE] Invalidating caches');
+      await invalidateCaches();
+      console.log('[CELLAR_SERVICE] Caches invalidated successfully');
+
+      return data;
+    } catch (error) {
+      console.error('[CELLAR_SERVICE] Failed to create cellar item', {
+        error: error instanceof Error ? error.message : String(error),
+        formData,
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
   },
 
   updateCellarItem: async (token: string, cellarItemId: number, formData: any) => {
