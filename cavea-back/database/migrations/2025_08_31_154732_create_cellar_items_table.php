@@ -13,8 +13,8 @@ return new class () extends Migration {
         Schema::create('cellar_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('bottle_id')->constrained()->onDelete('cascade');
-            $table->foreignId('vintage_id')->constrained()->onDelete('cascade');
+            $table->foreignId('bottle_id')->constrained();
+            $table->foreignId('vintage_id')->constrained();
             $table->integer('stock');
             $table->decimal('rating', 2, 1)->nullable();
             $table->double('price')->nullable();

@@ -11,9 +11,9 @@ class Bottle extends Model
 
     protected $fillable = [
         'name',
-        'domain',
-        'PDO',
-        'colour_id'
+        'colour_id',
+        'region_id',
+        'domain_id'
     ];
 
     public function cellarItems(): HasMany
@@ -24,5 +24,15 @@ class Bottle extends Model
     public function colour()
     {
         return $this->belongsTo(Colour::class);
+    }
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function domain()
+    {
+        return $this->belongsTo(Domain::class);
     }
 }
