@@ -16,15 +16,18 @@ class BottleService
         try {
             $bottle = Bottle::firstOrCreate([
                 'name' => $data['name'],
-                'domain' => $data['domain'] ?? null,
-                'PDO' => $data['PDO'] ?? null,
+                'domain_id' => $data['domain_id'],
                 'colour_id' => $data['colour_id'],
+                'region_id' => $data['region_id'] ?? null,
             ]);
+
+            if (!empty($data['grape_variety_ids'])) {
+                $bottle->grapeVarieties()->sync($data['grape_variety_ids']);
+            }
 
             Log::info('[BOTTLE_SERVICE] Bottle operation completed', [
                 'bottle_id' => $bottle->id,
                 'bottle_name' => $bottle->name,
-                'was_created' => $bottle->wasRecentlyCreated,
             ]);
 
             return $bottle;
