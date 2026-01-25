@@ -3,25 +3,22 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 use App\Models\Colour;
+use App\Models\Region;
+use App\Models\Domain;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Bottle>
  */
 class BottleFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'domain' => Str::random(10),
+            'name' => fake()->words(3, true),
             'colour_id' => Colour::inRandomOrder()->first()?->id ?? Colour::firstOrCreate(['name' => 'Rouge'])->id,
+            'region_id' => Region::inRandomOrder()->first()?->id ?? Region::factory()->create()->id,
+            'domain_id' => Domain::inRandomOrder()->first()?->id ?? Domain::factory()->create()->id,
         ];
     }
 }
