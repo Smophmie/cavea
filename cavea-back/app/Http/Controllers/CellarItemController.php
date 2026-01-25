@@ -239,10 +239,10 @@ class CellarItemController extends Controller
         }
 
         if (isset($validated['bottle']['grape_variety_ids'])) {
-        $this->bottleService->update($cellarItem->bottle, [
-            'grape_variety_ids' => $validated['bottle']['grape_variety_ids']
-        ]);
-    }
+            $this->bottleService->update($cellarItem->bottle, [
+                'grape_variety_ids' => $validated['bottle']['grape_variety_ids']
+            ]);
+        }
 
         $item = $this->cellarItemService->update($cellarItem, $validated);
         return response()->json($item);

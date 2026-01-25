@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class CommentService
 {
-
     public function create(array $data, int $cellarItemId): Comment
     {
         Log::info('[COMMENT_SERVICE] Creating comment', [

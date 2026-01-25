@@ -11,7 +11,7 @@ class Appellation extends Model
 
     protected $fillable = ['name'];
 
-     public function cellarItems(): HasMany
+    public function cellarItems(): HasMany
     {
         return $this->hasMany(CellarItem::class);
     }

@@ -31,7 +31,7 @@ class CellarItemService
     {
         return CellarItem::with([
             'bottle.colour',
-            'bottle.region', 
+            'bottle.region',
             'bottle.domain',
             'vintage'
             ])

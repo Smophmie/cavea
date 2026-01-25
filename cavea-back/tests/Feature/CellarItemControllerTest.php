@@ -479,8 +479,8 @@ class CellarItemControllerTest extends TestCase
             ->shouldReceive('update')
             ->once()
             ->with(
-                Mockery::on(fn($b) => $b->id === $bottle->id),
-                Mockery::on(fn($data) => isset($data['grape_variety_ids']))
+                Mockery::on(fn ($b) => $b->id === $bottle->id),
+                Mockery::on(fn ($data) => isset($data['grape_variety_ids']))
             )
             ->andReturn($bottle);
 
