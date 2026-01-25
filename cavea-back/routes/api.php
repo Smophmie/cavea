@@ -24,8 +24,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/cellar-items/last', [CellarItemController::class, 'getLastAdded']);
     Route::get('/cellar-items/total-stock', [CellarItemController::class, 'getTotalStock']);
     Route::get('/cellar-items/stock-by-colour', [CellarItemController::class, 'getStockByColour']);
-    Route::get('/cellar-items/{cellarItem}', [CellarItemController::class, 'show']);
+    Route::get('/cellar-items/{cellarItemId}', [CellarItemController::class, 'show']);
     Route::get('/cellar-items/colour/{colourId}', [CellarItemController::class, 'filterByColour']);
+    Route::get('/cellar-items/region/{regionId}', [CellarItemController::class, 'filterByRegion']);
     Route::post('/cellar-items', [CellarItemController::class, 'store']);
     Route::put('/cellar-items/{cellarItem}', [CellarItemController::class, 'update']);
     Route::post('/cellar-items/{cellarItem}/increment', [CellarItemController::class, 'incrementStock']);
