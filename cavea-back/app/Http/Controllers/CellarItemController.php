@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CellarItem;
+use App\Services\DomainService;
+use App\Services\AppellationService;
+use App\Services\CommentService;
 use App\Policies\CellarItemPolicy;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
@@ -19,7 +22,10 @@ class CellarItemController extends Controller
     public function __construct(
         protected BottleService $bottleService,
         protected VintageService $vintageService,
-        protected CellarItemService $cellarItemService
+        protected CellarItemService $cellarItemService,
+        protected DomainService $domainService,
+        protected AppellationService $appellationService,
+        protected CommentService $commentService
     ) {
     }
 
@@ -70,12 +76,15 @@ class CellarItemController extends Controller
         try {
             $validated = $request->validate([
                 'bottle.name' => 'required|string|max:255',
-                'bottle.domain' => 'nullable|string|max:255',
-                'bottle.PDO' => 'nullable|string|max:255',
+                'bottle.domain_name' => 'required|string|max:255',
                 'bottle.colour_id' => 'required|exists:colours,id',
+                'bottle.region_id' => 'required|exists:regions,id',
+                'bottle.grape_variety_ids' => 'nullable|array',
+                'bottle.grape_variety_ids.*' => 'exists:grape_varieties,id',
                 'vintage.year' => 'required|integer|digits:4|min:1900|max:2100',
+                'appellation_name' => 'nullable|string|max:255',
                 'stock' => 'required|integer|min:0',
-                'rating' => 'nullable|numeric|min:0|max:5',
+                'rating' => 'nullable|numeric|min:0|max:10',
                 'price' => 'nullable|numeric|min:0',
                 'shop' => 'nullable|string|max:255',
                 'offered_by' => 'nullable|string|max:255',
@@ -101,51 +110,43 @@ class CellarItemController extends Controller
         }
 
         try {
-            Log::info('[CELLAR_ITEM_POST] Finding or creating bottle', [
-                'user_id' => auth()->id(),
-                'bottle_data' => $validated['bottle'],
+            $domain = $this->domainService->findOrCreate([
+                'name' => $validated['bottle']['domain_name']
             ]);
 
-            $bottle = $this->bottleService->findOrCreate($validated['bottle']);
+            $appellation = null;
+            if (!empty($validated['appellation_name'])) {
+                $appellation = $this->appellationService->findOrCreate([
+                    'name' => $validated['appellation_name']
+                ]);
+            }
 
-            Log::info('[CELLAR_ITEM_POST] Bottle created/found', [
-                'user_id' => auth()->id(),
-                'bottle_id' => $bottle->id,
-                'bottle_name' => $bottle->name,
-            ]);
-
-            Log::info('[CELLAR_ITEM_POST] Finding or creating vintage', [
-                'user_id' => auth()->id(),
-                'vintage_data' => $validated['vintage'],
+            $bottle = $this->bottleService->findOrCreate([
+                'name' => $validated['bottle']['name'],
+                'domain_id' => $domain->id,
+                'colour_id' => $validated['bottle']['colour_id'],
+                'region_id' => $validated['bottle']['region_id'],
+                'grape_variety_ids' => $validated['bottle']['grape_variety_ids'] ?? [],
             ]);
 
             $vintage = $this->vintageService->findOrCreate($validated['vintage']);
 
-            Log::info('[CELLAR_ITEM_POST] Vintage created/found', [
-                'user_id' => auth()->id(),
-                'vintage_id' => $vintage->id,
-                'vintage_year' => $vintage->year,
-            ]);
-
-            Log::info('[CELLAR_ITEM_POST] Creating cellar item', [
-                'user_id' => auth()->id(),
-                'bottle_id' => $bottle->id,
-                'vintage_id' => $vintage->id,
-                'stock' => $validated['stock'],
-            ]);
-
             $cellarItem = $this->cellarItemService->create([
                 'bottle_id' => $bottle->id,
                 'vintage_id' => $vintage->id,
-                ...$validated
+                'appellation_id' => $appellation?->id,
+                'stock' => $validated['stock'],
+                'rating' => $validated['rating'] ?? null,
+                'price' => $validated['price'] ?? null,
+                'shop' => $validated['shop'] ?? null,
+                'offered_by' => $validated['offered_by'] ?? null,
+                'drinking_window_start' => $validated['drinking_window_start'] ?? null,
+                'drinking_window_end' => $validated['drinking_window_end'] ?? null,
             ], auth()->id());
 
             Log::info('[CELLAR_ITEM_POST] Cellar item created successfully', [
                 'user_id' => auth()->id(),
                 'cellar_item_id' => $cellarItem->id,
-                'bottle_name' => $cellarItem->bottle->name,
-                'vintage_year' => $cellarItem->vintage->year,
-                'stock' => $cellarItem->stock,
             ]);
 
             return response()->json($cellarItem, 201);
@@ -158,7 +159,7 @@ class CellarItemController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Une erreur est survenue lors de la création de l\'article',
+                'message' => 'Une erreur est survenue lors de la création de la bouteille.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -167,17 +168,30 @@ class CellarItemController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CellarItem $cellarItem): JsonResponse
+    public function show(int $id): JsonResponse
     {
+        $cellarItem = $this->cellarItemService->findByIdAndUser($id, auth()->id());
+
+        if (!$cellarItem) {
+            return response()->json([
+                'message' => 'Bouteille non trouvée'
+            ], 404);
+        }
+
         $this->authorize('view', $cellarItem);
-        //
-        $cellarItem->load(['bottle.colour', 'vintage']);
+
         return response()->json($cellarItem);
     }
 
     public function filterByColour(int $colourId): JsonResponse
     {
         $items = $this->cellarItemService->filterByColour(auth()->id(), $colourId);
+        return response()->json($items);
+    }
+
+    public function filterByRegion(int $regionId): JsonResponse
+    {
+        $items = $this->cellarItemService->filterByRegion(auth()->id(), $regionId);
         return response()->json($items);
     }
 
@@ -212,7 +226,23 @@ class CellarItemController extends Controller
             'offered_by' => 'nullable|string|max:255',
             'drinking_window_start' => 'nullable|integer|digits:4|min:1900|max:2100',
             'drinking_window_end' => 'nullable|integer|digits:4|min:1900|max:2100|gte:drinking_window_start',
+            'appellation_name' => 'nullable|string|max:255',
+            'bottle.grape_variety_ids' => 'nullable|array',
+            'bottle.grape_variety_ids.*' => 'exists:grape_varieties,id',
         ]);
+
+        if (!empty($validated['appellation_name'])) {
+            $appellation = $this->appellationService->findOrCreate([
+                'name' => $validated['appellation_name']
+            ]);
+            $validated['appellation_id'] = $appellation->id;
+        }
+
+        if (isset($validated['bottle']['grape_variety_ids'])) {
+            $this->bottleService->update($cellarItem->bottle, [
+                'grape_variety_ids' => $validated['bottle']['grape_variety_ids']
+            ]);
+        }
 
         $item = $this->cellarItemService->update($cellarItem, $validated);
         return response()->json($item);

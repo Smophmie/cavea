@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CellarItem extends Model
 {
@@ -14,6 +15,7 @@ class CellarItem extends Model
         'user_id',
         'bottle_id',
         'vintage_id',
+        'appellation_id',
         'stock',
         'rating',
         'price',
@@ -36,5 +38,15 @@ class CellarItem extends Model
     public function vintage(): BelongsTo
     {
         return $this->belongsTo(Vintage::class);
+    }
+
+    public function appellation(): BelongsTo
+    {
+        return $this->belongsTo(Appellation::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 }

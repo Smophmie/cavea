@@ -14,7 +14,12 @@ class CellarItemService
      */
     public function getUserItems(int $userId): Collection
     {
-        return CellarItem::with(['bottle.colour', 'vintage'])
+        return CellarItem::with([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'vintage'
+        ])
             ->where('user_id', $userId)
             ->get();
     }
@@ -24,7 +29,12 @@ class CellarItemService
      */
     public function getLastAdded(int $userId, int $limit = 10): Collection
     {
-        return CellarItem::with(['bottle.colour', 'vintage'])
+        return CellarItem::with([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'vintage'
+            ])
             ->where('user_id', $userId)
             ->orderByDesc('created_at')
             ->take($limit)
@@ -63,9 +73,30 @@ class CellarItemService
      */
     public function filterByColour(int $userId, int $colourId): Collection
     {
-        return CellarItem::with(['bottle.colour', 'vintage'])
+        return CellarItem::with([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'vintage'
+        ])
             ->where('user_id', $userId)
             ->whereHas('bottle', fn ($query) => $query->where('colour_id', $colourId))
+            ->get();
+    }
+
+    /**
+     * Filter cellar items by region
+     */
+    public function filterByRegion(int $userId, int $regionId): Collection
+    {
+        return CellarItem::with([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'vintage'
+        ])
+            ->where('user_id', $userId)
+            ->whereHas('bottle', fn ($query) => $query->where('region_id', $regionId))
             ->get();
     }
 
@@ -74,7 +105,15 @@ class CellarItemService
      */
     public function findByIdAndUser(string $id, int $userId): ?CellarItem
     {
-        return CellarItem::with(['bottle.colour', 'vintage'])
+        return CellarItem::with([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'bottle.grapeVarieties',
+            'vintage',
+            'appellation',
+            'comments'
+        ])
             ->where('id', $id)
             ->where('user_id', $userId)
             ->first();
@@ -98,6 +137,7 @@ class CellarItemService
                 'user_id' => $userId,
                 'bottle_id' => $data['bottle_id'],
                 'vintage_id' => $data['vintage_id'],
+                'appellation_id' => $data['appellation_id'] ?? null,
                 'stock' => $data['stock'],
                 'rating' => $data['rating'] ?? null,
                 'price' => $data['price'] ?? null,
@@ -108,11 +148,17 @@ class CellarItemService
             ]);
 
             Log::info('[CELLAR_ITEM_SERVICE] Cellar item created in database', [
-                'user_id' => $userId,
                 'cellar_item_id' => $cellarItem->id,
             ]);
 
-            $cellarItem->load(['bottle.colour', 'vintage']);
+            $cellarItem->load([
+                'bottle.colour',
+                'bottle.region',
+                'bottle.domain',
+                'bottle.grapeVarieties',
+                'vintage',
+                'appellation'
+            ]);
 
             Log::info('[CELLAR_ITEM_SERVICE] Relationships loaded successfully', [
                 'user_id' => $userId,
@@ -140,8 +186,25 @@ class CellarItemService
      */
     public function update(CellarItem $cellarItem, array $data): CellarItem
     {
-        $cellarItem->update($data);
-        return $cellarItem->fresh(['bottle.colour', 'vintage']);
+        $cellarItem->update([
+            'stock' => $data['stock'] ?? $cellarItem->stock,
+            'rating' => $data['rating'] ?? $cellarItem->rating,
+            'price' => $data['price'] ?? $cellarItem->price,
+            'shop' => $data['shop'] ?? $cellarItem->shop,
+            'offered_by' => $data['offered_by'] ?? $cellarItem->offered_by,
+            'drinking_window_start' => $data['drinking_window_start'] ?? $cellarItem->drinking_window_start,
+            'drinking_window_end' => $data['drinking_window_end'] ?? $cellarItem->drinking_window_end,
+            'appellation_id' => $data['appellation_id'] ?? $cellarItem->appellation_id,
+        ]);
+
+        return $cellarItem->fresh([
+            'bottle.colour',
+            'bottle.region',
+            'bottle.domain',
+            'bottle.grapeVarieties',
+            'vintage',
+            'appellation'
+        ]);
     }
 
     /**
