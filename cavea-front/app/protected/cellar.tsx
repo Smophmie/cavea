@@ -10,19 +10,26 @@ interface CellarItem {
   id: number;
   stock: number;
   price?: number;
+  rating?: number;
   bottle: {
     name: string;
-    domain: string;
-    PDO: string | null;
-    region: string | null;
+    domain: {
+      name: string;
+    };
+    region: {
+      name: string;
+    } | null;
     colour: {
       id: number;
       name: string;
     };
   };
   vintage: {
-    year: string;
+    year: number;
   };
+  appellation: {
+    name: string;
+  } | null;
 }
 
 const colours = [
@@ -110,12 +117,14 @@ export default function CellarPage() {
               <BottleCard
                 key={item.id}
                 bottleName={item.bottle.name}
-                domainName={item.bottle.domain}
-                region={item.bottle.region || "Région non spécifiée"}
+                domainName={item.bottle.domain.name}
+                region={item.bottle.region?.name || "Région non spécifiée"}
                 quantity={item.stock}
                 price={item.price}
                 color={item.bottle.colour.name}
-                vintage={parseInt(item.vintage.year)}
+                vintage={item.vintage.year}
+                rating={item.rating}
+                showRating={true}
               />
             ))}
           </View>
