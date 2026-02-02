@@ -179,6 +179,9 @@ describe('AddOrUpdateBottleForm', () => {
     
         fireEvent.press(screen.getByText('Rouge'));
 
+        fireEvent.press(screen.getByText('Sélectionnez une région'));
+        fireEvent.press(screen.getByText('Bordeaux'));
+
         fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
         fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
         fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
@@ -192,7 +195,8 @@ describe('AddOrUpdateBottleForm', () => {
                 expect.objectContaining({
                     bottle: expect.objectContaining({
                     name: 'Test Wine',
-                    domain: 'Domaine test',
+                    domain_name: 'Domaine test',
+                    region_id: 3,
                     colour_id: 1,
                     }),
                     vintage: expect.objectContaining({
@@ -220,6 +224,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '3');
 
@@ -247,6 +253,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
@@ -254,7 +262,7 @@ describe('AddOrUpdateBottleForm', () => {
 
       await waitFor(() => {
         const callArg = mockOnSubmit.mock.calls[0][0];
-        expect(callArg.bottle.PDO).toBeUndefined();
+        expect(callArg.bottle.appellation_name).toBeUndefined();
         expect(callArg.price).toBeUndefined();
         expect(callArg.shop).toBeUndefined();
       });
@@ -283,9 +291,11 @@ describe('Cancel button', () => {
       const initialData = {
         bottle: {
           name: 'Existing Wine',
-          domain: 'Test Domain',
-          PDO: 'Test PDO',
+          domain_name: 'Test Domain',
+          appellation_name: 'Test',
           colour_id: 2,
+          region_id: null,
+          grape_variety_ids: [],
         },
         vintage: {
           year: '2018',
