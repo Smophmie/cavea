@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { BottleWine } from "lucide-react-native";
+import { BottleWine, Star } from "lucide-react-native";
 
 type BottleCardProps = {
   bottleName: string;
@@ -10,6 +10,8 @@ type BottleCardProps = {
   price?: number;
   color?: string;
   vintage: number;
+  rating?: number;
+  showRating?: boolean;
 };
 
 const colourMap: { [key: string]: string } = {
@@ -28,7 +30,9 @@ export default function BottleCard({
   quantity, 
   price,
   color,
-  vintage
+  vintage,
+  rating,
+  showRating = false
 }: BottleCardProps) {
   const iconColor = color ? (colourMap[color] || colourMap["Autre"]) : "#bb2700";
 
@@ -43,6 +47,33 @@ export default function BottleCard({
         <Text className="text-base font-semibold text-black">{bottleName} {vintage}</Text>
         <Text className="text-sm text-gray">{domainName}</Text>
         <Text className="text-sm text-gray">{region}</Text>
+        
+        {showRating && rating && (
+          <View className="flex-row items-center mt-1">
+            {Array.from({ length: 10 }, (_, index) => {
+              const starValue = index + 1;
+              const isFilled = rating >= starValue;
+              const isHalfFilled = !isFilled && rating >= starValue - 0.5;
+              
+              let fillColor = "transparent";
+              if (isFilled) {
+                fillColor = "#bb2700";
+              } else if (isHalfFilled) {
+                fillColor = "rgba(187, 39, 0, 0.5)";
+              }
+              
+              return (
+                <Star
+                  key={index}
+                  size={12}
+                  color={fillColor}
+                  fill={fillColor}
+                />
+              );
+            })}
+            <Text className="text-xs text-gray ml-2">{rating}/10</Text>
+          </View>
+        )}
       </View>
 
       {price && (

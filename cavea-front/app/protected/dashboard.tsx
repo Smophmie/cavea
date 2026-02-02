@@ -21,16 +21,22 @@ interface LastAddedItem {
   price?: number;
   bottle: {
     name: string;
-    domain: string;
-    PDO: string | null;
-    region: string | null;
+    domain: {
+      name: string;
+    };
+    region: {
+      name: string;
+    } | null;
     colour: {
       name: string;
     };
   };
   vintage: {
     year: number;
-  }
+  };
+  appellation: {
+    name: string;
+  } | null;
 }
 
 export default function DashboardPage() {
@@ -96,7 +102,6 @@ export default function DashboardPage() {
             textColor="text-white"
             backgroundColor="rgba(255, 255, 255, 0.1)"
           />
-          {/* <CardIconText text="12 alertes de garde" icon="CircleAlert"></CardIconText> */}
         </View>
       </View>
 
@@ -104,10 +109,6 @@ export default function DashboardPage() {
         <SubTitle text="Répartition par couleur" color="black" />
         <StockByColour data={stockByColour} loading={loading} />
       </View>
-
-      {/* <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
-        <SubTitle text="Alertes de garde" />
-      </View> */}
 
       <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
         <SubTitle text="Mes derniers ajouts" color="black" />
@@ -119,8 +120,8 @@ export default function DashboardPage() {
               <BottleCard
                 key={item.id}
                 bottleName={item.bottle.name}
-                domainName={item.bottle.domain}
-                region={item.bottle.region || "Région non spécifiée"}
+                domainName={item.bottle.domain.name}
+                region={item.bottle.region?.name || "Région non spécifiée"}
                 quantity={item.stock}
                 price={item.price}
                 color={item.bottle.colour.name}
