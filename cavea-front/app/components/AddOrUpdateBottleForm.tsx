@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import { ChevronDown, Star } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
+import { ChevronDown, Star, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
@@ -8,13 +8,15 @@ import PageTitle from "./PageTitle";
 interface BottleFormData {
   bottle: {
     name: string;
-    domain: string;
-    PDO?: string;
+    domain_name: string;
     colour_id: number;
+    region_id: number;
+    grape_variety_ids?: number[];
   };
   vintage: {
     year: number;
   };
+  appellation_name?: string;
   stock: number;
   rating?: number;
   price?: number;
@@ -27,13 +29,15 @@ interface BottleFormData {
 interface BottleFormInput {
   bottle: {
     name: string;
-    domain: string;
-    PDO: string;
+    domain_name: string;
     colour_id: number | null;
+    region_id: number | null;
+    grape_variety_ids: number[];
   };
   vintage: {
     year: string;
   };
+  appellation_name: string;
   stock: string;
   rating: string;
   price: string;
@@ -59,6 +63,79 @@ const COLOURS = [
   { id: 6, name: "Autre" }
 ];
 
+const REGIONS = [
+  { id: 1, name: "Alsace" },
+  { id: 2, name: "Beaujolais" },
+  { id: 3, name: "Bordeaux" },
+  { id: 4, name: "Bourgogne" },
+  { id: 5, name: "Champagne" },
+  { id: 6, name: "Corse" },
+  { id: 7, name: "Jura" },
+  { id: 8, name: "Languedoc" },
+  { id: 9, name: "Roussillon" },
+  { id: 10, name: "Lorraine" },
+  { id: 11, name: "Provence" },
+  { id: 12, name: "Savoie et Bugey" },
+  { id: 13, name: "Sud-Ouest" },
+  { id: 14, name: "Vallée de la Loire" },
+  { id: 15, name: "Vallée du Rhône" },
+  { id: 16, name: "Île-de-France" },
+  { id: 17, name: "Poitou-Charentes" },
+];
+
+const GRAPE_VARIETIES = [
+  { id: 1, name: "Cabernet Sauvignon" },
+  { id: 2, name: "Cabernet Franc" },
+  { id: 3, name: "Merlot" },
+  { id: 4, name: "Pinot Noir" },
+  { id: 5, name: "Gamay" },
+  { id: 6, name: "Syrah" },
+  { id: 7, name: "Grenache" },
+  { id: 8, name: "Mourvèdre" },
+  { id: 9, name: "Cinsault" },
+  { id: 10, name: "Carignan" },
+  { id: 11, name: "Malbec" },
+  { id: 12, name: "Petit Verdot" },
+  { id: 13, name: "Tannat" },
+  { id: 14, name: "Négrette" },
+  { id: 15, name: "Fer Servadou" },
+  { id: 16, name: "Counoise" },
+  { id: 17, name: "Mondeuse" },
+  { id: 18, name: "Poulsard" },
+  { id: 19, name: "Trousseau" },
+  { id: 20, name: "Aramon" },
+  { id: 21, name: "Chardonnay" },
+  { id: 22, name: "Sauvignon Blanc" },
+  { id: 23, name: "Chenin Blanc" },
+  { id: 24, name: "Sémillon" },
+  { id: 25, name: "Ugni Blanc" },
+  { id: 26, name: "Viognier" },
+  { id: 27, name: "Roussanne" },
+  { id: 28, name: "Marsanne" },
+  { id: 29, name: "Clairette" },
+  { id: 30, name: "Grenache Blanc" },
+  { id: 31, name: "Bourboulenc" },
+  { id: 32, name: "Picpoul" },
+  { id: 33, name: "Aligoté" },
+  { id: 34, name: "Melon de Bourgogne" },
+  { id: 35, name: "Folle Blanche" },
+  { id: 36, name: "Mauzac" },
+  { id: 37, name: "Gros Manseng" },
+  { id: 38, name: "Petit Manseng" },
+  { id: 39, name: "Colombard" },
+  { id: 40, name: "Rolle (Vermentino)" },
+  { id: 41, name: "Riesling" },
+  { id: 42, name: "Gewurztraminer" },
+  { id: 43, name: "Pinot Gris" },
+  { id: 44, name: "Pinot Blanc" },
+  { id: 45, name: "Sylvaner" },
+  { id: 46, name: "Jacquère" },
+  { id: 47, name: "Savagnin" },
+  { id: 48, name: "Chasselas" },
+  { id: 49, name: "Muscat Blanc à Petits Grains" },
+  { id: 50, name: "Muscat d'Alexandrie" },
+];
+
 export default function AddOrUpdateBottleForm({ 
   mode, 
   initialData, 
@@ -68,17 +145,21 @@ export default function AddOrUpdateBottleForm({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showColourPicker, setShowColourPicker] = useState(false);
+  const [showRegionPicker, setShowRegionPicker] = useState(false);
+  const [showGrapeVarietyPicker, setShowGrapeVarietyPicker] = useState(false);
 
   const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
       name: initialData?.bottle?.name || "",
-      domain: initialData?.bottle?.domain || "",
-      PDO: initialData?.bottle?.PDO || "",
+      domain_name: initialData?.bottle?.domain_name || "",
       colour_id: initialData?.bottle?.colour_id || null,
+      region_id: initialData?.bottle?.region_id || null,
+      grape_variety_ids: initialData?.bottle?.grape_variety_ids || [],
     },
     vintage: {
       year: initialData?.vintage?.year || "",
     },
+    appellation_name: initialData?.appellation_name || "",
     stock: initialData?.stock || "",
     rating: initialData?.rating || "",
     price: initialData?.price || "",
@@ -95,11 +176,14 @@ export default function AddOrUpdateBottleForm({
       if (!formData.bottle.name.trim()) {
         newErrors['bottle.name'] = "Le nom de la bouteille est requis";
       }
-      if (!formData.bottle.domain.trim()) {
-        newErrors['bottle.domain'] = "Le domaine est requis";
+      if (!formData.bottle.domain_name.trim()) {
+        newErrors['bottle.domain_name'] = "Le domaine est requis";
       }
       if (!formData.bottle.colour_id) {
         newErrors['bottle.colour_id'] = "La couleur est requise";
+      }
+      if (!formData.bottle.region_id) {
+        newErrors['bottle.region_id'] = "La région est requise";
       }
       if (!formData.vintage.year.trim()) {
         newErrors['vintage.year'] = "Le millésime est requis";
@@ -120,8 +204,8 @@ export default function AddOrUpdateBottleForm({
     }
 
     const rating = parseFloat(formData.rating);
-    if (formData.rating && (isNaN(rating) || rating < 0 || rating > 5)) {
-      newErrors['rating'] = "Note invalide (0-5)";
+    if (formData.rating && (isNaN(rating) || rating < 0 || rating > 10)) {
+      newErrors['rating'] = "Note invalide (0-10)";
     }
 
     const price = parseFloat(formData.price);
@@ -151,14 +235,18 @@ export default function AddOrUpdateBottleForm({
       const bottleData: BottleFormData = {
         bottle: {
           name: formData.bottle.name,
-          domain: formData.bottle.domain,
-          ...(formData.bottle.PDO && { PDO: formData.bottle.PDO }),
+          domain_name: formData.bottle.domain_name,
           colour_id: formData.bottle.colour_id!,
+          region_id: formData.bottle.region_id!,
+          ...(formData.bottle.grape_variety_ids.length > 0 && { 
+            grape_variety_ids: formData.bottle.grape_variety_ids 
+          }),
         },
         vintage: {
           year: parseInt(formData.vintage.year),
         },
         stock: parseInt(formData.stock),
+        ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
         ...(formData.rating && { rating: parseFloat(formData.rating) }),
         ...(formData.price && { price: parseFloat(formData.price) }),
         ...(formData.shop && { shop: formData.shop }),
@@ -179,7 +267,7 @@ export default function AddOrUpdateBottleForm({
     }
   };
 
-  const updateField = (field: string, value: string | number) => {
+  const updateField = (field: string, value: string | number | number[]) => {
     const keys = field.split('.');
     
     setFormData(prev => {
@@ -212,15 +300,48 @@ export default function AddOrUpdateBottleForm({
     setShowColourPicker(false);
   };
 
+  const selectRegion = (regionId: number) => {
+    updateField('bottle.region_id', regionId);
+    setShowRegionPicker(false);
+  };
+
+  const toggleGrapeVariety = (grapeVarietyId: number) => {
+    const currentIds = formData.bottle.grape_variety_ids;
+    const newIds = currentIds.includes(grapeVarietyId)
+      ? currentIds.filter(id => id !== grapeVarietyId)
+      : [...currentIds, grapeVarietyId];
+    
+    updateField('bottle.grape_variety_ids', newIds);
+  };
+
+  const removeGrapeVariety = (grapeVarietyId: number) => {
+    const newIds = formData.bottle.grape_variety_ids.filter(id => id !== grapeVarietyId);
+    updateField('bottle.grape_variety_ids', newIds);
+  };
+
   const setRating = (stars: number) => {
-    updateField('rating', stars.toString());
+    const currentRatingValue = parseFloat(formData.rating) || 0;
+    
+    if (stars === Math.ceil(currentRatingValue)) {
+      if (currentRatingValue === stars) {
+        updateField('rating', (stars - 0.5).toString());
+      } else {
+        updateField('rating', stars.toString());
+      }
+    } else {
+      updateField('rating', stars.toString());
+    }
   };
 
   const selectedColour = COLOURS.find(c => c.id === formData.bottle.colour_id);
+  const selectedRegion = REGIONS.find(r => r.id === formData.bottle.region_id);
+  const selectedGrapeVarieties = GRAPE_VARIETIES.filter(gv => 
+    formData.bottle.grape_variety_ids.includes(gv.id)
+  );
   const currentRating = parseFloat(formData.rating) || 0;
 
   return (
-    <View>
+    <ScrollView>
       <View className="pb-5 pt-16 pl-2 bg-wine">
         <PageTitle text={mode === 'add' ? 'Ajouter une bouteille' : 'Modifier la bouteille'} color="white" />
       </View>
@@ -242,22 +363,127 @@ export default function AddOrUpdateBottleForm({
 
             <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
             <TextInput
-              value={formData.bottle.domain}
-              onChangeText={(value) => updateField('bottle.domain', value)}
+              value={formData.bottle.domain_name}
+              onChangeText={(value) => updateField('bottle.domain_name', value)}
               placeholder="Ex: Mas de la Seranne"
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
             />
-             {errors['bottle.domain'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['bottle.domain']}</Text>
+             {errors['bottle.domain_name'] && (
+              <Text className="text-red-600 text-sm mb-4">{errors['bottle.domain_name']}</Text>
+            )}
+
+            <Text className="text-base font-semibold text-gray mb-2">Région *</Text>
+            <TouchableOpacity
+              onPress={() => setShowRegionPicker(!showRegionPicker)}
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+            >
+              <Text className={selectedRegion ? "text-black" : "text-gray-400"}>
+                {selectedRegion ? selectedRegion.name : "Sélectionnez une région"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
+
+            <Modal
+              visible={showRegionPicker}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setShowRegionPicker(false)}
+            >
+              <View className="flex-1 justify-end bg-black/50">
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
+                  <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+                    <Text className="text-lg font-bold">Sélectionnez une région</Text>
+                    <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
+                      <X size={24} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  <FlatList
+                    data={REGIONS}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() => selectRegion(item.id)}
+                        className="px-4 py-4 border-b border-gray-100"
+                      >
+                        <Text className="text-base">{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </View>
+            </Modal>
+
+            {errors['bottle.region_id'] && (
+              <Text className="text-red-600 text-sm mb-4">{errors['bottle.region_id']}</Text>
             )}
 
             <Text className="text-base font-semibold text-gray mb-2">Appellation</Text>
             <TextInput
-              value={formData.bottle.PDO}
-              onChangeText={(value) => updateField('bottle.PDO', value)}
+              value={formData.appellation_name}
+              onChangeText={(value) => updateField('appellation_name', value)}
               placeholder="Ex: AOP Languedoc"
               className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
             />
+
+            <Text className="text-base font-semibold text-gray mb-2">Cépages</Text>
+            
+            {selectedGrapeVarieties.length > 0 && (
+              <View className="flex-row flex-wrap gap-2 mb-2">
+                {selectedGrapeVarieties.map((gv) => (
+                  <View key={gv.id} className="bg-wine rounded-full px-3 py-1 flex-row items-center">
+                    <Text className="text-white text-sm mr-1">{gv.name}</Text>
+                    <TouchableOpacity onPress={() => removeGrapeVariety(gv.id)}>
+                      <X size={14} color="#ffffff" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setShowGrapeVarietyPicker(!showGrapeVarietyPicker)}
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+            >
+              <Text className="text-gray-400">
+                {selectedGrapeVarieties.length > 0 ? "Modifier les cépages" : "Ajouter des cépages"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
+
+            <Modal
+              visible={showGrapeVarietyPicker}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setShowGrapeVarietyPicker(false)}
+            >
+              <View className="flex-1 justify-end bg-black/50">
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
+                  <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+                    <Text className="text-lg font-bold">Sélectionnez des cépages</Text>
+                    <TouchableOpacity onPress={() => setShowGrapeVarietyPicker(false)} testID="close-modal-grape-varieties">
+                      <X size={24} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  <FlatList
+                    data={GRAPE_VARIETIES}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() => toggleGrapeVariety(item.id)}
+                        className="px-4 py-4 border-b border-gray-100 flex-row justify-between items-center"
+                      >
+                        <Text className="text-base">{item.name}</Text>
+                        {formData.bottle.grape_variety_ids.includes(item.id) && (
+                          <View className="w-6 h-6 rounded-full bg-wine items-center justify-center">
+                            <Text className="text-white text-sm">✓</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </View>
+            </Modal>
 
             <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
             <TouchableOpacity
@@ -389,25 +615,37 @@ export default function AddOrUpdateBottleForm({
         <Text className="font-bold text-xl pb-4">Notes personnelles</Text>
         <Text className="text-base font-semibold text-gray mb-3">Ma note</Text>
         <View className="flex-row items-center gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <TouchableOpacity
-              key={star}
-              onPress={() => setRating(star)}
-              className="p-1"
-            >
-              <Star
-                size={40}
-                color="#bb2700"
-                fill={star <= currentRating ? "#bb2700" : "transparent"}
-              />
-            </TouchableOpacity>
-          ))}
-          {currentRating > 0 && (
-            <Text className="text-gray ml-2 text-base">
-              {currentRating}/5
-            </Text>
-          )}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
+            const isFilled = currentRating >= star;
+            const isHalfFilled = !isFilled && currentRating >= star - 0.5;
+            
+            let fillColor = "transparent";
+            if (isFilled) {
+              fillColor = "#bb2700";
+            } else if (isHalfFilled) {
+              fillColor = "rgba(187, 39, 0, 0.5)";
+            }
+            
+            return (
+              <TouchableOpacity
+                key={star}
+                onPress={() => setRating(star)}
+                className="p-1"
+              >
+                <Star
+                  size={30}
+                  color="#bb2700"
+                  fill={fillColor}
+                />
+              </TouchableOpacity>
+            );
+          })}
         </View>
+        {currentRating > 0 && (
+          <Text className="text-gray mt-2 text-base">
+            {currentRating}/10
+          </Text>
+        )}
         {errors['rating'] && (
           <Text className="text-red-600 text-sm mt-2">{errors['rating']}</Text>
         )}
@@ -426,6 +664,6 @@ export default function AddOrUpdateBottleForm({
           )}
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }

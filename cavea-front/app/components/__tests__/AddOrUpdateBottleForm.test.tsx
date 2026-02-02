@@ -24,6 +24,7 @@ describe('AddOrUpdateBottleForm', () => {
       expect(screen.getByText('Nom de la bouteille *')).toBeTruthy();
       expect(screen.getByText('Domaine *')).toBeTruthy();
       expect(screen.getByText('Appellation')).toBeTruthy();
+      expect(screen.getByText('Cépages')).toBeTruthy();
     });
 
     it('should render Add button in add mode', () => {
@@ -159,50 +160,54 @@ describe('AddOrUpdateBottleForm', () => {
 
   describe('Form submission', () => {
     it('should submit valid form data with correct types', async () => {
-        render(
-            <AddOrUpdateBottleForm
-            mode="add"
-            onSubmit={mockOnSubmit}
-            />
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.changeText(
+        screen.getByPlaceholderText("Ex: A l'ombre du figuier"),
+        'Test Wine'
+      );
+
+      fireEvent.press(screen.getByText('Sélectionnez une couleur'));
+      
+      await waitFor(() => {
+        expect(screen.getByText('Rouge')).toBeTruthy();
+      });
+  
+      fireEvent.press(screen.getByText('Rouge'));
+
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
+
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 15.50'), '25.50');
+
+      const submitButton = screen.getByText('Ajouter');
+      fireEvent.press(submitButton);
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            bottle: expect.objectContaining({
+              name: 'Test Wine',
+              domain_name: 'Domaine test',
+              region_id: 3,
+              colour_id: 1,
+            }),
+            vintage: expect.objectContaining({
+              year: 2020,
+            }),
+            stock: 5,
+            price: 25.50,
+          })
         );
-
-        fireEvent.changeText(
-            screen.getByPlaceholderText("Ex: A l'ombre du figuier"),
-            'Test Wine'
-        );
-
-        fireEvent.press(screen.getByText('Sélectionnez une couleur'));
-        
-        await waitFor(() => {
-            expect(screen.getByText('Rouge')).toBeTruthy();
-        });
-    
-        fireEvent.press(screen.getByText('Rouge'));
-
-        fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
-        fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
-        fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
-        fireEvent.changeText(screen.getByPlaceholderText('Ex: 15.50'), '25.50');
-
-        const submitButton = screen.getByText('Ajouter');
-        fireEvent.press(submitButton);
-
-        await waitFor(() => {
-            expect(mockOnSubmit).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    bottle: expect.objectContaining({
-                    name: 'Test Wine',
-                    domain: 'Domaine test',
-                    colour_id: 1,
-                    }),
-                    vintage: expect.objectContaining({
-                    year: 2020,
-                    }),
-                    stock: 5,
-                    price: 25.50,
-                })
-            );
-        });
+      });
     });
 
     it('should convert string inputs to numbers', async () => {
@@ -220,6 +225,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '3');
 
@@ -247,6 +254,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.press(screen.getByText('Sélectionnez une couleur'));
       fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
@@ -254,14 +263,14 @@ describe('AddOrUpdateBottleForm', () => {
 
       await waitFor(() => {
         const callArg = mockOnSubmit.mock.calls[0][0];
-        expect(callArg.bottle.PDO).toBeUndefined();
+        expect(callArg.appellation_name).toBeUndefined();
         expect(callArg.price).toBeUndefined();
         expect(callArg.shop).toBeUndefined();
       });
     });
-});
+  });
  
-describe('Cancel button', () => {
+  describe('Cancel button', () => {
     it('should call onCancel when cancel is pressed', () => {
       render(
         <AddOrUpdateBottleForm
@@ -276,20 +285,22 @@ describe('Cancel button', () => {
 
       expect(mockOnCancel).toHaveBeenCalledTimes(1);
     });
-});
+  });
 
   describe('Initial data', () => {
     it('should populate form with initial data', () => {
       const initialData = {
         bottle: {
           name: 'Existing Wine',
-          domain: 'Test Domain',
-          PDO: 'Test PDO',
+          domain_name: 'Test Domain',
           colour_id: 2,
+          region_id: 1,
+          grape_variety_ids: [],
         },
         vintage: {
           year: '2018',
         },
+        appellation_name: 'Test Appellation',
         stock: '10',
         price: '45.00',
       };
@@ -328,6 +339,217 @@ describe('Cancel button', () => {
       await waitFor(() => {
         expect(screen.queryByText('Le nom de la bouteille est requis')).toBeNull();
       });
+    });
+  });
+
+  describe('Rating System', () => {
+
+    it('should not submit rating if not set', async () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.changeText(screen.getByPlaceholderText("Ex: A l'ombre du figuier"), 'Test Bottle');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Test Domain');
+      fireEvent.press(screen.getByText('Sélectionnez une couleur'));
+      fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
+
+      fireEvent.press(screen.getByText('Ajouter'));
+
+      await waitFor(() => {
+        const callArg = mockOnSubmit.mock.calls[0][0];
+        expect(callArg.rating).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Grape Varieties Selection', () => {
+    it('should open grape varieties modal when clicking the button', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+
+      expect(screen.getByText('Sélectionnez des cépages')).toBeTruthy();
+    });
+
+    it('should close grape varieties modal when clicking X button', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+      expect(screen.getByText('Sélectionnez des cépages')).toBeTruthy();
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      expect(screen.queryByText('Sélectionnez des cépages')).toBeNull();
+    });
+
+    it('should select a single grape variety', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+
+      fireEvent.press(screen.getByText('Cabernet Sauvignon'));
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      expect(screen.getByText('Cabernet Sauvignon')).toBeTruthy();
+    });
+
+    it('should select multiple grape varieties', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+
+      fireEvent.press(screen.getByText('Merlot'));
+      fireEvent.press(screen.getByText('Cabernet Franc'));
+      fireEvent.press(screen.getByText('Syrah'));
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      expect(screen.getByText('Merlot')).toBeTruthy();
+      expect(screen.getByText('Cabernet Franc')).toBeTruthy();
+      expect(screen.getByText('Syrah')).toBeTruthy();
+    });
+
+    it('should show checkmark for selected grape varieties in modal', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+
+      fireEvent.press(screen.getByText('Grenache'));
+
+      const checkmarks = screen.getAllByText('✓');
+      expect(checkmarks.length).toBeGreaterThan(0);
+    });
+
+    it('should submit form with selected grape varieties', async () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.changeText(screen.getByPlaceholderText("Ex: A l'ombre du figuier"), 'Test Bottle');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Test Domain');
+      fireEvent.press(screen.getByText('Sélectionnez une couleur'));
+      fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
+
+      // Select grape varieties
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+      fireEvent.press(screen.getByText('Merlot'));
+      fireEvent.press(screen.getByText('Cabernet Sauvignon'));
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      fireEvent.press(screen.getByText('Ajouter'));
+
+      await waitFor(() => {
+        const callArg = mockOnSubmit.mock.calls[0][0];
+        expect(callArg.bottle.grape_variety_ids).toEqual(expect.arrayContaining([3, 1]));
+        expect(callArg.bottle.grape_variety_ids.length).toBe(2);
+      });
+    });
+
+    it('should submit form without grape varieties when none selected', async () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.changeText(screen.getByPlaceholderText("Ex: A l'ombre du figuier"), 'Test Bottle');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Test Domain');
+      fireEvent.press(screen.getByText('Sélectionnez une couleur'));
+      fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
+
+      fireEvent.press(screen.getByText('Ajouter'));
+
+      await waitFor(() => {
+        const callArg = mockOnSubmit.mock.calls[0][0];
+        expect(callArg.bottle.grape_variety_ids).toBeUndefined();
+      });
+    });
+
+    it('should change button text when grape varieties are selected', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      expect(screen.getByText('Ajouter des cépages')).toBeTruthy();
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+      fireEvent.press(screen.getByText('Gamay'));
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      expect(screen.getByText('Modifier les cépages')).toBeTruthy();
+      expect(screen.queryByText('Ajouter des cépages')).toBeNull();
+    });
+
+    it('should preserve grape variety selection when reopening modal', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="add"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.press(screen.getByText('Ajouter des cépages'));
+      fireEvent.press(screen.getByText('Cinsault'));
+      fireEvent.press(screen.getByText('Cabernet Sauvignon'));
+
+      fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
+
+      // Reopen modal
+      fireEvent.press(screen.getByText('Modifier les cépages'));
+
+      const checkmarks = screen.getAllByText('✓');
+      expect(checkmarks.length).toBeGreaterThanOrEqual(2);
     });
   });
 });
