@@ -460,7 +460,7 @@ export default function AddOrUpdateBottleForm({
                 <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
                   <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
                     <Text className="text-lg font-bold">Sélectionnez des cépages</Text>
-                    <TouchableOpacity onPress={() => setShowGrapeVarietyPicker(false)}>
+                    <TouchableOpacity onPress={() => setShowGrapeVarietyPicker(false)} testID="close-modal-grape-varieties">
                       <X size={24} color="#000" />
                     </TouchableOpacity>
                   </View>
@@ -631,7 +631,6 @@ export default function AddOrUpdateBottleForm({
                 key={star}
                 onPress={() => setRating(star)}
                 className="p-1"
-                testID={`star-button-${star}`}
               >
                 <Star
                   size={30}
