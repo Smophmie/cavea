@@ -220,7 +220,7 @@ class CellarItemController extends Controller
 
         $validated = $request->validate([
             'stock' => 'integer|min:0',
-            'rating' => 'nullable|numeric|min:0|max:5',
+            'rating' => 'nullable|numeric|min:0|max:10',
             'price' => 'nullable|numeric|min:0',
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',
