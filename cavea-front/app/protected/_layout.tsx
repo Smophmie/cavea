@@ -45,6 +45,20 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} />,
         }}
       />
+
+      <Tabs.Screen
+        name="bottle-detail"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="update-bottle"
+        options={{
+          href: null,
+        }}
+      />
     
     </Tabs>
   );
