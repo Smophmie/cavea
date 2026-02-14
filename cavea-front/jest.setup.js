@@ -13,3 +13,11 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true })),
   addEventListener: jest.fn(() => jest.fn()),
 }));
+
+// Suppress console logs, errors and warnings in tests to keep output clean
+global.console = {
+  ...console,
+  log: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+};

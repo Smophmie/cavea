@@ -2,9 +2,14 @@ import React from 'react';
 import { render, fireEvent, waitFor, screen } from '@testing-library/react-native';
 import AddOrUpdateBottleForm from '../AddOrUpdateBottleForm';
 
+jest.mock('@/services/CellarService', () => ({
+  cellarService: {
+    getCellarItemById: jest.fn(),
+  },
+}));
+
 describe('AddOrUpdateBottleForm', () => {
   const mockOnSubmit = jest.fn();
-  const mockOnCancel = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -16,14 +21,14 @@ describe('AddOrUpdateBottleForm', () => {
         <AddOrUpdateBottleForm
           mode="add"
           onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
+          
         />
       );
 
       expect(screen.getByText('Ajouter une bouteille')).toBeTruthy();
       expect(screen.getByText('Nom de la bouteille *')).toBeTruthy();
       expect(screen.getByText('Domaine *')).toBeTruthy();
-      expect(screen.getByText('Appellation')).toBeTruthy();
+      expect(screen.getByText('Appellation (AOC/AOP)')).toBeTruthy();
       expect(screen.getByText('Cépages')).toBeTruthy();
     });
 
@@ -272,6 +277,7 @@ describe('AddOrUpdateBottleForm', () => {
  
   describe('Cancel button', () => {
     it('should call onCancel when cancel is pressed', () => {
+      const mockOnCancel = jest.fn();
       render(
         <AddOrUpdateBottleForm
           mode="add"

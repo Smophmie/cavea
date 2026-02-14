@@ -5,6 +5,7 @@ import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
 import BackButton from "./BackButton";
+import { cellarService } from "@/services/CellarService";
 
 interface BottleFormData {
   bottle: {
@@ -186,7 +187,6 @@ export default function AddOrUpdateBottleForm({
     
     setDataLoading(true);
     try {
-      const { cellarService } = await import('@/services/CellarService');
       const data = await cellarService.getCellarItemById(token, bottleId);
       
       setFormData({
