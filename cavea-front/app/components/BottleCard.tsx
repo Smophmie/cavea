@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { BottleWine, Star } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { COLOUR_MAP } from "@/constants/wineData";
 
 type BottleCardProps = {
   id: number;
@@ -14,15 +15,6 @@ type BottleCardProps = {
   vintage: number;
   rating?: number;
   showRating?: boolean;
-};
-
-const colourMap: { [key: string]: string } = {
-  "Rouge": "#8B0000",
-  "Blanc": "#F5DEB3",
-  "Rosé": "#FFB6C1",
-  "Pétillant": "#FFD700",
-  "Orange": "#FF8C00",
-  "Autre": "#808080"
 };
 
 export default function BottleCard({ 
@@ -38,7 +30,7 @@ export default function BottleCard({
   showRating = false
 }: BottleCardProps) {
   const router = useRouter();
-  const iconColor = color ? (colourMap[color] || colourMap["Autre"]) : "#bb2700";
+  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#bb2700";
 
   const handlePress = () => {
     router.push({
