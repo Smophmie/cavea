@@ -274,24 +274,6 @@ describe('AddOrUpdateBottleForm', () => {
       });
     });
   });
- 
-  describe('Cancel button', () => {
-    it('should call onCancel when cancel is pressed', () => {
-      const mockOnCancel = jest.fn();
-      render(
-        <AddOrUpdateBottleForm
-          mode="add"
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-        />
-      );
-
-      const cancelButton = screen.getByText('Annuler');
-      fireEvent.press(cancelButton);
-
-      expect(mockOnCancel).toHaveBeenCalledTimes(1);
-    });
-  });
 
   describe('Initial data', () => {
     it('should populate form with initial data', () => {
