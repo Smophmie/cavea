@@ -1,8 +1,11 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { BottleWine, Star } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { COLOUR_MAP } from "@/constants/wineData";
 
 type BottleCardProps = {
+  id: number;
   bottleName: string;
   domainName: string;
   region: string;
@@ -14,16 +17,8 @@ type BottleCardProps = {
   showRating?: boolean;
 };
 
-const colourMap: { [key: string]: string } = {
-  "Rouge": "#8B0000",
-  "Blanc": "#F5DEB3",
-  "Rosé": "#FFB6C1",
-  "Pétillant": "#FFD700",
-  "Orange": "#FF8C00",
-  "Autre": "#808080"
-};
-
 export default function BottleCard({ 
+  id,
   bottleName, 
   domainName, 
   region, 
@@ -34,10 +29,21 @@ export default function BottleCard({
   rating,
   showRating = false
 }: BottleCardProps) {
-  const iconColor = color ? (colourMap[color] || colourMap["Autre"]) : "#bb2700";
+  const router = useRouter();
+  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#bb2700";
+
+  const handlePress = () => {
+    router.push({
+      pathname: "/protected/bottle-detail",
+      params: { id, bottleName }
+    } as any);
+  };
 
   return (
-    <View className="flex-row items-center border border-lightgray rounded-lg p-4 bg-white">
+    <TouchableOpacity 
+      onPress={handlePress}
+      className="flex-row items-center border border-lightgray rounded-lg p-4 bg-white"
+    >
       <View className="items-center mr-4">
         <BottleWine size={32} color={iconColor} />
         <Text className="text-sm text-gray mt-1">x{quantity}</Text>
@@ -81,6 +87,6 @@ export default function BottleCard({
           <Text className="text-base font-semibold text-gray">{price}€</Text>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 }

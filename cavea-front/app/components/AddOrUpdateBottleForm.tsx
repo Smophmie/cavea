@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
 import { ChevronDown, Star, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
+import BackButton from "./BackButton";
+import { cellarService } from "@/services/CellarService";
+import { REGIONS, COLOURS, GRAPE_VARIETIES } from "@/constants/wineData";
 
 interface BottleFormData {
   bottle: {
@@ -49,100 +52,21 @@ interface BottleFormInput {
 
 interface AddOrUpdateFormProps {
   mode: 'add' | 'update';
+  bottleId?: number;
+  token?: string;
   initialData?: Partial<BottleFormInput>;
   onSubmit: (data: BottleFormData) => Promise<void>;
-  onCancel?: () => void;
 }
-
-const COLOURS = [
-  { id: 1, name: "Rouge" },
-  { id: 2, name: "Blanc" },
-  { id: 3, name: "Rosé" },
-  { id: 4, name: "Pétillant" },
-  { id: 5, name: "Orange" },
-  { id: 6, name: "Autre" }
-];
-
-const REGIONS = [
-  { id: 1, name: "Alsace" },
-  { id: 2, name: "Beaujolais" },
-  { id: 3, name: "Bordeaux" },
-  { id: 4, name: "Bourgogne" },
-  { id: 5, name: "Champagne" },
-  { id: 6, name: "Corse" },
-  { id: 7, name: "Jura" },
-  { id: 8, name: "Languedoc" },
-  { id: 9, name: "Roussillon" },
-  { id: 10, name: "Lorraine" },
-  { id: 11, name: "Provence" },
-  { id: 12, name: "Savoie et Bugey" },
-  { id: 13, name: "Sud-Ouest" },
-  { id: 14, name: "Vallée de la Loire" },
-  { id: 15, name: "Vallée du Rhône" },
-  { id: 16, name: "Île-de-France" },
-  { id: 17, name: "Poitou-Charentes" },
-];
-
-const GRAPE_VARIETIES = [
-  { id: 1, name: "Cabernet Sauvignon" },
-  { id: 2, name: "Cabernet Franc" },
-  { id: 3, name: "Merlot" },
-  { id: 4, name: "Pinot Noir" },
-  { id: 5, name: "Gamay" },
-  { id: 6, name: "Syrah" },
-  { id: 7, name: "Grenache" },
-  { id: 8, name: "Mourvèdre" },
-  { id: 9, name: "Cinsault" },
-  { id: 10, name: "Carignan" },
-  { id: 11, name: "Malbec" },
-  { id: 12, name: "Petit Verdot" },
-  { id: 13, name: "Tannat" },
-  { id: 14, name: "Négrette" },
-  { id: 15, name: "Fer Servadou" },
-  { id: 16, name: "Counoise" },
-  { id: 17, name: "Mondeuse" },
-  { id: 18, name: "Poulsard" },
-  { id: 19, name: "Trousseau" },
-  { id: 20, name: "Aramon" },
-  { id: 21, name: "Chardonnay" },
-  { id: 22, name: "Sauvignon Blanc" },
-  { id: 23, name: "Chenin Blanc" },
-  { id: 24, name: "Sémillon" },
-  { id: 25, name: "Ugni Blanc" },
-  { id: 26, name: "Viognier" },
-  { id: 27, name: "Roussanne" },
-  { id: 28, name: "Marsanne" },
-  { id: 29, name: "Clairette" },
-  { id: 30, name: "Grenache Blanc" },
-  { id: 31, name: "Bourboulenc" },
-  { id: 32, name: "Picpoul" },
-  { id: 33, name: "Aligoté" },
-  { id: 34, name: "Melon de Bourgogne" },
-  { id: 35, name: "Folle Blanche" },
-  { id: 36, name: "Mauzac" },
-  { id: 37, name: "Gros Manseng" },
-  { id: 38, name: "Petit Manseng" },
-  { id: 39, name: "Colombard" },
-  { id: 40, name: "Rolle (Vermentino)" },
-  { id: 41, name: "Riesling" },
-  { id: 42, name: "Gewurztraminer" },
-  { id: 43, name: "Pinot Gris" },
-  { id: 44, name: "Pinot Blanc" },
-  { id: 45, name: "Sylvaner" },
-  { id: 46, name: "Jacquère" },
-  { id: 47, name: "Savagnin" },
-  { id: 48, name: "Chasselas" },
-  { id: 49, name: "Muscat Blanc à Petits Grains" },
-  { id: 50, name: "Muscat d'Alexandrie" },
-];
 
 export default function AddOrUpdateBottleForm({ 
   mode, 
+  bottleId,
+  token,
   initialData, 
-  onSubmit, 
-  onCancel 
+  onSubmit
 }: AddOrUpdateFormProps) {
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showColourPicker, setShowColourPicker] = useState(false);
   const [showRegionPicker, setShowRegionPicker] = useState(false);
@@ -168,6 +92,46 @@ export default function AddOrUpdateBottleForm({
     drinking_window_start: initialData?.drinking_window_start || "",
     drinking_window_end: initialData?.drinking_window_end || "",
   });
+
+  useEffect(() => {
+    if (mode === 'update' && bottleId && !initialData && token) {
+      fetchBottleData();
+    }
+  }, [mode, bottleId, token]);
+
+  const fetchBottleData = async () => {
+    if (!bottleId || !token) return;
+    
+    setDataLoading(true);
+    try {
+      const data = await cellarService.getCellarItemById(token, bottleId);
+      
+      setFormData({
+        bottle: {
+          name: data.bottle.name,
+          domain_name: data.bottle.domain.name,
+          colour_id: data.bottle.colour.id,
+          region_id: data.bottle.region?.id || null,
+          grape_variety_ids: data.bottle.grapeVarieties?.map((gv: any) => gv.id) || [],
+        },
+        vintage: {
+          year: String(data.vintage.year),
+        },
+        appellation_name: data.appellation?.name || "",
+        stock: String(data.stock),
+        rating: data.rating ? String(data.rating) : "",
+        price: data.price ? String(data.price) : "",
+        shop: data.shop || "",
+        offered_by: data.offered_by || "",
+        drinking_window_start: data.drinking_window_start ? String(data.drinking_window_start) : "",
+        drinking_window_end: data.drinking_window_end ? String(data.drinking_window_end) : "",
+      });
+    } catch (error) {
+      console.error('Error fetching bottle data:', error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -342,59 +306,88 @@ export default function AddOrUpdateBottleForm({
 
   return (
     <ScrollView>
-      <View className="pb-5 pt-16 pl-2 bg-wine">
+      <View className="pb-5 pt-16 px-10 bg-wine">
+        <View className="mb-4">
+          <BackButton color="#ffffff" />
+        </View>
         <PageTitle text={mode === 'add' ? 'Ajouter une bouteille' : 'Modifier la bouteille'} color="white" />
       </View>
 
-      <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
-        <Text className="font-bold text-xl pb-4">Informations principales</Text>
-        {mode === 'add' && (
-          <>
-            <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
-            <TextInput
-              value={formData.bottle.name}
-              onChangeText={(value) => updateField('bottle.name', value)}
-              placeholder="Ex: A l'ombre du figuier"
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
-            />
-            {errors['bottle.name'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['bottle.name']}</Text>
+      {dataLoading ? (
+        <View className="flex-1 items-center justify-center py-20">
+          <ActivityIndicator size="large" color="#bb2700" />
+          <Text className="text-gray-500 mt-4">Chargement des données...</Text>
+        </View>
+      ) : (
+        <>
+          <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
+            <Text className="font-bold text-xl pb-4">Informations principales</Text>
+            
+            {mode === 'add' ? (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
+                <TextInput
+                  value={formData.bottle.name}
+                  onChangeText={(value) => updateField('bottle.name', value)}
+                  placeholder="Ex: A l'ombre du figuier"
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
+                />
+                {errors['bottle.name'] && (
+                  <Text className="text-red-600 text-sm mb-4">{errors['bottle.name']}</Text>
+                )}
+              </>
+            ) : (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Nom du vin</Text>
+                <Text className="text-base text-black mb-4">{formData.bottle.name}</Text>
+              </>
             )}
 
-            <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
-            <TextInput
-              value={formData.bottle.domain_name}
-              onChangeText={(value) => updateField('bottle.domain_name', value)}
-              placeholder="Ex: Mas de la Seranne"
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
-            />
-             {errors['bottle.domain_name'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['bottle.domain_name']}</Text>
+            {mode === 'add' ? (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
+                <TextInput
+                  value={formData.bottle.domain_name}
+                  onChangeText={(value) => updateField('bottle.domain_name', value)}
+                  placeholder="Ex: Mas de la Seranne"
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
+                />
+                {errors['bottle.domain_name'] && (
+                  <Text className="text-red-600 text-sm mb-4">{errors['bottle.domain_name']}</Text>
+                )}
+              </>
+            ) : (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Domaine/Producteur</Text>
+                <Text className="text-base text-black mb-4">{formData.bottle.domain_name}</Text>
+              </>
             )}
 
-            <Text className="text-base font-semibold text-gray mb-2">Région *</Text>
-            <TouchableOpacity
-              onPress={() => setShowRegionPicker(!showRegionPicker)}
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
-            >
-              <Text className={selectedRegion ? "text-black" : "text-gray-400"}>
-                {selectedRegion ? selectedRegion.name : "Sélectionnez une région"}
-              </Text>
-              <ChevronDown size={20} color="#6B7280" />
-            </TouchableOpacity>
+            {mode === 'add' ? (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Région *</Text>
+                <TouchableOpacity
+                  onPress={() => setShowRegionPicker(!showRegionPicker)}
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+                >
+                  <Text className={selectedRegion ? "text-black" : "text-gray-400"}>
+                    {selectedRegion ? selectedRegion.name : "Sélectionnez une région"}
+                  </Text>
+                  <ChevronDown size={20} color="#6B7280" />
+                </TouchableOpacity>
 
-            <Modal
-              visible={showRegionPicker}
-              transparent={true}
-              animationType="slide"
-              onRequestClose={() => setShowRegionPicker(false)}
-            >
-              <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
-                  <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
-                    <Text className="text-lg font-bold">Sélectionnez une région</Text>
-                    <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
-                      <X size={24} color="#000" />
+                <Modal
+                  visible={showRegionPicker}
+                  transparent={true}
+                  animationType="slide"
+                  onRequestClose={() => setShowRegionPicker(false)}
+                >
+                  <View className="flex-1 justify-end bg-black/50">
+                    <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
+                      <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+                        <Text className="text-lg font-bold">Sélectionnez une région</Text>
+                        <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
+                          <X size={24} color="#000" />
                     </TouchableOpacity>
                   </View>
                   <FlatList
@@ -413,11 +406,31 @@ export default function AddOrUpdateBottleForm({
               </View>
             </Modal>
 
-            {errors['bottle.region_id'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['bottle.region_id']}</Text>
+                {errors['bottle.region_id'] && (
+                  <Text className="text-red-600 text-sm mb-4">{errors['bottle.region_id']}</Text>
+                )}
+              </>
+            ) : (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Région</Text>
+                <Text className="text-base text-black mb-4">{selectedRegion?.name || "Non spécifiée"}</Text>
+              </>
             )}
 
-            <Text className="text-base font-semibold text-gray mb-2">Appellation</Text>
+            {mode === 'update' && (
+              <View className="flex-row gap-4 mb-4">
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray mb-2">Millésime</Text>
+                  <Text className="text-base text-black">{formData.vintage.year}</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray mb-2">Couleur</Text>
+                  <Text className="text-base text-black">{selectedColour?.name || "Non spécifiée"}</Text>
+                </View>
+              </View>
+            )}
+
+            <Text className="text-base font-semibold text-gray mb-2">Appellation (AOC/AOP)</Text>
             <TextInput
               value={formData.appellation_name}
               onChangeText={(value) => updateField('appellation_name', value)}
@@ -485,50 +498,56 @@ export default function AddOrUpdateBottleForm({
               </View>
             </Modal>
 
-            <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
-            <TouchableOpacity
-              onPress={() => setShowColourPicker(!showColourPicker)}
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
-            >
-              <Text className={selectedColour ? "text-black" : "text-gray-400"}>
-                {selectedColour ? selectedColour.name : "Sélectionnez une couleur"}
-              </Text>
-              <ChevronDown size={20} color="#6B7280" />
-            </TouchableOpacity>
+            {mode === 'add' ? (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
+                <TouchableOpacity
+                  onPress={() => setShowColourPicker(!showColourPicker)}
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+                >
+                  <Text className={selectedColour ? "text-black" : "text-gray-400"}>
+                    {selectedColour ? selectedColour.name : "Sélectionnez une couleur"}
+                  </Text>
+                  <ChevronDown size={20} color="#6B7280" />
+                </TouchableOpacity>
 
-            {showColourPicker && (
-              <View className="border border-gray-300 rounded-lg mb-2">
-                {COLOURS.map((colour) => (
-                  <TouchableOpacity
-                    key={colour.id}
-                    onPress={() => selectColour(colour.id)}
-                    className="px-4 py-3 border-b border-gray-200"
-                  >
-                    <Text className="text-base">{colour.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+                {showColourPicker && (
+                  <View className="border border-gray-300 rounded-lg mb-2">
+                    {COLOURS.map((colour) => (
+                      <TouchableOpacity
+                        key={colour.id}
+                        onPress={() => selectColour(colour.id)}
+                        className="px-4 py-3 border-b border-gray-200"
+                      >
+                        <Text className="text-base">{colour.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
 
-            {errors['bottle.colour_id'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['bottle.colour_id']}</Text>
-            )}
+                {errors['bottle.colour_id'] && (
+                  <Text className="text-red-600 text-sm mb-4">{errors['bottle.colour_id']}</Text>
+                )}
+              </>
+            ) : null}
 
-            <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
-            <TextInput
-              value={formData.vintage.year}
-              onChangeText={(value) => updateField('vintage.year', value)}
-              placeholder="Ex: 2015"
-              keyboardType="numeric"
-              maxLength={4}
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
-            />
-            {errors['vintage.year'] && (
-              <Text className="text-red-600 text-sm mb-4">{errors['vintage.year']}</Text>
+            {mode === 'add' && (
+              <>
+                <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
+                <TextInput
+                  value={formData.vintage.year}
+                  onChangeText={(value) => updateField('vintage.year', value)}
+                  placeholder="Ex: 2015"
+                  keyboardType="numeric"
+                  maxLength={4}
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
+                />
+                {errors['vintage.year'] && (
+                  <Text className="text-red-600 text-sm mb-4">{errors['vintage.year']}</Text>
+                )}
+              </>
             )}
-          </>
-        )}
-      </View>
+          </View>
 
       <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
         <Text className="font-bold text-xl pb-4">Informations d'achat</Text>
@@ -614,7 +633,7 @@ export default function AddOrUpdateBottleForm({
       <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
         <Text className="font-bold text-xl pb-4">Notes personnelles</Text>
         <Text className="text-base font-semibold text-gray mb-3">Ma note</Text>
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center flex-wrap">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
             const isFilled = currentRating >= star;
             const isHalfFilled = !isFilled && currentRating >= star - 0.5;
@@ -630,10 +649,10 @@ export default function AddOrUpdateBottleForm({
               <TouchableOpacity
                 key={star}
                 onPress={() => setRating(star)}
-                className="p-1"
+                style={{ padding: 2 }}
               >
                 <Star
-                  size={30}
+                  size={24}
                   color="#bb2700"
                   fill={fillColor}
                 />
@@ -650,19 +669,22 @@ export default function AddOrUpdateBottleForm({
           <Text className="text-red-600 text-sm mt-2">{errors['rating']}</Text>
         )}
       </View>
+        </>
+      )}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#bb2700" className="my-4" />
-      ) : (
-        <View className="gap-2 m-6">
-          <PrimaryButton 
-            text={mode === 'add' ? 'Ajouter' : 'Modifier'} 
-            onPress={handleSubmit} 
-          />
-          {onCancel && (
-            <SecondaryButton text="Annuler" onPress={onCancel} />
+      {!dataLoading && (
+        <>
+          {loading ? (
+            <ActivityIndicator size="large" color="#bb2700" className="my-4" />
+          ) : (
+            <View className="m-6">
+              <PrimaryButton 
+                text={mode === 'add' ? 'Ajouter' : 'Modifier'} 
+                onPress={handleSubmit} 
+              />
+            </View>
           )}
-        </View>
+        </>
       )}
     </ScrollView>
   );

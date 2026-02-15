@@ -196,4 +196,20 @@ export const cellarService = {
       'Erreur lors de la récupération de la bouteille'
     );
   },
+
+  getCellarItemById: async (token: string, cellarItemId: number) => {
+    return fetchAPI(
+      `/cellar-items/${cellarItemId}`,
+      token,
+      'GET',
+      undefined,
+      'Erreur lors de la récupération de la bouteille'
+    );
+  },
+
+  deleteCellarItem: async (token: string, cellarItemId: number) => {
+    const data = await fetchAPI(`/cellar-items/${cellarItemId}`, token, 'DELETE');
+    await invalidateCaches();
+    return data;
+  },
 };

@@ -3,15 +3,19 @@ import { TouchableOpacity } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
-export default function BackButton() {
+interface BackButtonProps {
+  color?: string;
+}
+
+export default function BackButton({ color = "#ffffff" }: BackButtonProps) {
   const router = useRouter();
 
   return (
     <TouchableOpacity
-      className="p-2"
       onPress={() => router.back()}
+      className="pt-2 pr-2"
     >
-      <ArrowLeft color="#bb2700" size={28} />
+      <ArrowLeft color={color} size={28} />
     </TouchableOpacity>
   );
 }

@@ -116,6 +116,7 @@ export default function CellarPage() {
             {cellarItems.map((item) => (
               <BottleCard
                 key={item.id}
+                id={item.id}
                 bottleName={item.bottle.name}
                 domainName={item.bottle.domain.name}
                 region={item.bottle.region?.name || "Région non spécifiée"}
