@@ -3,7 +3,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
 import { cellarService } from "@/services/CellarService";
-import BackButton from "../components/BackButton";
 
 export default function UpdateBottlePage() {
   const router = useRouter();
@@ -43,10 +42,6 @@ export default function UpdateBottlePage() {
     }
   };
 
-  const handleCancel = () => {
-    router.back();
-  };
-
   return (
     <ScrollView className="flex-1 bg-app">
       <AddOrUpdateBottleForm
@@ -54,7 +49,6 @@ export default function UpdateBottlePage() {
         bottleId={Number(id)}
         token={token || undefined}
         onSubmit={handleSubmit}
-        onCancel={handleCancel}
       />
     </ScrollView>
   );
