@@ -1,159 +1,150 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import UpdateBottlePage from '../update-bottle';
 import { cellarService } from '@/services/CellarService';
 
+
 const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    back: mockBack,
-  }),
-  useLocalSearchParams: () => ({ id: '1' }),
+  useRouter: () => ({ back: mockBack }),
+  useLocalSearchParams: () => ({ id: '42' }),
 }));
 
+let mockToken: string | null = 'mock-token';
+
 jest.mock('@/authentication/AuthContext', () => ({
-  useAuth: () => ({ token: 'mock-token' }),
+  useAuth: () => ({ token: mockToken }),
 }));
 
 jest.mock('@/services/CellarService', () => ({
   cellarService: {
     updateCellarItem: jest.fn(),
-    getCellarItemById: jest.fn(),
   },
 }));
 
+jest.mock('../../components/AddOrUpdateBottleForm', () => {
+  const { TouchableOpacity, Text } = require('react-native');
+  return ({ onSubmit }: { onSubmit: (data: any) => void }) => (
+    <TouchableOpacity testID="submit-button" onPress={() => onSubmit({ stock: 5 })}>
+      <Text>Soumettre</Text>
+    </TouchableOpacity>
+  );
+});
+
+
 describe('UpdateBottlePage', () => {
-  let alertSpy: jest.SpyInstance;
-  let handleSubmit: ((formData: any) => Promise<void>) | null = null;
+  const mockedUpdate = cellarService.updateCellarItem as jest.MockedFunction<
+    typeof cellarService.updateCellarItem
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    handleSubmit = null;
-    alertSpy = jest.spyOn(Alert, 'alert');
-    
-    // Capture handleSubmit from the component
-    const originalCreateElement = React.createElement;
-    jest.spyOn(React, 'createElement').mockImplementation((type: any, props: any, ...children: any[]) => {
-      if (props?.onSubmit && props?.mode === 'update') {
-        handleSubmit = props.onSubmit;
-      }
-      return originalCreateElement(type, props, ...children);
+    mockToken = 'mock-token';
+  });
+
+  it('renders the form in update mode', () => {
+    render(<UpdateBottlePage />);
+
+    expect(screen.getByTestId('submit-button')).toBeTruthy();
+  });
+
+  it('shows an error alert when no token is available', async () => {
+    mockToken = null;
+    const alertSpy = jest.spyOn(Alert, 'alert');
+
+    render(<UpdateBottlePage />);
+    fireEvent.press(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Informations manquantes');
+    });
+
+    expect(mockedUpdate).not.toHaveBeenCalled();
+  });
+
+  it('calls updateCellarItem with the correct token, id and form data', async () => {
+    mockedUpdate.mockResolvedValueOnce({} as any);
+    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    render(<UpdateBottlePage />);
+    fireEvent.press(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(mockedUpdate).toHaveBeenCalledWith('mock-token', 42, { stock: 5 });
     });
   });
 
-  afterEach(() => {
-    alertSpy.mockRestore();
-    jest.restoreAllMocks();
-  });
+  it('shows a success alert after a successful update', async () => {
+    mockedUpdate.mockResolvedValueOnce({} as any);
+    const alertSpy = jest.spyOn(Alert, 'alert');
 
-  it('should render the form in update mode', () => {
-    const { UNSAFE_root } = render(<UpdateBottlePage />);
-    expect(UNSAFE_root).toBeTruthy();
-  });
-
-  it('should show error when token is missing', async () => {
-    jest.spyOn(require('@/authentication/AuthContext'), 'useAuth')
-      .mockReturnValue({ token: null });
-    
     render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({});
-      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Informations manquantes');
-    }
+    fireEvent.press(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Succès',
+        'Bouteille modifiée avec succès !',
+        expect.arrayContaining([expect.objectContaining({ text: 'OK' })])
+      );
+    });
   });
 
-  it('should show error when id is missing', async () => {
-    jest.spyOn(require('expo-router'), 'useLocalSearchParams')
-      .mockReturnValue({ id: undefined });
-    
+  it('navigates back when pressing OK on the success alert', async () => {
+    mockedUpdate.mockResolvedValueOnce({} as any);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+
     render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({});
-      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Informations manquantes');
-    }
+    fireEvent.press(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalled();
+    });
+
+    const [, , buttons] = alertSpy.mock.calls[0] as any;
+    buttons[0].onPress();
+
+    expect(mockBack).toHaveBeenCalled();
   });
 
-  it('should call updateCellarItem and show success', async () => {
-    (cellarService.updateCellarItem as jest.Mock).mockResolvedValue({});
-    
+  it('shows a generic error alert on network failure', async () => {
+    mockedUpdate.mockRejectedValueOnce(new Error('Network timeout'));
+    const alertSpy = jest.spyOn(Alert, 'alert');
+
     render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({ stock: 5 });
-      
-      await waitFor(() => {
-        expect(cellarService.updateCellarItem).toHaveBeenCalledWith('mock-token', 1, { stock: 5 });
-        expect(alertSpy).toHaveBeenCalledWith(
-          'Succès',
-          'Bouteille modifiée avec succès !',
-          expect.any(Array)
-        );
-      });
-    }
+    fireEvent.press(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Network timeout');
+    });
+
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
-  it('should navigate back when pressing OK on success', async () => {
-    (cellarService.updateCellarItem as jest.Mock).mockResolvedValue({});
-    
-    render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({ stock: 5 });
-      
-      await waitFor(() => {
-        const okButton = alertSpy.mock.calls[0][2][0];
-        okButton.onPress();
-        expect(mockBack).toHaveBeenCalled();
-      });
-    }
-  });
-
-  it('should format 422 validation errors', async () => {
-    const validationError = {
-      response: {
-        status: 422,
-        data: {
-          errors: {
-            rating: ['Rating must be between 0 and 10'],
-            stock: ['Stock is required'],
-          },
+  it('shows flattened validation messages on 422 error', async () => {
+    const validationError = new Error('Validation failed') as any;
+    validationError.response = {
+      status: 422,
+      data: {
+        errors: {
+          rating: ['La note doit être entre 0 et 10'],
+          stock: ['Le stock est requis'],
         },
       },
     };
+    mockedUpdate.mockRejectedValueOnce(validationError);
+    const alertSpy = jest.spyOn(Alert, 'alert');
 
-    (cellarService.updateCellarItem as jest.Mock).mockRejectedValue(validationError);
-    
     render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({ stock: 5 });
-      
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          'Erreur',
-          expect.stringContaining('Rating must be between 0 and 10')
-        );
-      });
-    }
-  });
+    fireEvent.press(screen.getByTestId('submit-button'));
 
-  it('should show generic error message for other errors', async () => {
-    const networkError = new Error('Network timeout');
-    
-    (cellarService.updateCellarItem as jest.Mock).mockRejectedValue(networkError);
-    
-    render(<UpdateBottlePage />);
-    
-    if (handleSubmit) {
-      await handleSubmit({ stock: 5 });
-      
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Network timeout');
-      });
-    }
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Erreur',
+        'La note doit être entre 0 et 10\nLe stock est requis'
+      );
+    });
   });
 });
