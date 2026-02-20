@@ -8,12 +8,16 @@ use App\Models\Bottle;
 use App\Models\Vintage;
 use App\Models\User;
 use App\Models\Colour;
+use App\Models\Region;
+use App\Models\Domain;
+use App\Models\Appellation;
 use App\Services\BottleService;
 use App\Services\VintageService;
 use App\Services\CellarItemService;
+use App\Services\DomainService;
+use App\Services\AppellationService;
+use App\Services\CommentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\Sanctum;
 use Mockery;
 
 class CellarItemControllerTest extends TestCase
@@ -24,6 +28,9 @@ class CellarItemControllerTest extends TestCase
     protected $bottleService;
     protected $vintageService;
     protected $cellarItemService;
+    protected $domainService;
+    protected $appellationService;
+    protected $commentService;
 
     protected function setUp(): void
     {
@@ -31,14 +38,19 @@ class CellarItemControllerTest extends TestCase
 
         $this->user = User::factory()->create();
 
-        // Mock des services
-        $this->bottleService = Mockery::mock('App\Services\BottleService');
-        $this->vintageService = Mockery::mock('App\Services\VintageService');
+        $this->bottleService = Mockery::mock(BottleService::class);
+        $this->vintageService = Mockery::mock(VintageService::class);
         $this->cellarItemService = Mockery::mock(CellarItemService::class);
+        $this->domainService = Mockery::mock(DomainService::class);
+        $this->appellationService = Mockery::mock(AppellationService::class);
+        $this->commentService = Mockery::mock(CommentService::class);
 
-        $this->app->instance('App\Services\BottleService', $this->bottleService);
-        $this->app->instance('App\Services\VintageService', $this->vintageService);
+        $this->app->instance(BottleService::class, $this->bottleService);
+        $this->app->instance(VintageService::class, $this->vintageService);
         $this->app->instance(CellarItemService::class, $this->cellarItemService);
+        $this->app->instance(DomainService::class, $this->domainService);
+        $this->app->instance(AppellationService::class, $this->appellationService);
+        $this->app->instance(CommentService::class, $this->commentService);
     }
 
     protected function tearDown(): void
@@ -46,7 +58,6 @@ class CellarItemControllerTest extends TestCase
         Mockery::close();
         parent::tearDown();
     }
-
 
     public function testCanShowUsersCellarItems()
     {
@@ -59,12 +70,16 @@ class CellarItemControllerTest extends TestCase
             ->for($vintage)
             ->create();
 
-        // Mock du service (ce n'est pas lui qu'on teste ici)
         $this->cellarItemService
             ->shouldReceive('getUserItems')
             ->once()
             ->with($this->user->id)
-            ->andReturn(collect([$cellarItem->load(['bottle.colour', 'vintage'])]));
+            ->andReturn(collect([$cellarItem->load([
+                'bottle.colour',
+                'bottle.region',
+                'bottle.domain',
+                'vintage'
+            ])]));
 
         $response = $this->actingAs($this->user)->getJson('api/cellar-items');
 
@@ -83,9 +98,8 @@ class CellarItemControllerTest extends TestCase
             ->for($bottle)
             ->for($vintage)
             ->create()
-            ->load(['bottle.colour', 'vintage']);
+            ->load(['bottle.colour', 'bottle.region', 'bottle.domain', 'vintage']);
 
-        // Mock le service
         $this->cellarItemService
             ->shouldReceive('getLastAdded')
             ->once()
@@ -104,7 +118,6 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanGetTotalStockForAuthenticatedUser()
     {
-        // Mock le service
         $this->cellarItemService
             ->shouldReceive('getTotalStock')
             ->once()
@@ -126,7 +139,6 @@ class CellarItemControllerTest extends TestCase
             ['colour' => 'Rouge', 'stock' => 5],
         ]);
 
-        // Mock le service
         $this->cellarItemService
             ->shouldReceive('getStockByColour')
             ->once()
@@ -145,7 +157,13 @@ class CellarItemControllerTest extends TestCase
     public function testCanStoreCellarItem()
     {
         $colour = Colour::factory()->create();
-        $bottle = Bottle::factory()->create(['colour_id' => $colour->id]);
+        $region = Region::factory()->create();
+        $domain = Domain::factory()->create();
+        $bottle = Bottle::factory()->create([
+            'colour_id' => $colour->id,
+            'region_id' => $region->id,
+            'domain_id' => $domain->id,
+        ]);
         $vintage = Vintage::factory()->create();
 
         $cellarItem = CellarItem::factory()
@@ -154,26 +172,38 @@ class CellarItemControllerTest extends TestCase
             ->for($vintage)
             ->make(['stock' => 5, 'rating' => 4.5]);
 
-        // Mock BottleService
+        $this->domainService
+            ->shouldReceive('findOrCreate')
+            ->once()
+            ->andReturn($domain);
+
         $this->bottleService
             ->shouldReceive('findOrCreate')
             ->once()
             ->andReturn($bottle);
 
-        // Mock VintageService
         $this->vintageService
             ->shouldReceive('findOrCreate')
             ->once()
             ->andReturn($vintage);
 
-        // Mock CellarItemService
         $this->cellarItemService
             ->shouldReceive('create')
             ->once()
-            ->andReturn($cellarItem->load(['bottle.colour', 'vintage']));
+            ->andReturn($cellarItem->load([
+                'bottle.colour',
+                'bottle.region',
+                'bottle.domain',
+                'vintage'
+            ]));
 
         $payload = [
-            'bottle' => ['name' => 'Château Test', 'domain' => 'Test', 'PDO' => 'AOC Test', 'colour_id' => $colour->id],
+            'bottle' => [
+                'name' => 'Château Test',
+                'domain_name' => 'Domaine Test',
+                'colour_id' => $colour->id,
+                'region_id' => $region->id,
+            ],
             'vintage' => ['year' => 2020],
             'stock' => 5,
             'rating' => 4.5,
@@ -189,11 +219,27 @@ class CellarItemControllerTest extends TestCase
 
     public function testCanShowCellarItem()
     {
+        $bottle = Bottle::factory()->create();
+
         $cellarItem = CellarItem::factory()
-        ->for($this->user)
-        ->for(Bottle::factory())
-        ->for(Vintage::factory())
-        ->create();
+            ->for($this->user)
+            ->for($bottle)
+            ->for(Vintage::factory())
+            ->create();
+
+        $this->cellarItemService
+            ->shouldReceive('findByIdAndUser')
+            ->once()
+            ->with($cellarItem->id, $this->user->id)
+            ->andReturn($cellarItem->load([
+                'bottle.colour',
+                'bottle.region',
+                'bottle.domain',
+                'bottle.grapeVarieties',
+                'vintage',
+                'appellation',
+                'comments'
+            ]));
 
         $response = $this->actingAs($this->user)->getJson("api/cellar-items/{$cellarItem->id}");
 
@@ -203,6 +249,12 @@ class CellarItemControllerTest extends TestCase
 
     public function testShowReturns404IfNotFound()
     {
+        $this->cellarItemService
+            ->shouldReceive('findByIdAndUser')
+            ->once()
+            ->with(99999, $this->user->id)
+            ->andReturn(null);
+
         $response = $this->actingAs($this->user)->getJson("api/cellar-items/99999");
 
         $response->assertNotFound();
@@ -220,9 +272,15 @@ class CellarItemControllerTest extends TestCase
             ->for($vintage)
             ->create();
 
+        $this->cellarItemService
+            ->shouldReceive('findByIdAndUser')
+            ->once()
+            ->with($cellarItem->id, $this->user->id)
+            ->andReturn(null);
+
         $response = $this->actingAs($this->user)->getJson("api/cellar-items/{$cellarItem->id}");
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     }
 
     public function testCanIncrementStock()
@@ -240,7 +298,6 @@ class CellarItemControllerTest extends TestCase
         $updatedItem->stock = 4;
         $updatedItem->user_id = $this->user->id;
 
-        // Mock CellarItemService
         $this->cellarItemService
             ->shouldReceive('incrementStock')
             ->once()
@@ -258,10 +315,14 @@ class CellarItemControllerTest extends TestCase
     public function testCanFilterCellarItemsByColour()
     {
         $red = Colour::factory()->create(['name' => 'Red']);
-        $white = Colour::factory()->create(['name' => 'White']);
+        $domain = Domain::factory()->create();
+        $region = Region::factory()->create();
 
-        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
-        $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
+        $bottleRed = Bottle::factory()->create([
+            'colour_id' => $red->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
 
         $vintage = Vintage::factory()->create();
 
@@ -271,13 +332,6 @@ class CellarItemControllerTest extends TestCase
             ->for($vintage)
             ->create();
 
-        $whiteItem = CellarItem::factory()
-            ->for($this->user)
-            ->for($bottleWhite)
-            ->for($vintage)
-            ->create();
-
-        // Mock CellarItemService
         $this->cellarItemService
             ->shouldReceive('filterByColour')
             ->once()
@@ -294,6 +348,42 @@ class CellarItemControllerTest extends TestCase
         $this->assertEquals($redItem->id, $data[0]['id']);
     }
 
+    public function testCanFilterCellarItemsByRegion()
+    {
+        $bordeaux = Region::factory()->create(['name' => 'Bordeaux']);
+        $domain = Domain::factory()->create();
+        $colour = Colour::factory()->create();
+
+        $bottleBordeaux = Bottle::factory()->create([
+            'region_id' => $bordeaux->id,
+            'domain_id' => $domain->id,
+            'colour_id' => $colour->id,
+        ]);
+
+        $vintage = Vintage::factory()->create();
+
+        $bordeauxItem = CellarItem::factory()
+            ->for($this->user)
+            ->for($bottleBordeaux)
+            ->for($vintage)
+            ->create();
+
+        $this->cellarItemService
+            ->shouldReceive('filterByRegion')
+            ->once()
+            ->with($this->user->id, $bordeaux->id)
+            ->andReturn(collect([$bordeauxItem]));
+
+        $response = $this->actingAs($this->user)
+            ->getJson("api/cellar-items/region/{$bordeaux->id}");
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertCount(1, $data);
+        $this->assertEquals($bordeauxItem->id, $data[0]['id']);
+    }
+
     public function testCanDecrementStock()
     {
         $bottle = Bottle::factory()->create();
@@ -308,7 +398,6 @@ class CellarItemControllerTest extends TestCase
         $updatedItem = $cellarItem->replicate();
         $updatedItem->stock = 2;
 
-        // Mock CellarItemService
         $this->cellarItemService
             ->shouldReceive('decrementStock')
             ->once()
@@ -334,7 +423,6 @@ class CellarItemControllerTest extends TestCase
             ->for($vintage)
             ->create(['stock' => 0]);
 
-        // Mock CellarItemService - le stock reste à 0
         $this->cellarItemService
             ->shouldReceive('decrementStock')
             ->once()
@@ -349,12 +437,13 @@ class CellarItemControllerTest extends TestCase
                 ->assertJsonFragment(['stock' => 0]);
     }
 
-
     public function testCanUpdateCellarItem()
     {
+        $bottle = Bottle::factory()->create();
+
         $cellarItem = CellarItem::factory()
             ->for($this->user)
-            ->for(Bottle::factory())
+            ->for($bottle)
             ->for(Vintage::factory())
             ->create(['stock' => 2]);
 
@@ -363,13 +452,12 @@ class CellarItemControllerTest extends TestCase
         $updatedItem->price = 20.0;
         $updatedItem->user_id = $this->user->id;
 
-        // Mock CellarItemService
         $this->cellarItemService
             ->shouldReceive('update')
             ->once()
             ->andReturn($updatedItem);
 
-        $response = $this->actingAs($this->user, 'sanctum')->putJson("api/cellar-items/{$cellarItem->id}", [
+        $response = $this->actingAs($this->user)->putJson("api/cellar-items/{$cellarItem->id}", [
             'stock' => 8,
             'price' => 20.0,
         ]);
@@ -378,17 +466,48 @@ class CellarItemControllerTest extends TestCase
                  ->assertJsonFragment(['stock' => 8, 'price' => 20.0]);
     }
 
-    public function testCanDeleteCellarItem()
+    public function testCanUpdateCellarItemWithGrapeVarieties()
     {
+        $bottle = Bottle::factory()->create();
         $cellarItem = CellarItem::factory()
             ->for($this->user)
-            ->for(Bottle::factory())
+            ->for($bottle)
             ->for(Vintage::factory())
             ->create();
 
-        $this->assertEquals($this->user->id, $cellarItem->user_id);
+        $this->bottleService
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                Mockery::on(fn ($b) => $b->id === $bottle->id),
+                Mockery::on(fn ($data) => isset($data['grape_variety_ids']))
+            )
+            ->andReturn($bottle);
 
-        // Mock CellarItemService
+        $this->cellarItemService
+            ->shouldReceive('update')
+            ->once()
+            ->andReturn($cellarItem);
+
+        $response = $this->actingAs($this->user)->putJson("api/cellar-items/{$cellarItem->id}", [
+            'bottle' => [
+                'grape_variety_ids' => [1, 2]
+            ]
+        ]);
+
+        $response->assertOk();
+    }
+
+    public function testCanDeleteCellarItem()
+    {
+        $bottle = Bottle::factory()->create();
+
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for($bottle)
+            ->for(Vintage::factory())
+            ->create();
+
         $this->cellarItemService
             ->shouldReceive('delete')
             ->once()
@@ -397,7 +516,7 @@ class CellarItemControllerTest extends TestCase
             }))
             ->andReturn($cellarItem->setAttribute('user_id', $this->user->id));
 
-        $response = $this->actingAs($this->user, 'sanctum')->deleteJson("api/cellar-items/{$cellarItem->id}");
+        $response = $this->actingAs($this->user)->deleteJson("api/cellar-items/{$cellarItem->id}");
 
         $response->assertNoContent();
     }

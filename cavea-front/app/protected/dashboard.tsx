@@ -3,10 +3,12 @@ import PageTitle from "../components/PageTitle";
 import { useAuth } from "@/authentication/AuthContext";
 import SubTitle from "../components/SubTitle";
 import CardIconText from "../components/CardIconText";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cellarService } from "@/services/CellarService";
 import BottleCard from "../components/BottleCard";
 import StockByColour from "../components/StockByColour";
+import OfflineIndicator from "../components/OfflineIndicator";
+import { useFocusEffect } from "expo-router";
 
 interface StockByColour {
   colour: string;
@@ -19,16 +21,22 @@ interface LastAddedItem {
   price?: number;
   bottle: {
     name: string;
-    domain: string;
-    PDO: string | null;
-    region: string | null;
+    domain: {
+      name: string;
+    };
+    region: {
+      name: string;
+    } | null;
     colour: {
       name: string;
     };
   };
   vintage: {
     year: number;
-  }
+  };
+  appellation: {
+    name: string;
+  } | null;
 }
 
 export default function DashboardPage() {
@@ -38,32 +46,39 @@ export default function DashboardPage() {
   const [stockByColour, setStockByColour] = useState<StockByColour[]>([]);
   const [lastAdded, setLastAdded] = useState<LastAddedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchData = async (silent = false) => {
     if (!token) return;
+    if (!silent) setLoading(true);
+    try {
+      const [stock, stockColour, lastAdded] = await Promise.all([
+        cellarService.getTotalStock(token),
+        cellarService.getStockByColour(token),
+        cellarService.getLastAdded(token)
+      ]);
+      setTotalStock(stock);
+      setStockByColour(stockColour);
+      setLastAdded(lastAdded);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-    const fetchData = async () => {
-      try {
-        const [stock, stockColour, lastAdded] = await Promise.all([
-          cellarService.getTotalStock(token),
-          cellarService.getStockByColour(token),
-          cellarService.getLastAdded(token)
-        ]);
-        setTotalStock(stock);
-        setStockByColour(stockColour);
-        setLastAdded(lastAdded);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshing(true);
+      fetchData(true);
+    }, [token])
+  );
 
-    fetchData();
-  }, [token]);
 
   return (
     <ScrollView className="flex-1 bg-app">
+      <OfflineIndicator />
       <View className="w-full flex-3 bg-wine px-10 py-14">
         
         <View className="w-full items-center my-8">
@@ -87,7 +102,6 @@ export default function DashboardPage() {
             textColor="text-white"
             backgroundColor="rgba(255, 255, 255, 0.1)"
           />
-          {/* <CardIconText text="12 alertes de garde" icon="CircleAlert"></CardIconText> */}
         </View>
       </View>
 
@@ -95,10 +109,6 @@ export default function DashboardPage() {
         <SubTitle text="Répartition par couleur" color="black" />
         <StockByColour data={stockByColour} loading={loading} />
       </View>
-
-      {/* <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
-        <SubTitle text="Alertes de garde" />
-      </View> */}
 
       <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
         <SubTitle text="Mes derniers ajouts" color="black" />
@@ -109,9 +119,10 @@ export default function DashboardPage() {
             {lastAdded.map((item) => (
               <BottleCard
                 key={item.id}
+                id={item.id}
                 bottleName={item.bottle.name}
-                domainName={item.bottle.domain}
-                region={item.bottle.region || "Région non spécifiée"}
+                domainName={item.bottle.domain.name}
+                region={item.bottle.region?.name || "Région non spécifiée"}
                 quantity={item.stock}
                 price={item.price}
                 color={item.bottle.colour.name}

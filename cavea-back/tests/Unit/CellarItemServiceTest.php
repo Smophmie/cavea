@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Models\Bottle;
 use App\Models\Vintage;
 use App\Models\Colour;
+use App\Models\Region;
+use App\Models\Domain;
+use App\Models\Appellation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CellarItemServiceTest extends TestCase
@@ -53,6 +56,8 @@ class CellarItemServiceTest extends TestCase
         $this->assertTrue($result->every(fn ($item) => $item->user_id === $this->user->id));
         $this->assertTrue($result->first()->relationLoaded('bottle'));
         $this->assertTrue($result->first()->relationLoaded('vintage'));
+        $this->assertTrue($result->first()->bottle->relationLoaded('region'));
+        $this->assertTrue($result->first()->bottle->relationLoaded('domain'));
     }
 
     public function testCanGetLastAddedItems()
@@ -99,11 +104,19 @@ class CellarItemServiceTest extends TestCase
     {
         $red = Colour::factory()->create(['name' => 'Rouge']);
         $white = Colour::factory()->create(['name' => 'Blanc']);
-        $rose = Colour::factory()->create(['name' => 'Rosé']);
+        $domain = Domain::factory()->create();
+        $region = Region::factory()->create();
 
-        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
-        $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
-        $bottleRose = Bottle::factory()->create(['colour_id' => $rose->id]);
+        $bottleRed = Bottle::factory()->create([
+            'colour_id' => $red->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
+        $bottleWhite = Bottle::factory()->create([
+            'colour_id' => $white->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
 
         $vintage = Vintage::factory()->create();
 
@@ -136,9 +149,19 @@ class CellarItemServiceTest extends TestCase
     {
         $red = Colour::factory()->create(['name' => 'Rouge']);
         $white = Colour::factory()->create(['name' => 'Blanc']);
+        $domain = Domain::factory()->create();
+        $region = Region::factory()->create();
 
-        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
-        $bottleWhite = Bottle::factory()->create(['colour_id' => $white->id]);
+        $bottleRed = Bottle::factory()->create([
+            'colour_id' => $red->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
+        $bottleWhite = Bottle::factory()->create([
+            'colour_id' => $white->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
 
         $vintage = Vintage::factory()->create();
 
@@ -155,14 +178,48 @@ class CellarItemServiceTest extends TestCase
         $this->assertTrue($result->every(fn ($item) => $item->bottle->colour_id === $red->id));
     }
 
+    public function testCanFilterItemsByRegion()
+    {
+        $bordeaux = Region::factory()->create(['name' => 'Bordeaux']);
+        $bourgogne = Region::factory()->create(['name' => 'Bourgogne']);
+        $domain = Domain::factory()->create();
+        $colour = Colour::factory()->create();
+
+        $bottleBordeaux = Bottle::factory()->create([
+            'region_id' => $bordeaux->id,
+            'domain_id' => $domain->id,
+            'colour_id' => $colour->id,
+        ]);
+        $bottleBourgogne = Bottle::factory()->create([
+            'region_id' => $bourgogne->id,
+            'domain_id' => $domain->id,
+            'colour_id' => $colour->id,
+        ]);
+
+        $vintage = Vintage::factory()->create();
+
+        $bordeauxItem = CellarItem::factory()->for($this->user)->for($bottleBordeaux)->for($vintage)->create();
+        CellarItem::factory()->for($this->user)->for($bottleBourgogne)->for($vintage)->create();
+
+        $result = $this->service->filterByRegion($this->user->id, $bordeaux->id);
+
+        $this->assertCount(1, $result);
+        $this->assertTrue($result->contains($bordeauxItem));
+    }
+
     public function it_only_returns_user_items_when_filtering_by_colour()
     {
         $red = Colour::factory()->create(['name' => 'Rouge']);
-        $bottleRed = Bottle::factory()->create(['colour_id' => $red->id]);
+        $domain = Domain::factory()->create();
+        $region = Region::factory()->create();
+        $bottleRed = Bottle::factory()->create([
+            'colour_id' => $red->id,
+            'domain_id' => $domain->id,
+            'region_id' => $region->id,
+        ]);
         $vintage = Vintage::factory()->create();
 
         CellarItem::factory()->for($this->user)->for($bottleRed)->for($vintage)->create();
-
         CellarItem::factory()->for($this->otherUser)->for($bottleRed)->for($vintage)->create();
 
         $result = $this->service->filterByColour($this->user->id, $red->id);
@@ -188,6 +245,9 @@ class CellarItemServiceTest extends TestCase
         $this->assertEquals($cellarItem->id, $result->id);
         $this->assertTrue($result->relationLoaded('bottle'));
         $this->assertTrue($result->relationLoaded('vintage'));
+        $this->assertTrue($result->relationLoaded('appellation'));
+        $this->assertTrue($result->relationLoaded('comments'));
+        $this->assertTrue($result->bottle->relationLoaded('grapeVarieties'));
     }
 
     public function testItReturnsNullWhenNotFound()
@@ -217,10 +277,12 @@ class CellarItemServiceTest extends TestCase
     {
         $bottle = Bottle::factory()->create();
         $vintage = Vintage::factory()->create();
+        $appellation = Appellation::factory()->create();
 
         $data = [
             'bottle_id' => $bottle->id,
             'vintage_id' => $vintage->id,
+            'appellation_id' => $appellation->id,
             'stock' => 12,
             'rating' => 4.5,
             'price' => 25.50,
@@ -236,6 +298,7 @@ class CellarItemServiceTest extends TestCase
         $this->assertEquals($this->user->id, $result->user_id);
         $this->assertEquals($bottle->id, $result->bottle_id);
         $this->assertEquals($vintage->id, $result->vintage_id);
+        $this->assertEquals($appellation->id, $result->appellation_id);
         $this->assertEquals(12, $result->stock);
         $this->assertEquals(4.5, $result->rating);
         $this->assertEquals(25.50, $result->price);
@@ -246,6 +309,7 @@ class CellarItemServiceTest extends TestCase
 
         $this->assertTrue($result->relationLoaded('bottle'));
         $this->assertTrue($result->relationLoaded('vintage'));
+        $this->assertTrue($result->relationLoaded('appellation'));
 
         $this->assertDatabaseHas('cellar_items', [
             'user_id' => $this->user->id,
@@ -256,6 +320,8 @@ class CellarItemServiceTest extends TestCase
 
     public function testCanUpdateCellarItem()
     {
+        $appellation = Appellation::factory()->create();
+
         $cellarItem = CellarItem::factory()
             ->for($this->user)
             ->for(Bottle::factory())
@@ -270,6 +336,7 @@ class CellarItemServiceTest extends TestCase
             'stock' => 10,
             'rating' => 4.5,
             'price' => 20.00,
+            'appellation_id' => $appellation->id,
         ];
 
         $result = $this->service->update($cellarItem, $data);
@@ -277,12 +344,14 @@ class CellarItemServiceTest extends TestCase
         $this->assertEquals(10, $result->stock);
         $this->assertEquals(4.5, $result->rating);
         $this->assertEquals(20.00, $result->price);
+        $this->assertEquals($appellation->id, $result->appellation_id);
 
         $this->assertDatabaseHas('cellar_items', [
             'id' => $cellarItem->id,
             'stock' => 10,
             'rating' => 4.5,
             'price' => 20.00,
+            'appellation_id' => $appellation->id,
         ]);
     }
 

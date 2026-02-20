@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Home, Wine, UserRound } from "lucide-react-native";
+import { Home, Wine, UserRound, PlusCircle } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
@@ -29,11 +29,34 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="add-bottle"
+        options={{
+          title: "",
+          headerShown:false,
+          tabBarIcon: ({ color, size }) => <PlusCircle color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: "",
           headerShown:false,
           tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="bottle-detail"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="update-bottle"
+        options={{
+          href: null,
         }}
       />
     

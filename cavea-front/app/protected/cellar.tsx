@@ -4,24 +4,32 @@ import BottleCard from "../components/BottleCard";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 interface CellarItem {
   id: number;
   stock: number;
   price?: number;
+  rating?: number;
   bottle: {
     name: string;
-    domain: string;
-    PDO: string | null;
-    region: string | null;
+    domain: {
+      name: string;
+    };
+    region: {
+      name: string;
+    } | null;
     colour: {
       id: number;
       name: string;
     };
   };
   vintage: {
-    year: string;
+    year: number;
   };
+  appellation: {
+    name: string;
+  } | null;
 }
 
 const colours = [
@@ -63,6 +71,7 @@ export default function CellarPage() {
 
   return (
     <ScrollView className="flex-1 bg-app">
+      <OfflineIndicator />
       <View className="w-full flex-3 bg-wine px-10 py-14">
         <View className="w-full items-center my-8">
           <Image
@@ -107,13 +116,16 @@ export default function CellarPage() {
             {cellarItems.map((item) => (
               <BottleCard
                 key={item.id}
+                id={item.id}
                 bottleName={item.bottle.name}
-                domainName={item.bottle.domain}
-                region={item.bottle.region || "Région non spécifiée"}
+                domainName={item.bottle.domain.name}
+                region={item.bottle.region?.name || "Région non spécifiée"}
                 quantity={item.stock}
                 price={item.price}
                 color={item.bottle.colour.name}
-                vintage={parseInt(item.vintage.year)}
+                vintage={item.vintage.year}
+                rating={item.rating}
+                showRating={true}
               />
             ))}
           </View>
