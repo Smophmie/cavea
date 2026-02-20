@@ -1,15 +1,25 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react-native';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react-native';
 import BottleDetailPage from '../bottle-detail';
 import { cellarService } from '@/services/CellarService';
+
+let focusCallback: (() => void) | null = null;
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: '1' }),
   useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
+    push: mockPush,
+    replace: mockReplace,
   }),
+  useFocusEffect: (cb: () => void) => {
+    const React = require('react');
+    focusCallback = cb;
+    React.useEffect(cb, []);
+  },
 }));
+
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock('@/authentication/AuthContext', () => ({
   useAuth: () => ({ token: 'mock-token' }),
@@ -51,6 +61,7 @@ const mockBottleData = {
 describe('BottleDetailPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    focusCallback = null;
   });
 
   it('should display loading state initially', () => {
@@ -125,10 +136,7 @@ describe('BottleDetailPage', () => {
   it('should display "Non spécifiés" when no grape varieties', async () => {
     const dataWithoutGrapes = {
       ...mockBottleData,
-      bottle: {
-        ...mockBottleData.bottle,
-        grape_varieties: [],
-      },
+      bottle: { ...mockBottleData.bottle, grape_varieties: [] },
     };
     (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(dataWithoutGrapes);
 
@@ -153,5 +161,53 @@ describe('BottleDetailPage', () => {
     });
 
     consoleError.mockRestore();
+  });
+
+  it('should call getCellarItemById again when the screen regains focus', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Test')).toBeTruthy();
+    });
+
+    expect(cellarService.getCellarItemById).toHaveBeenCalledTimes(1);
+
+    // Simulate returning from the edit screen
+    await act(async () => {
+      focusCallback?.();
+    });
+
+    expect(cellarService.getCellarItemById).toHaveBeenCalledTimes(2);
+  });
+
+  it('should display updated data after returning from the edit screen', async () => {
+    const updatedBottle = {
+      ...mockBottleData,
+      stock: 99,
+      bottle: { ...mockBottleData.bottle, name: 'Château Modifié' },
+    };
+
+    (cellarService.getCellarItemById as jest.Mock)
+      .mockResolvedValueOnce(mockBottleData)
+      .mockResolvedValueOnce(updatedBottle);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Test')).toBeTruthy();
+    });
+
+    await act(async () => {
+      focusCallback?.();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Modifié')).toBeTruthy();
+      expect(screen.getByText('x99')).toBeTruthy();
+    });
+
+    expect(screen.queryByText('Château Test')).toBeNull();
   });
 });
