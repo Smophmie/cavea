@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Wine, MapPin, Calendar, DollarSign, Package, Pencil, Trash2, Star } from "lucide-react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
 import BackButton from "../components/BackButton";
@@ -51,11 +51,13 @@ export default function BottleDetailPage() {
   const [bottleData, setBottleData] = useState<BottleDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     if (token && id) {
       fetchBottleData();
     }
-  }, [token, id]);
+    }, [token, id])
+  );
 
   const fetchBottleData = async () => {
     if (!token || !id) return;
