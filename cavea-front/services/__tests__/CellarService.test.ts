@@ -59,15 +59,16 @@ describe('CellarService - New Methods', () => {
   });
 
   describe('deleteCellarItem', () => {
-    it('should delete a cellar item', async () => {
+    it('should send a DELETE request and return null on 204', async () => {
+      const jsonSpy = jest.fn();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        json: async () => ({}),
         status: 204,
         statusText: 'No Content',
+        json: jsonSpy,
       });
 
-      await cellarService.deleteCellarItem(mockToken, mockBottleId);
+      const result = await cellarService.deleteCellarItem(mockToken, mockBottleId);
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/cellar-items/1'),
@@ -78,6 +79,8 @@ describe('CellarService - New Methods', () => {
           }),
         })
       );
+      expect(result).toBeNull();
+      expect(jsonSpy).not.toHaveBeenCalled();
     });
 
     it('should handle errors when deleting', async () => {
