@@ -71,6 +71,10 @@ const fetchAPI = async (
       throw error;
     }
 
+    if (response.status === 204) {
+      return null;
+    }
+
     const responseData = await response.json();
     console.log(`[FETCH_API] ${method} success response:`, responseData);
     return responseData;
