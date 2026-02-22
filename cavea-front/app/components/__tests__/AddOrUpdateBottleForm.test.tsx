@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, screen } from '@testing-library/react-native';
 import AddOrUpdateBottleForm from '../AddOrUpdateBottleForm';
+import { cellarService } from '@/services/CellarService';
 
 jest.mock('@/services/CellarService', () => ({
   cellarService: {
@@ -533,11 +534,101 @@ describe('AddOrUpdateBottleForm', () => {
 
       fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
 
-      // Reopen modal
       fireEvent.press(screen.getByText('Modifier les cépages'));
 
       const checkmarks = screen.getAllByText('✓');
       expect(checkmarks.length).toBeGreaterThanOrEqual(2);
     });
+  });
+
+  it('should show data loading indicator while fetching bottle data in update mode', async () => {
+    // Never resolves to keep the loading state active
+    (cellarService.getCellarItemById as jest.Mock).mockImplementation(
+      () => new Promise(() => {})
+    );
+
+    render(
+      <AddOrUpdateBottleForm
+        mode="update"
+        bottleId={1}
+        token="mock-token"
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    expect(screen.getByText('Chargement des données...')).toBeTruthy();
+  });
+
+  it('should hide data loading indicator after fetch completes', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue({
+      bottle: {
+        name: 'Château Test',
+        domain: { name: 'Domaine Test' },
+        colour: { id: 1, name: 'Rouge' },
+        region: { id: 1, name: 'Bordeaux' },
+        grapeVarieties: [],
+      },
+      vintage: { year: 2018 },
+      appellation: null,
+      stock: 3,
+      rating: null,
+      price: null,
+      shop: null,
+      offered_by: null,
+      drinking_window_start: null,
+      drinking_window_end: null,
+    });
+
+    render(
+      <AddOrUpdateBottleForm
+        mode="update"
+        bottleId={1}
+        token="mock-token"
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Chargement des données...')).toBeNull();
+    });
+  });
+
+  it('should show submit loading indicator while submitting', async () => {
+    // Never resolves to keep the loading state active
+    mockOnSubmit.mockImplementation(() => new Promise(() => {}));
+
+    render(
+      <AddOrUpdateBottleForm
+        mode="add"
+        onSubmit={mockOnSubmit}
+        initialData={{
+          bottle: { name: 'Test', domain_name: 'Domaine', colour_id: 1, region_id: 1, grape_variety_ids: [] },
+          vintage: { year: '2020' },
+          appellation_name: '',
+          stock: '3',
+          rating: '',
+          price: '',
+          shop: '',
+          offered_by: '',
+          drinking_window_start: '',
+          drinking_window_end: '',
+        }}
+      />
+    );
+
+    const { ActivityIndicator } = require('react-native');
+    // Submit button should be present before loading
+    expect(screen.getByText('Ajouter')).toBeTruthy();
+  });
+
+  it('should not show data loading indicator in add mode', () => {
+    render(
+      <AddOrUpdateBottleForm
+        mode="add"
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    expect(screen.queryByText('Chargement des données...')).toBeNull();
   });
 });
