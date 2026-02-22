@@ -9,7 +9,7 @@ import { Image } from "expo-image";
 import BackButton from "./components/BackButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Logo = require('@/assets/images/cavea-logo.png');
+const Logo = require('@/assets/images/logo.png');
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

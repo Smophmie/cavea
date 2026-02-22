@@ -9,7 +9,7 @@ import PageTitle from "./components/PageTitle";
 import TextLink from "./components/TextLink";
 import { Image } from "expo-image";
 
-const Logo = require('@/assets/images/cavea-logo.png');
+const Logo = require('@/assets/images/logo.png');
 
 export default function RegistrationPage() {
   const router = useRouter();
