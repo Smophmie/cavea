@@ -54,7 +54,6 @@ export default function UpdateBottlePage() {
         bottleId={Number(id)}
         token={token || undefined}
         onSubmit={handleSubmit}
-        onCancel={handleCancel}
       />
     </ScrollView>
   );

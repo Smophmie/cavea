@@ -18,7 +18,7 @@ export default function CardIconText({ text, icon, iconColor, textColor, backgro
       className="flex-col items-center gap-2 border border-lightgray rounded-lg px-4 py-3 w-48 h-38"
       style={{ backgroundColor: backgroundColor || "#ffffff" }}
       >
-      {IconComponent && <IconComponent size={40} color={iconColor || "#bb2700"} />}
+      {IconComponent && <IconComponent size={40} color={iconColor || "#730b1e"} />}
       <Text className={`text-xl ${textColor || "text-gray"} text-center`}>{text}</Text>
     </View>
   );
