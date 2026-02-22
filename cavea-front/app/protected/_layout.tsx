@@ -1,20 +1,24 @@
 import { Tabs } from "expo-router";
 import { Home, Wine, UserRound, PlusCircle } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#bb2700",
+        tabBarActiveTintColor: "#730b1e",
         tabBarInactiveTintColor: "#6B7280",
+        // Respect bottom safe area (home indicator on iPhone, nav bar on Android)
+        tabBarStyle: { paddingBottom: insets.bottom > 0 ? insets.bottom : 8, paddingTop: 4, },
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
           title: "",
-          headerShown:false,
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
@@ -23,7 +27,6 @@ export default function TabsLayout() {
         name="cellar"
         options={{
           title: "",
-          headerShown:false,
           tabBarIcon: ({ color, size }) => <Wine color={color} size={size} />,
         }}
       />
@@ -32,7 +35,6 @@ export default function TabsLayout() {
         name="add-bottle"
         options={{
           title: "",
-          headerShown:false,
           tabBarIcon: ({ color, size }) => <PlusCircle color={color} size={size} />,
         }}
       />
@@ -41,7 +43,6 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "",
-          headerShown:false,
           tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} />,
         }}
       />
@@ -59,7 +60,6 @@ export default function TabsLayout() {
           href: null,
         }}
       />
-    
     </Tabs>
   );
 }
