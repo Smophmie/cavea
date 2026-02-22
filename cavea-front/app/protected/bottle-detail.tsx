@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Wine, MapPin, Calendar, DollarSign, Package, Pencil, Trash2, Star } from "lucide-react-native";
-import { useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { Wine, MapPin, Calendar, Euro, Package, Pencil, Trash2, Star } from "lucide-react-native";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
 import BackButton from "../components/BackButton";
@@ -51,19 +51,12 @@ export default function BottleDetailPage() {
   const [bottleData, setBottleData] = useState<BottleDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token && id) {
-      fetchBottleData();
-    }
-  }, [token, id]);
-
   const fetchBottleData = async () => {
     if (!token || !id) return;
-    
+
     setLoading(true);
     try {
       const data = await cellarService.getCellarItemById(token, Number(id));
-      console.log('Comments data:', data.comments);
       setBottleData(data);
     } catch (error) {
       console.error('Error fetching bottle data:', error);
@@ -71,6 +64,12 @@ export default function BottleDetailPage() {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBottleData();
+    }, [token, id])
+  );
 
   const handleEdit = () => {
     router.push({
@@ -131,28 +130,22 @@ export default function BottleDetailPage() {
       <View className="w-full bg-wine px-10 py-14">
         <View className="flex-row justify-between items-center mb-8">
           <BackButton color="#ffffff" />
-          
+
           <View className="flex-row">
-            <TouchableOpacity 
-              onPress={handleEdit}
-              className="p-2"
-            >
+            <TouchableOpacity onPress={handleEdit} className="p-2">
               <Pencil size={20} color="#ffffff" />
             </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={handleDelete}
-              className="p-2"
-            >
+            <TouchableOpacity onPress={handleDelete} className="p-2">
               <Trash2 size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View className="flex-row items-start gap-4">
           <View>
             <Wine size={65} color="#ffffff" />
           </View>
-          
+
           <View className="flex-1">
             <Text className="text-white text-2xl font-bold mb-2">
               {bottleData.bottle.name}
@@ -192,7 +185,7 @@ export default function BottleDetailPage() {
           {bottleData.price && (
             <View className="w-1/2 mb-6">
               <View className="flex-row items-center mb-2">
-                <DollarSign size={20} color="#bb2700" />
+                <Euro size={20} color="#bb2700" />
                 <Text className="text-gray-500 text-sm ml-2">Prix</Text>
               </View>
               <Text className="text-black text-base">
@@ -215,7 +208,7 @@ export default function BottleDetailPage() {
 
       <View className="mx-6 mt-6 bg-white rounded-lg border border-lightgray p-6">
         <Text className="text-xl font-bold text-black mb-4">Détails</Text>
-        
+
         <View className="mb-4">
           <Text className="text-gray-500 text-sm mb-1">Appellation</Text>
           <Text className="text-black text-base">
@@ -259,7 +252,7 @@ export default function BottleDetailPage() {
       {(bottleData.rating || (bottleData.comments && bottleData.comments.length > 0)) && (
         <View className="mx-6 mt-6 bg-white rounded-lg border border-lightgray p-6">
           <Text className="text-xl font-bold text-black mb-4">Mes notes personnelles</Text>
-          
+
           {bottleData.rating && (
             <View className="mb-4">
               <Text className="text-gray-500 text-sm mb-2">Ma note</Text>
@@ -269,14 +262,14 @@ export default function BottleDetailPage() {
                   const rating = parseFloat(String(bottleData.rating));
                   const isFilled = rating >= starValue;
                   const isHalfFilled = !isFilled && rating >= starValue - 0.5;
-                  
+
                   let fillColor = "transparent";
                   if (isFilled) {
                     fillColor = "#bb2700";
                   } else if (isHalfFilled) {
                     fillColor = "rgba(187, 39, 0, 0.5)";
                   }
-                  
+
                   return (
                     <Star
                       key={index}
