@@ -7,7 +7,8 @@ const CACHE_KEYS = {
   STOCK_BY_COLOUR: 'cache_stock_by_colour',
   LAST_ADDED: 'cache_last_added',
   ALL_ITEMS: 'cache_all_items',
-  ITEMS_BY_COLOUR: 'cache_items_by_colour_'
+  ITEMS_BY_COLOUR: 'cache_items_by_colour_',
+  ITEM_BY_ID: 'cache_item_by_id_',
 } as const;
 
 const CACHE_KEYS_TO_INVALIDATE = [
@@ -109,9 +110,18 @@ const fetchWithCache = async (
   }
 };
 
-const invalidateCaches = async () => {
+const invalidateCaches = async (cellarItemId?: number) => {
+  const keys = [...CACHE_KEYS_TO_INVALIDATE];
+
+  if (cellarItemId !== undefined) {
+    keys.push(`${CACHE_KEYS.ITEM_BY_ID}${cellarItemId}` as any);
+  }
+
+  await Promise.all(keys.map(key => cacheService.clear(key)));
+
+  const colourIds = [null, 1, 2, 3, 4, 5, 6];
   await Promise.all(
-    CACHE_KEYS_TO_INVALIDATE.map(key => cacheService.clear(key))
+    colourIds.map(id => cacheService.clear(`${CACHE_KEYS.ITEMS_BY_COLOUR}${id}`))
   );
 };
 
@@ -151,7 +161,7 @@ export const cellarService = {
       () => fetchAPI(`/cellar-items/colour/${selectedColour}`, token)
     );
   },
-  
+
   createCellarItem: async (token: string, formData: any) => {
     console.log('[CELLAR_SERVICE] Creating cellar item', {
       formData,
@@ -183,7 +193,7 @@ export const cellarService = {
 
   updateCellarItem: async (token: string, cellarItemId: number, formData: any) => {
     const data = await fetchAPI(`/cellar-items/${cellarItemId}`, token, 'PUT', formData);
-    await invalidateCaches();
+    await invalidateCaches(cellarItemId);
     return data;
   },
 
@@ -198,18 +208,22 @@ export const cellarService = {
   },
 
   getCellarItemById: async (token: string, cellarItemId: number) => {
-    return fetchAPI(
-      `/cellar-items/${cellarItemId}`,
-      token,
-      'GET',
-      undefined,
-      'Erreur lors de la récupération de la bouteille'
+    const cacheKey = `${CACHE_KEYS.ITEM_BY_ID}${cellarItemId}`;
+    return fetchWithCache(
+      cacheKey,
+      () => fetchAPI(
+        `/cellar-items/${cellarItemId}`,
+        token,
+        'GET',
+        undefined,
+        'Erreur lors de la récupération de la bouteille'
+      )
     );
   },
 
   deleteCellarItem: async (token: string, cellarItemId: number) => {
     const data = await fetchAPI(`/cellar-items/${cellarItemId}`, token, 'DELETE');
-    await invalidateCaches();
+    await invalidateCaches(cellarItemId);
     return data;
   },
 };
