@@ -315,7 +315,7 @@ export default function AddOrUpdateBottleForm({
 
       {dataLoading ? (
         <View className="flex-1 items-center justify-center py-20">
-          <ActivityIndicator size="large" color="#bb2700" />
+          <ActivityIndicator size="large" color="#730b1e" />
           <Text className="text-gray-500 mt-4">Chargement des données...</Text>
         </View>
       ) : (
@@ -640,9 +640,9 @@ export default function AddOrUpdateBottleForm({
             
             let fillColor = "transparent";
             if (isFilled) {
-              fillColor = "#bb2700";
+              fillColor = "#f59e0b";
             } else if (isHalfFilled) {
-              fillColor = "rgba(187, 39, 0, 0.5)";
+              fillColor = "rgba(245, 158, 11, 0.5)";
             }
             
             return (
@@ -653,7 +653,7 @@ export default function AddOrUpdateBottleForm({
               >
                 <Star
                   size={24}
-                  color="#bb2700"
+                  color="#f59e0b"
                   fill={fillColor}
                 />
               </TouchableOpacity>
@@ -675,7 +675,7 @@ export default function AddOrUpdateBottleForm({
       {!dataLoading && (
         <>
           {loading ? (
-            <ActivityIndicator size="large" color="#bb2700" className="my-4" />
+            <ActivityIndicator size="large" color="#730b1e" className="my-4" />
           ) : (
             <View className="m-6">
               <PrimaryButton 

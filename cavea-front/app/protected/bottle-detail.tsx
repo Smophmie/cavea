@@ -164,7 +164,7 @@ export default function BottleDetailPage() {
         <View className="flex-row flex-wrap">
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
-              <MapPin size={20} color="#bb2700" />
+              <MapPin size={20} color="#730b1e" />
               <Text className="text-gray-500 text-sm ml-2">Région</Text>
             </View>
             <Text className="text-black text-base">
@@ -174,7 +174,7 @@ export default function BottleDetailPage() {
 
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
-              <Calendar size={20} color="#bb2700" />
+              <Calendar size={20} color="#730b1e" />
               <Text className="text-gray-500 text-sm ml-2">Millésime</Text>
             </View>
             <Text className="text-black text-base">
@@ -185,7 +185,7 @@ export default function BottleDetailPage() {
           {bottleData.price && (
             <View className="w-1/2 mb-6">
               <View className="flex-row items-center mb-2">
-                <Euro size={20} color="#bb2700" />
+                <Euro size={20} color="#730b1e" />
                 <Text className="text-gray-500 text-sm ml-2">Prix</Text>
               </View>
               <Text className="text-black text-base">
@@ -196,7 +196,7 @@ export default function BottleDetailPage() {
 
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
-              <Package size={20} color="#bb2700" />
+              <Package size={20} color="#730b1e" />
               <Text className="text-gray-500 text-sm ml-2">Quantité</Text>
             </View>
             <Text className="text-black text-base">
@@ -265,16 +265,16 @@ export default function BottleDetailPage() {
 
                   let fillColor = "transparent";
                   if (isFilled) {
-                    fillColor = "#bb2700";
+                    fillColor = "#f59e0b";
                   } else if (isHalfFilled) {
-                    fillColor = "rgba(187, 39, 0, 0.5)";
+                    fillColor = "rgba(245, 158, 11, 0.5)";
                   }
 
                   return (
                     <Star
                       key={index}
                       size={20}
-                      color={fillColor === "transparent" ? "#bb2700" : fillColor}
+                      color={fillColor === "transparent" ? "#f59e0b" : fillColor}
                       fill={fillColor}
                     />
                   );

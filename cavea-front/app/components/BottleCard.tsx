@@ -30,7 +30,7 @@ export default function BottleCard({
   showRating = false
 }: BottleCardProps) {
   const router = useRouter();
-  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#bb2700";
+  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#730b1e";
 
   const handlePress = () => {
     router.push({
@@ -63,9 +63,9 @@ export default function BottleCard({
               
               let fillColor = "transparent";
               if (isFilled) {
-                fillColor = "#bb2700";
+                fillColor = "#f59e0b";
               } else if (isHalfFilled) {
-                fillColor = "rgba(187, 39, 0, 0.5)";
+                fillColor = "rgba(245, 158, 11, 0.5)";
               }
               
               return (
