@@ -16,12 +16,12 @@ export default function Index() {
   return (
     <SafeAreaView className="flex-1 bg-app">
       <ScrollView 
-        className="px-6"
+        className="p-6"
         contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
       >
         <Image 
           source={Logo}
-          style={{ width:"60%",height: 100, margin: 20 }}
+          style={{ width:"60%",height: 100, margin: 30 }}
         />
         <PageTitle text = "Gérez votre cave à vin avec passion et expertise." color="wine"></PageTitle>
 
