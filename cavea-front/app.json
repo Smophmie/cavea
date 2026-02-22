@@ -16,7 +16,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo-fond-rouge.png",
-        "backgroundColor": "#bb2700"
+        "backgroundColor": "#730b1e"
       },
       "edgeToEdgeEnabled": true
     },
@@ -30,10 +30,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo-fond-rouge.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#730b1e"
         }
       ],
       "expo-font"
