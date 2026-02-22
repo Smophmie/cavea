@@ -8,7 +8,7 @@ import CardIconText from "./components/CardIconText";
 import PageTitle from "./components/PageTitle";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Logo = require('@/assets/images/cavea-logo.png');
+const Logo = require('@/assets/images/logo.png');
 
 export default function Index() {
   const router = useRouter();
