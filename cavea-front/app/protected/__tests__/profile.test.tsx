@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-
 import { Alert, Linking } from 'react-native';
 import ProfilePage from '../profile';
 import { userService } from '@/services/UserService';
+import { cellarService } from '@/services/CellarService';
 
 const mockPush = jest.fn();
 const mockLogout = jest.fn();
@@ -22,8 +23,13 @@ jest.mock('@/authentication/AuthContext', () => ({
 jest.mock('@/services/UserService', () => ({
   userService: {
     getMe: jest.fn(),
-    getStats: jest.fn(),
     deleteAccount: jest.fn(),
+  },
+}));
+
+jest.mock('@/services/CellarService', () => ({
+  cellarService: {
+    getStats: jest.fn(),
   },
 }));
 
@@ -48,12 +54,12 @@ describe('ProfilePage - chargement des données', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (userService.getMe as jest.Mock).mockResolvedValue(mockProfile);
-    (userService.getStats as jest.Mock).mockResolvedValue(mockStats);
+    (cellarService.getStats as jest.Mock).mockResolvedValue(mockStats);
   });
 
   it('should display loading state initially', () => {
     (userService.getMe as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    (userService.getStats as jest.Mock).mockImplementation(() => new Promise(() => {}));
+    (cellarService.getStats as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
     render(<ProfilePage />);
 
@@ -104,7 +110,7 @@ describe('ProfilePage - valeurs nulles dans les statistiques', () => {
 
   it('should display "—" when total_value is null', async () => {
     (userService.getMe as jest.Mock).mockResolvedValue(mockProfile);
-    (userService.getStats as jest.Mock).mockResolvedValue({
+    (cellarService.getStats as jest.Mock).mockResolvedValue({
       ...mockStats,
       total_value: null,
     });
@@ -118,7 +124,7 @@ describe('ProfilePage - valeurs nulles dans les statistiques', () => {
 
   it('should display "—" when favourite_region is null', async () => {
     (userService.getMe as jest.Mock).mockResolvedValue(mockProfile);
-    (userService.getStats as jest.Mock).mockResolvedValue({
+    (cellarService.getStats as jest.Mock).mockResolvedValue({
       ...mockStats,
       favourite_region: null,
     });
@@ -137,7 +143,7 @@ describe('ProfilePage - suppression du compte', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (userService.getMe as jest.Mock).mockResolvedValue(mockProfile);
-    (userService.getStats as jest.Mock).mockResolvedValue(mockStats);
+    (cellarService.getStats as jest.Mock).mockResolvedValue(mockStats);
     alertSpy = jest.spyOn(Alert, 'alert');
   });
 
@@ -219,7 +225,7 @@ describe('ProfilePage - liens et navigation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (userService.getMe as jest.Mock).mockResolvedValue(mockProfile);
-    (userService.getStats as jest.Mock).mockResolvedValue(mockStats);
+    (cellarService.getStats as jest.Mock).mockResolvedValue(mockStats);
     linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue();
   });
 

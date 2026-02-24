@@ -125,7 +125,18 @@ const invalidateCaches = async (cellarItemId?: number) => {
   );
 };
 
+export interface CellarStats {
+  total_stock: number;
+  total_value: number | null;
+  favourite_region: string | null;
+}
+
 export const cellarService = {
+  getStats: async (token: string): Promise<CellarStats> => {
+    return fetchAPI('/cellar-items/stats', token, 'GET', undefined, 'Impossible de récupérer les statistiques.');
+  },
+
+
   getTotalStock: async (token: string) => {
     return fetchWithCache(CACHE_KEYS.TOTAL_STOCK, async () => {
       const data = await fetchAPI('/cellar-items/total-stock', token);

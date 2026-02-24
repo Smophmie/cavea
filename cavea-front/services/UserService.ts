@@ -38,19 +38,9 @@ export interface UserProfile {
   email: string;
 }
 
-export interface UserStats {
-  total_stock: number;
-  total_value: number | null;
-  favourite_region: string | null;
-}
-
 class UserService {
   async getMe(token: string): Promise<UserProfile> {
     return fetchAPI("/user/me", token, "GET", "Impossible de récupérer les informations.");
-  }
-
-  async getStats(token: string): Promise<UserStats> {
-    return fetchAPI("/user/stats", token, "GET", "Impossible de récupérer les statistiques.");
   }
 
   async deleteAccount(token: string): Promise<void> {

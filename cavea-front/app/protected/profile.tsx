@@ -8,7 +8,8 @@ import SubTitle from "../components/SubTitle";
 import LogoutButton from "../components/LogoutButton";
 import CardIconText from "../components/CardIconText";
 import { useAuth } from "@/authentication/AuthContext";
-import { userService, UserProfile, UserStats } from "@/services/UserService";
+import { userService, UserProfile } from "@/services/UserService";
+import { cellarService, CellarStats } from "@/services/CellarService";
 
 const CONTACT_EMAIL = "sothereau@gmail.com";
 const PRIVACY_POLICY_URL = "https://smophmie.github.io/cavea-privacy/";
@@ -19,7 +20,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<UserStats | null>(null);
+  const [stats, setStats] = useState<CellarStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
 
@@ -29,7 +30,7 @@ export default function ProfilePage() {
     try {
       const [profileData, statsData] = await Promise.all([
         userService.getMe(token),
-        userService.getStats(token),
+        cellarService.getStats(token),
       ]);
       setProfile(profileData);
       setStats(statsData);
