@@ -187,25 +187,6 @@ class UserControllerTest extends TestCase
         $response->assertStatus(401);
     }
     
-    public function testCanGetStats()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/user/stats');
-
-        $response->assertStatus(200)
-                 ->assertJsonStructure(['total_stock', 'total_value', 'favourite_region']);
-    }
-
-    public function testGetStatsRequiresAuth()
-    {
-        $response = $this->getJson('api/user/stats');
-
-        $response->assertStatus(401);
-    }
-
     public function testCanDeleteOwnAccount()
     {
         $user = User::factory()->create();

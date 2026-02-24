@@ -31,12 +31,7 @@ class UserController extends Controller
         return response()->json(Auth::user());
     }
 
-    public function stats(): JsonResponse
-    {
-        return response()->json($this->userService->getStats(Auth::id()));
-    }
-
-    public function register(Request $request): JsonResponse
+public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => User::RULE_REQUIRED_MAX,

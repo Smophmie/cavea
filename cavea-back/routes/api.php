@@ -17,7 +17,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     Route::get('/user/me', [UserController::class, 'me']);
-    Route::get('/user/stats', [UserController::class, 'stats']);
     Route::delete('/user', [UserController::class, 'deleteAccount']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -26,6 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/cellar-items', [CellarItemController::class, 'index']);
     Route::get('/cellar-items/last', [CellarItemController::class, 'getLastAdded']);
+    Route::get('/cellar-items/stats', [CellarItemController::class, 'stats']);
     Route::get('/cellar-items/total-stock', [CellarItemController::class, 'getTotalStock']);
     Route::get('/cellar-items/stock-by-colour', [CellarItemController::class, 'getStockByColour']);
     Route::get('/cellar-items/{cellarItemId}', [CellarItemController::class, 'show']);
