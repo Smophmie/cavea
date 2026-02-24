@@ -124,7 +124,7 @@ export default function ProfilePage() {
 
       <View className="border border-lightgray rounded-lg p-6 mx-6 bg-white">
         <SubTitle text="Mes statistiques" color="black" />
-        <View className="flex-row flex-wrap gap-3">
+        <View className="flex-col flex-wrap gap-1">
           <CardIconText
             label="Bouteilles en cave"
             text={loading ? "..." : `${stats?.total_stock ?? 0}`}

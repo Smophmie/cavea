@@ -25,14 +25,14 @@ export default function Index() {
         />
         <PageTitle text = "Gérez votre cave à vin avec passion et expertise." color="wine"></PageTitle>
 
-        <View className="my-6">
+        <View className="my-6 w-full">
           <View className="flex-row gap-5 my-2">
-            <CardIconText text="Gérez vos bouteilles" icon="Wine" />
-            <CardIconText text="Notez vos dégustations" icon="Star" />
+            <CardIconText text="Gérez vos bouteilles" icon="Wine" variant="column" />
+            <CardIconText text="Notez vos dégustations" icon="Star" variant="column" />
           </View>
           <View className="flex-row gap-5 my-2">
-            <CardIconText text="Consommez au bon moment" icon="Hourglass" />
-            <CardIconText text="Créez votre liste d'envies" icon="Heart" />
+            <CardIconText text="Consommez au bon moment" icon="Hourglass" variant="column" />
+            <CardIconText text="Créez votre liste d'envies" icon="Heart" variant="column" />
           </View>
         </View>
 
