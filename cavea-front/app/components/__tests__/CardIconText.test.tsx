@@ -55,6 +55,40 @@ describe('CardIconText - label prop', () => {
   });
 });
 
+describe('CardIconText - variant prop', () => {
+  it('should render in row layout by default', () => {
+    const { UNSAFE_root } = render(<CardIconText text="42" icon="Wine" />);
+    const views = UNSAFE_root.findAllByType('View');
+    const rowView = views.find(v => v.props.className?.includes('flex-row'));
+    expect(rowView).toBeTruthy();
+  });
+
+  it('should render in row layout when variant="row"', () => {
+    const { UNSAFE_root } = render(<CardIconText text="42" icon="Wine" variant="row" />);
+    const views = UNSAFE_root.findAllByType('View');
+    const rowView = views.find(v => v.props.className?.includes('flex-row'));
+    expect(rowView).toBeTruthy();
+  });
+
+  it('should render in column layout when variant="column"', () => {
+    const { UNSAFE_root } = render(<CardIconText text="42" icon="Wine" variant="column" />);
+    const views = UNSAFE_root.findAllByType('View');
+    const colView = views.find(v => v.props.className?.includes('flex-col'));
+    expect(colView).toBeTruthy();
+  });
+
+  it('should display text in column variant', () => {
+    render(<CardIconText text="Gérez vos bouteilles" icon="Wine" variant="column" />);
+    expect(screen.getByText('Gérez vos bouteilles')).toBeTruthy();
+  });
+
+  it('should display label in column variant', () => {
+    render(<CardIconText text="42" icon="Wine" label="Bouteilles en cave" variant="column" />);
+    expect(screen.getByText('Bouteilles en cave')).toBeTruthy();
+    expect(screen.getByText('42')).toBeTruthy();
+  });
+});
+
 describe('CardIconText - style override', () => {
   it('should render without error when style prop is provided', () => {
     const { UNSAFE_root } = render(
