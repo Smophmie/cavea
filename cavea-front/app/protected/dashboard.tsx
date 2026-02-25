@@ -95,7 +95,8 @@ export default function DashboardPage() {
 
         <View className="flex-row justify-between">
           <CardIconText 
-            text={loading ? "..." : `${totalStock} bouteilles`} 
+            label="Total bouteilles"
+            text={loading ? "..." : `${totalStock}`} 
             icon="BottleWine"
             iconColor="#ffffff"
             textColor="text-white"
