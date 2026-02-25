@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function __construct(protected UserService $userService) {}
+    public function __construct(protected UserService $userService)
+    {
+    }
 
     public function index(): JsonResponse
     {
@@ -31,7 +33,7 @@ class UserController extends Controller
         return response()->json(Auth::user());
     }
 
-public function register(Request $request): JsonResponse
+    public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => User::RULE_REQUIRED_MAX,

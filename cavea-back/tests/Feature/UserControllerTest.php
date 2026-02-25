@@ -186,7 +186,7 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
-    
+
     public function testCanDeleteOwnAccount()
     {
         $user = User::factory()->create();
