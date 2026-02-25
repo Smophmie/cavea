@@ -7,12 +7,9 @@ use App\Models\CellarItem;
 use App\Services\DomainService;
 use App\Services\AppellationService;
 use App\Services\CommentService;
-use App\Policies\CellarItemPolicy;
-use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
 use App\Services\VintageService;
 use App\Services\CellarItemService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -29,6 +26,9 @@ class CellarItemController extends Controller
     ) {
     }
 
+    /**
+     * Display all cellar items of the authenticated user.
+     */
     public function index(): JsonResponse
     {
         $items = $this->cellarItemService->getUserItems(auth()->id());
@@ -44,6 +44,9 @@ class CellarItemController extends Controller
         return response()->json($items);
     }
 
+    /**
+    * Get statistics about the cellar items (total count, favorite region, etc.).
+     */
     public function stats(): JsonResponse
     {
         return response()->json($this->cellarItemService->getStats(auth()->id()));
@@ -58,6 +61,9 @@ class CellarItemController extends Controller
         return response()->json(['total_stock' => $total]);
     }
 
+    /**
+     * Get the stock of bottles grouped by colour.
+     */
     public function getStockByColour(): JsonResponse
     {
         $stocks = $this->cellarItemService->getStockByColour(auth()->id());
@@ -183,23 +189,30 @@ class CellarItemController extends Controller
             ], 404);
         }
 
-        $this->authorize('view', $cellarItem);
-
         return response()->json($cellarItem);
     }
 
+    /**
+     * Filter cellar items by colour.
+     */
     public function filterByColour(int $colourId): JsonResponse
     {
         $items = $this->cellarItemService->filterByColour(auth()->id(), $colourId);
         return response()->json($items);
     }
 
+    /**
+     * Filter cellar items by region.
+     */
     public function filterByRegion(int $regionId): JsonResponse
     {
         $items = $this->cellarItemService->filterByRegion(auth()->id(), $regionId);
         return response()->json($items);
     }
 
+    /**
+     * Increment the stock of a cellar item.
+     */
     public function incrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
@@ -208,6 +221,9 @@ class CellarItemController extends Controller
         return response()->json($item);
     }
 
+    /**
+     * Decrement the stock of a cellar item.
+     */
     public function decrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
