@@ -15,24 +15,17 @@ class UserController extends Controller
     {
     }
 
-    public function index(): JsonResponse
-    {
-        return response()->json(User::all());
-    }
-
-    public function show(string $id): JsonResponse
-    {
-        $user = User::findOrFail($id);
-        $this->authorize('view', $user);
-
-        return response()->json($user);
-    }
-
+    /**
+     * Get the authenticated user's information.
+     */
     public function me(): JsonResponse
     {
         return response()->json(Auth::user());
     }
 
+    /**
+     * Register a new user and return the created user data.
+     */
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -84,22 +77,9 @@ class UserController extends Controller
         }
     }
 
-    public function update(Request $request, string $id): JsonResponse
-    {
-        $user = User::findOrFail($id);
-        $this->authorize('update', $user);
-
-        $request->validate([
-            'name' => User::RULE_REQUIRED_MAX,
-            'firstname' => User::RULE_REQUIRED_MAX,
-            'email' => 'required|email|unique:users,email,' . $id,
-        ]);
-
-        $user->update($request->all());
-
-        return response()->json($user);
-    }
-
+    /**
+     * Delete the authenticated user's account.
+     */
     public function deleteAccount(): JsonResponse
     {
         try {
@@ -112,15 +92,5 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function destroy(string $id): JsonResponse
-    {
-        $user = User::findOrFail($id);
-        $this->authorize('delete', $user);
-
-        $user->delete();
-
-        return response()->json(['message' => 'L\'utilisateur a été supprimé']);
     }
 }

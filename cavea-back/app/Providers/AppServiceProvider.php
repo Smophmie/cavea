@@ -7,6 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\CellarItem;
 use App\Policies\CellarItemPolicy;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +27,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(CellarItem::class, CellarItemPolicy::class);
+
+        Scramble::configure()
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->secure(
+                    SecurityScheme::http('bearer')
+                );
+            });
     }
 }

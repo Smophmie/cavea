@@ -12,61 +12,6 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testCanShowAUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users/' . $user->id);
-
-        $response->assertStatus(200)
-                 ->assertJson(['id' => $user->id]);
-    }
-
-    public function testCanShowUsers()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users');
-
-        $response->assertStatus(200);
-    }
-
-    public function testCanUpdateAUser()
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user);
-
-        $response = $this->putJson('api/users/' . $user->id, [
-            'firstname' => 'Firstname',
-            'name' => 'New Name',
-            'email' => 'new@example.com'
-        ]);
-
-        $response->assertStatus(200)
-                 ->assertJson(['name' => 'New Name']);
-
-        $this->assertDatabaseHas('users', ['email' => 'new@example.com']);
-    }
-
-
-    public function testCanDeleteAUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->deleteJson('api/users/' . $user->id);
-
-        $response->assertStatus(200);
-
-        $this->assertDatabaseMissing('users', ['id' => $user->id]);
-    }
-
     public function testUserCanRegister()
     {
         $userData = [
@@ -145,29 +90,6 @@ class UserControllerTest extends TestCase
                 ->assertJsonValidationErrors(['email']);
     }
 
-    public function testCannotShowAnotherUser()
-    {
-        $user = User::factory()->create();
-        $other = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users/' . $other->id);
-
-        $response->assertStatus(403);
-    }
-
-    public function testShowReturns404ForUnknownUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users/99999');
-
-        $response->assertStatus(404);
-    }
-
     public function testCanGetMe()
     {
         $user = User::factory()->create();
@@ -207,59 +129,4 @@ class UserControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function testCannotUpdateAnotherUser()
-    {
-        $user = User::factory()->create();
-        $other = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->putJson('api/users/' . $other->id, [
-            'firstname' => 'Hacker',
-            'name' => 'Hacker',
-            'email' => 'hacker@example.com',
-        ]);
-
-        $response->assertStatus(403);
-    }
-
-    public function testUpdateReturns404ForUnknownUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->putJson('api/users/99999', [
-            'firstname' => 'Test',
-            'name' => 'Test',
-            'email' => 'test@example.com',
-        ]);
-
-        $response->assertStatus(404);
-    }
-
-    public function testCannotDeleteAnotherUser()
-    {
-        $user = User::factory()->create();
-        $other = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->deleteJson('api/users/' . $other->id);
-
-        $response->assertStatus(403);
-
-        $this->assertDatabaseHas('users', ['id' => $other->id]);
-    }
-
-    public function testDestroyReturns404ForUnknownUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->deleteJson('api/users/99999');
-
-        $response->assertStatus(404);
-    }
 }

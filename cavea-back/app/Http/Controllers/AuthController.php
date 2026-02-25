@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * Handle user login and return an API token.
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -40,7 +42,9 @@ class AuthController extends Controller
         ]);
     }
 
-
+    /**
+     * Handle user logout by revoking the current API token.
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
