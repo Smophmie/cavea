@@ -48,7 +48,7 @@ class AuthControllerTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $response = $this->getJson('/api/users/' . $user->id);
+        $response = $this->getJson('/api/user/me');
 
         $response->assertStatus(200)
                  ->assertJson(['id' => $user->id]);
@@ -56,9 +56,7 @@ class AuthControllerTest extends TestCase
 
     public function testGuestCanNotAccessProtectedRoute()
     {
-        $user = User::factory()->create();
-
-        $response = $this->getJson('/api/users/' . $user->id);
+        $response = $this->getJson('/api/user/me');
 
         $response->assertStatus(401);
     }
