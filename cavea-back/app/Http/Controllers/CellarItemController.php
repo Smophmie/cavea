@@ -44,6 +44,11 @@ class CellarItemController extends Controller
         return response()->json($items);
     }
 
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->cellarItemService->getStats(auth()->id()));
+    }
+
     /**
      * Get the stock of bottles.
      */

@@ -60,6 +60,13 @@ export default function TabsLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="legal-mentions"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -116,6 +116,33 @@ class CellarItemControllerTest extends TestCase
         $this->assertArrayHasKey('vintage', $data[0]);
     }
 
+    public function testCanGetStats()
+    {
+        $expectedStats = [
+            'total_stock'      => 42,
+            'total_value'      => 1250.50,
+            'favourite_region' => 'Bordeaux',
+        ];
+
+        $this->cellarItemService
+            ->shouldReceive('getStats')
+            ->once()
+            ->with($this->user->id)
+            ->andReturn($expectedStats);
+
+        $response = $this->actingAs($this->user)->getJson('api/cellar-items/stats');
+
+        $response->assertOk()
+                 ->assertJson($expectedStats);
+    }
+
+    public function testGetStatsRequiresAuth()
+    {
+        $response = $this->getJson('api/cellar-items/stats');
+
+        $response->assertUnauthorized();
+    }
+
     public function testCanGetTotalStockForAuthenticatedUser()
     {
         $this->cellarItemService

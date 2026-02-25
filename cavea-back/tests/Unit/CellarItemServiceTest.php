@@ -406,6 +406,50 @@ class CellarItemServiceTest extends TestCase
         ]);
     }
 
+    public function testCanGetStats()
+    {
+        $region = Region::factory()->create(['name' => 'Bordeaux']);
+        $domain = Domain::factory()->create();
+        $colour = Colour::factory()->create();
+        $bottle = Bottle::factory()->create([
+            'region_id' => $region->id,
+            'domain_id' => $domain->id,
+            'colour_id' => $colour->id,
+        ]);
+        $vintage = Vintage::factory()->create();
+
+        CellarItem::factory()->for($this->user)->for($bottle)->for($vintage)->create(['stock' => 5, 'price' => 20.00]);
+        CellarItem::factory()->for($this->user)->for($bottle)->for($vintage)->create(['stock' => 3, 'price' => 10.00]);
+
+        $result = $this->service->getStats($this->user->id);
+
+        $this->assertEquals(8, $result['total_stock']);
+        $this->assertEquals(130.00, $result['total_value']);
+        $this->assertEquals('Bordeaux', $result['favourite_region']);
+    }
+
+    public function testGetStatsReturnsNullsWhenCellarIsEmpty()
+    {
+        $result = $this->service->getStats($this->user->id);
+
+        $this->assertEquals(0, $result['total_stock']);
+        $this->assertNull($result['total_value']);
+        $this->assertNull($result['favourite_region']);
+    }
+
+    public function testGetStatsIgnoresItemsWithoutPrice()
+    {
+        $bottle = Bottle::factory()->create();
+        $vintage = Vintage::factory()->create();
+
+        CellarItem::factory()->for($this->user)->for($bottle)->for($vintage)->create(['stock' => 5, 'price' => null]);
+
+        $result = $this->service->getStats($this->user->id);
+
+        $this->assertEquals(5, $result['total_stock']);
+        $this->assertNull($result['total_value']);
+    }
+
     public function testCanDeleteACellarItem()
     {
         $cellarItem = CellarItem::factory()
