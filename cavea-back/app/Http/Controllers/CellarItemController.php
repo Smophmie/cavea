@@ -95,7 +95,7 @@ class CellarItemController extends Controller
                 'vintage.year' => 'required|integer|digits:4|min:1900|max:2100',
                 'appellation_name' => 'nullable|string|max:255',
                 'stock' => 'required|integer|min:0',
-                'rating' => 'nullable|numeric|min:0|max:10',
+                'rating' => 'nullable|numeric|min:0|max:20',
                 'price' => 'nullable|numeric|min:0',
                 'shop' => 'nullable|string|max:255',
                 'offered_by' => 'nullable|string|max:255',
@@ -241,7 +241,7 @@ class CellarItemController extends Controller
 
         $validated = $request->validate([
             'stock' => 'integer|min:0',
-            'rating' => 'nullable|numeric|min:0|max:10',
+            'rating' => 'nullable|numeric|min:0|max:20',
             'price' => 'nullable|numeric|min:0',
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',
