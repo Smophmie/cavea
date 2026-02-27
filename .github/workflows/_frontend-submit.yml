@@ -1,18 +1,13 @@
-name: Frontend Build Android
+name: Frontend Submit to Play Store
 
 on:
   workflow_call:
-    inputs:
-      profile:
-        required: true
-        type: string
-        default: 'preview'
 
 jobs:
-  build-package:
-    name: Build Android package
+  submit-playstore:
+    name: Submit AAB to Play Store (internal track)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,16 +29,17 @@ jobs:
         working-directory: cavea-front
         run: npm ci
 
-      - name: Build with EAS
-        working-directory: cavea-front
-        run: |
-          echo "Starting EAS Build for Android (${{ inputs.profile }})..."
-          eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait
+      - name: Write Google service account key
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > /tmp/google-service-account.json
 
-      - name: Build summary
+      - name: Submit to Play Store
+        working-directory: cavea-front
+        run: eas submit --platform android --profile production --latest --non-interactive
+
+      - name: Submit summary
         run: |
-          echo "## Android build completed!" >> $GITHUB_STEP_SUMMARY
+          echo "## Soumission Play Store terminée !" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Profile:** ${{ inputs.profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Track :** Internal" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "👉 Le lien du build est disponible directement dans les logs EAS ci-dessus." >> $GITHUB_STEP_SUMMARY
+          echo "Retrouve la release dans la [Google Play Console](https://play.google.com/console)." >> $GITHUB_STEP_SUMMARY
