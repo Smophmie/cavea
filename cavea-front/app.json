@@ -13,12 +13,12 @@
     },
     "android": {
       "package": "com.cavea.app",
-      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/simple-logo.png",
         "backgroundColor": "#730b1e"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
