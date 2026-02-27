@@ -22,8 +22,15 @@ jest.mock('@/services/CellarService', () => ({
   cellarService: {
     getCellarItemById: jest.fn(),
     deleteCellarItem: jest.fn(),
+    updateCellarItem: jest.fn(),
   },
 }));
+
+jest.mock('@react-native-community/slider', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return (props: any) => <View testID="slider" />;
+});
 
 const mockBottleData = {
   id: 1,
@@ -95,7 +102,7 @@ describe('BottleDetailPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Mes notes personnelles')).toBeTruthy();
-      expect(screen.getByText('7.5/10')).toBeTruthy();
+      expect(screen.getByText('7.5/20')).toBeTruthy();
     });
   });
 
@@ -110,7 +117,7 @@ describe('BottleDetailPage', () => {
     });
   });
 
-  it('should not display personal notes section when no rating or comments', async () => {
+  it('should always display personal notes section and show "Non notée" when no rating', async () => {
     const dataWithoutNotes = {
       ...mockBottleData,
       rating: undefined,
@@ -121,7 +128,8 @@ describe('BottleDetailPage', () => {
     render(<BottleDetailPage />);
 
     await waitFor(() => {
-      expect(screen.queryByText('Mes notes personnelles')).toBeNull();
+      expect(screen.getByText('Mes notes personnelles')).toBeTruthy();
+      expect(screen.getByText('Non notée')).toBeTruthy();
     });
   });
 

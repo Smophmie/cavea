@@ -34,7 +34,7 @@ describe('BottleCard - Rating Display', () => {
       />
     );
 
-    expect(screen.queryByText('7/10')).toBeNull();
+    expect(screen.queryByText('7/20')).toBeNull();
   });
 
   it('should not display rating when rating is undefined', () => {
@@ -45,7 +45,7 @@ describe('BottleCard - Rating Display', () => {
       />
     );
 
-    expect(screen.queryByText('/10')).toBeNull();
+    expect(screen.queryByText('/20')).toBeNull();
   });
 
   it('should display full star rating', () => {
@@ -57,7 +57,7 @@ describe('BottleCard - Rating Display', () => {
       />
     );
 
-    expect(screen.getByText('8/10')).toBeTruthy();
+    expect(screen.getByText('8/20')).toBeTruthy();
   });
 
   it('should display half star rating', () => {
@@ -69,7 +69,7 @@ describe('BottleCard - Rating Display', () => {
       />
     );
 
-    expect(screen.getByText('7.5/10')).toBeTruthy();
+    expect(screen.getByText('7.5/20')).toBeTruthy();
   });
 });
 
@@ -97,7 +97,7 @@ describe('BottleCard - Bottle Info Display', () => {
     expect(screen.getByText('Domaine Test')).toBeTruthy();
     expect(screen.getByText('Bordeaux')).toBeTruthy();
     expect(screen.getByText('x6')).toBeTruthy();
-    expect(screen.getByText('8.5/10')).toBeTruthy();
+    expect(screen.getByText('8.5/20')).toBeTruthy();
   });
 });
 
@@ -123,7 +123,7 @@ describe('BottleCard - Price Display', () => {
     );
 
     expect(screen.getByText('25.5€')).toBeTruthy();
-    expect(screen.getByText('7/10')).toBeTruthy();
+    expect(screen.getByText('7/20')).toBeTruthy();
   });
 });
 
