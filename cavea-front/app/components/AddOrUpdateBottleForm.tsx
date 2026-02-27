@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
-import { ChevronDown, Star, X } from "lucide-react-native";
+import { ChevronDown, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
@@ -21,7 +21,6 @@ interface BottleFormData {
   };
   appellation_name?: string;
   stock: number;
-  rating?: number;
   price?: number;
   shop?: string;
   offered_by?: string;
@@ -42,7 +41,6 @@ interface BottleFormInput {
   };
   appellation_name: string;
   stock: string;
-  rating: string;
   price: string;
   shop: string;
   offered_by: string;
@@ -85,7 +83,6 @@ export default function AddOrUpdateBottleForm({
     },
     appellation_name: initialData?.appellation_name || "",
     stock: initialData?.stock || "",
-    rating: initialData?.rating || "",
     price: initialData?.price || "",
     shop: initialData?.shop || "",
     offered_by: initialData?.offered_by || "",
@@ -119,7 +116,6 @@ export default function AddOrUpdateBottleForm({
         },
         appellation_name: data.appellation?.name || "",
         stock: String(data.stock),
-        rating: data.rating ? String(data.rating) : "",
         price: data.price ? String(data.price) : "",
         shop: data.shop || "",
         offered_by: data.offered_by || "",
@@ -167,11 +163,6 @@ export default function AddOrUpdateBottleForm({
       newErrors['stock'] = "Stock invalide (minimum 0)";
     }
 
-    const rating = parseFloat(formData.rating);
-    if (formData.rating && (isNaN(rating) || rating < 0 || rating > 10)) {
-      newErrors['rating'] = "Note invalide (0-10)";
-    }
-
     const price = parseFloat(formData.price);
     if (formData.price && (isNaN(price) || price < 0)) {
       newErrors['price'] = "Prix invalide";
@@ -211,7 +202,6 @@ export default function AddOrUpdateBottleForm({
         },
         stock: parseInt(formData.stock),
         ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
-        ...(formData.rating && { rating: parseFloat(formData.rating) }),
         ...(formData.price && { price: parseFloat(formData.price) }),
         ...(formData.shop && { shop: formData.shop }),
         ...(formData.offered_by && { offered_by: formData.offered_by }),
@@ -283,26 +273,11 @@ export default function AddOrUpdateBottleForm({
     updateField('bottle.grape_variety_ids', newIds);
   };
 
-  const setRating = (stars: number) => {
-    const currentRatingValue = parseFloat(formData.rating) || 0;
-    
-    if (stars === Math.ceil(currentRatingValue)) {
-      if (currentRatingValue === stars) {
-        updateField('rating', (stars - 0.5).toString());
-      } else {
-        updateField('rating', stars.toString());
-      }
-    } else {
-      updateField('rating', stars.toString());
-    }
-  };
-
   const selectedColour = COLOURS.find(c => c.id === formData.bottle.colour_id);
   const selectedRegion = REGIONS.find(r => r.id === formData.bottle.region_id);
-  const selectedGrapeVarieties = GRAPE_VARIETIES.filter(gv => 
+  const selectedGrapeVarieties = GRAPE_VARIETIES.filter(gv =>
     formData.bottle.grape_variety_ids.includes(gv.id)
   );
-  const currentRating = parseFloat(formData.rating) || 0;
 
   return (
     <ScrollView>
@@ -630,45 +605,6 @@ export default function AddOrUpdateBottleForm({
         )}
       </View>
 
-      <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
-        <Text className="font-bold text-xl pb-4">Notes personnelles</Text>
-        <Text className="text-base font-semibold text-gray mb-3">Ma note</Text>
-        <View className="flex-row items-center flex-wrap">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
-            const isFilled = currentRating >= star;
-            const isHalfFilled = !isFilled && currentRating >= star - 0.5;
-            
-            let fillColor = "transparent";
-            if (isFilled) {
-              fillColor = "#f59e0b";
-            } else if (isHalfFilled) {
-              fillColor = "rgba(245, 158, 11, 0.5)";
-            }
-            
-            return (
-              <TouchableOpacity
-                key={star}
-                onPress={() => setRating(star)}
-                style={{ padding: 2 }}
-              >
-                <Star
-                  size={24}
-                  color="#f59e0b"
-                  fill={fillColor}
-                />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        {currentRating > 0 && (
-          <Text className="text-gray mt-2 text-base">
-            {currentRating}/10
-          </Text>
-        )}
-        {errors['rating'] && (
-          <Text className="text-red-600 text-sm mt-2">{errors['rating']}</Text>
-        )}
-      </View>
         </>
       )}
 
