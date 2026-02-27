@@ -95,7 +95,7 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Année invalide (1900-2100)')).toBeTruthy();
+        expect(screen.getByText('Année invalide (1901-2100)')).toBeTruthy();
       });
     });
 
