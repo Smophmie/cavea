@@ -87,9 +87,8 @@ export default function CellarPage() {
         </Text>
         <View className="py-4">
           <Text className="text-white text-lg mb-3">Filtrer par couleur</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-2">
-              {colours.map((colour) => (
+          <View className="flex-row flex-wrap gap-2">
+            {colours.map((colour) => (
                 <TouchableOpacity
                   key={colour.id || "all"}
                   onPress={() => setSelectedColour(colour.id)}
@@ -104,9 +103,8 @@ export default function CellarPage() {
                     {colour.name}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+            ))}
+          </View>
         </View>
       </View>
 
