@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Wine, MapPin, Calendar, Euro, Package, Pencil, Trash2, Star } from "lucide-react-native";
 import { useState, useCallback, useEffect } from "react";
@@ -55,6 +55,7 @@ export default function BottleDetailPage() {
   const [sliderRating, setSliderRating] = useState<number>(0);
   const [isSavingRating, setIsSavingRating] = useState(false);
   const [isEditingRating, setIsEditingRating] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fetchBottleData = async () => {
     if (!token || !id) return;
@@ -102,34 +103,18 @@ export default function BottleDetailPage() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Supprimer la bouteille",
-      "Êtes-vous sûr de vouloir supprimer cette bouteille ?",
-      [
-        {
-          text: "Annuler",
-          style: "cancel"
-        },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            if (!token || !id) return;
-            try {
-              await cellarService.deleteCellarItem(token, Number(id));
-              Alert.alert("Succès", "Bouteille supprimée", [
-                {
-                  text: "OK",
-                  onPress: () => router.replace("/protected/dashboard")
-                }
-              ]);
-            } catch (error) {
-              Alert.alert("Erreur", "Impossible de supprimer la bouteille");
-            }
-          }
-        }
-      ]
-    );
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    if (!token || !id) return;
+    try {
+      await cellarService.deleteCellarItem(token, Number(id));
+      router.replace("/protected/dashboard");
+    } catch (error) {
+      console.error('Error deleting bottle:', error);
+    }
   };
 
   if (loading) {
@@ -155,12 +140,12 @@ export default function BottleDetailPage() {
           <BackButton color="#ffffff" />
 
           <View className="flex-row">
-            <TouchableOpacity onPress={handleEdit} className="p-2">
+            <Pressable onPress={handleEdit} style={{ padding: 8 }}>
               <Pencil size={20} color="#ffffff" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDelete} className="p-2">
+            </Pressable>
+            <Pressable onPress={handleDelete} style={{ padding: 8 }}>
               <Trash2 size={20} color="#ffffff" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -331,6 +316,37 @@ export default function BottleDetailPage() {
           </View>
         )}
       </View>
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24, width: '100%' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1d293d', marginBottom: 8 }}>
+              Supprimer la bouteille
+            </Text>
+            <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 24 }}>
+              Êtes-vous sûr de vouloir supprimer cette bouteille ?
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable
+                onPress={() => setShowDeleteModal(false)}
+                style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, paddingVertical: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#6B7280', fontWeight: '500' }}>Annuler</Text>
+              </Pressable>
+              <Pressable
+                onPress={confirmDelete}
+                style={{ flex: 1, backgroundColor: '#730b1e', borderRadius: 8, paddingVertical: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '500' }}>Supprimer</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
