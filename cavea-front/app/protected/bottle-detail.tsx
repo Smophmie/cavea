@@ -1,10 +1,12 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { Wine, MapPin, Calendar, Euro, Package, Pencil, Trash2, Star } from "lucide-react-native";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import Slider from "@react-native-community/slider";
 import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
 import BackButton from "../components/BackButton";
+import PrimaryButton from "../components/PrimaryButton";
 
 interface BottleDetail {
   id: number;
@@ -50,6 +52,9 @@ export default function BottleDetailPage() {
   const { token } = useAuth();
   const [bottleData, setBottleData] = useState<BottleDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sliderRating, setSliderRating] = useState<number>(0);
+  const [isSavingRating, setIsSavingRating] = useState(false);
+  const [isEditingRating, setIsEditingRating] = useState(false);
 
   const fetchBottleData = async () => {
     if (!token || !id) return;
@@ -70,6 +75,24 @@ export default function BottleDetailPage() {
       fetchBottleData();
     }, [token, id])
   );
+
+  useEffect(() => {
+    if (bottleData?.rating) setSliderRating(Number(bottleData.rating));
+  }, [bottleData]);
+
+  const handleSaveRating = async () => {
+    if (!token || !id) return;
+    setIsSavingRating(true);
+    try {
+      await cellarService.updateCellarItem(token, Number(id), { rating: sliderRating });
+      await fetchBottleData();
+      setIsEditingRating(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingRating(false);
+    }
+  };
 
   const handleEdit = () => {
     router.push({
@@ -249,58 +272,65 @@ export default function BottleDetailPage() {
         )}
       </View>
 
-      {(bottleData.rating || (bottleData.comments && bottleData.comments.length > 0)) && (
-        <View className="mx-6 mt-6 bg-white rounded-lg border border-lightgray p-6">
-          <Text className="text-xl font-bold text-black mb-4">Mes notes personnelles</Text>
+      <View className="mx-6 mt-6 mb-6 bg-white rounded-lg border border-lightgray p-6">
+        <Text className="text-xl font-bold text-black mb-4">Mes notes personnelles</Text>
 
-          {bottleData.rating && (
-            <View className="mb-4">
-              <Text className="text-gray-500 text-sm mb-2">Ma note</Text>
-              <View className="flex-row items-center">
-                {Array.from({ length: 10 }, (_, index) => {
-                  const starValue = index + 1;
-                  const rating = parseFloat(String(bottleData.rating));
-                  const isFilled = rating >= starValue;
-                  const isHalfFilled = !isFilled && rating >= starValue - 0.5;
-
-                  let fillColor = "transparent";
-                  if (isFilled) {
-                    fillColor = "#f59e0b";
-                  } else if (isHalfFilled) {
-                    fillColor = "rgba(245, 158, 11, 0.5)";
-                  }
-
-                  return (
-                    <Star
-                      key={index}
-                      size={20}
-                      color={fillColor === "transparent" ? "#f59e0b" : fillColor}
-                      fill={fillColor}
-                    />
-                  );
-                })}
-                <Text className="text-black text-base ml-2">{bottleData.rating}/10</Text>
-              </View>
+        <View className="mb-4">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-gray-500 text-sm">Ma note</Text>
+            <TouchableOpacity onPress={() => setIsEditingRating(!isEditingRating)}>
+              <Pencil size={16} color="#730b1e" />
+            </TouchableOpacity>
+          </View>
+          {sliderRating > 0 ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderWidth: 1, borderColor: '#f59e0b', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, gap: 4 }}>
+              <Star size={15} color="#f59e0b" fill="#f59e0b" />
+              <Text style={{ fontSize: 14, color: '#d97706', fontWeight: '500' }}>
+                {sliderRating % 1 === 0 ? sliderRating : sliderRating.toFixed(1)}/20
+              </Text>
             </View>
+          ) : (
+            <Text className="text-black text-base">Non notée</Text>
           )}
-
-          {bottleData.comments && bottleData.comments.length > 0 && (
-            <View>
-              <Text className="text-gray-500 text-sm mb-2">Commentaires</Text>
-              {bottleData.comments.map((comment: any, index: number) => (
-                <View key={comment.id || index} className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <Text className="text-black text-base">{comment.content}</Text>
-                  {comment.date && (
-                    <Text className="text-gray-400 text-xs mt-1">
-                      {new Date(comment.date).toLocaleDateString('fr-FR')}
-                    </Text>
-                  )}
-                </View>
-              ))}
-            </View>
+          {isEditingRating && (
+            <>
+              <Slider
+                minimumValue={0}
+                maximumValue={20}
+                step={0.5}
+                value={Number(sliderRating)}
+                onValueChange={(v) => setSliderRating(Number(v))}
+                minimumTrackTintColor="#800020"
+                maximumTrackTintColor="#d1d5db"
+                thumbTintColor="#800020"
+              />
+              <Text className="text-black text-base text-center mb-2">
+                {sliderRating % 1 === 0 ? sliderRating : sliderRating.toFixed(1)}/20
+              </Text>
+              <PrimaryButton
+                text={isSavingRating ? "Enregistrement..." : "Enregistrer la note"}
+                onPress={handleSaveRating}
+              />
+            </>
           )}
         </View>
-      )}
+
+        {bottleData.comments && bottleData.comments.length > 0 && (
+          <View>
+            <Text className="text-gray-500 text-sm mb-2">Commentaires</Text>
+            {bottleData.comments.map((comment: any, index: number) => (
+              <View key={comment.id || index} className="mb-3 p-3 bg-gray-50 rounded-lg">
+                <Text className="text-black text-base">{comment.content}</Text>
+                {comment.date && (
+                  <Text className="text-gray-400 text-xs mt-1">
+                    {new Date(comment.date).toLocaleDateString('fr-FR')}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
 }
