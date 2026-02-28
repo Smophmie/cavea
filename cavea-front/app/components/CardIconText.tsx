@@ -23,7 +23,7 @@ export default function CardIconText({ text, icon, label, iconColor, textColor, 
         style={{ backgroundColor: backgroundColor || "#ffffff", ...style }}
       >
         {IconComponent && <IconComponent size={40} color={iconColor || "#730b1e"} />}
-        {label && <Text className="text-sm text-gray text-center">{label}</Text>}
+        {label && <Text className={`text-sm ${textColor || "text-gray"} text-center`}>{label}</Text>}
         <Text className={`text-xl ${textColor || "text-gray"} text-center font-semibold`}>{text}</Text>
       </View>
     );
@@ -36,7 +36,7 @@ export default function CardIconText({ text, icon, label, iconColor, textColor, 
     >
       {IconComponent && <IconComponent size={40} color={iconColor || "#730b1e"} />}
       <View className="flex-1 flex-col">
-        {label && <Text className="text-sm text-gray">{label}</Text>}
+        {label && <Text className={`text-sm ${textColor || "text-gray"}`}>{label}</Text>}
         <Text className={`text-xl ${textColor || "text-gray"} font-semibold`}>{text}</Text>
       </View>
     </View>
