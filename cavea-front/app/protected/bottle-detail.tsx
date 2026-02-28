@@ -249,7 +249,7 @@ export default function BottleDetailPage() {
 
         {(bottleData.drinking_window_start || bottleData.drinking_window_end) && (
           <View className="mb-4">
-            <Text className="text-gray-500 text-sm mb-1">Période de garde</Text>
+            <Text className="text-gray-500 text-sm mb-1">Période de dégustation optimale</Text>
             <Text className="text-black text-base">
               {bottleData.drinking_window_start || '?'} - {bottleData.drinking_window_end || '?'}
             </Text>

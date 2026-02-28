@@ -579,10 +579,10 @@ export default function AddOrUpdateBottleForm({
       </View>
 
       <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
-        <Text className="font-bold text-xl pb-4">Période de garde</Text>
+        <Text className="font-bold text-xl pb-4">Période de dégustation optimale</Text>
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Début de garde</Text>
+            <Text className="text-base font-semibold text-gray mb-2">Début de dégustation optimale</Text>
             <TextInput placeholderTextColor="#9CA3AF"
               value={formData.drinking_window_start}
               onChangeText={(value) => updateField('drinking_window_start', value)}
@@ -593,7 +593,7 @@ export default function AddOrUpdateBottleForm({
             />
           </View>
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Fin de garde</Text>
+            <Text className="text-base font-semibold text-gray mb-2">Fin de dégustation optimale</Text>
             <TextInput placeholderTextColor="#9CA3AF"
               value={formData.drinking_window_end}
               onChangeText={(value) => updateField('drinking_window_end', value)}
