@@ -1,6 +1,6 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, Pressable } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, Pressable, TextInput, ActivityIndicator, KeyboardAvoidingView } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import { Wine, MapPin, Calendar, Euro, Package, Pencil, Trash2, Star } from "lucide-react-native";
+import { Wine, MapPin, Calendar, Euro, Package, Pencil, Trash2, Star, MessageSquarePlus } from "lucide-react-native";
 import { useState, useCallback, useEffect } from "react";
 import Slider from "@react-native-community/slider";
 import { useAuth } from "@/authentication/AuthContext";
@@ -56,6 +56,8 @@ export default function BottleDetailPage() {
   const [isSavingRating, setIsSavingRating] = useState(false);
   const [isEditingRating, setIsEditingRating] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [isSavingComment, setIsSavingComment] = useState(false);
 
   const fetchBottleData = async () => {
     if (!token || !id) return;
@@ -106,6 +108,30 @@ export default function BottleDetailPage() {
     setShowDeleteModal(true);
   };
 
+  const handleAddComment = async () => {
+    if (!token || !id || !newComment.trim()) return;
+    setIsSavingComment(true);
+    try {
+      await cellarService.addComment(token, Number(id), newComment.trim());
+      setNewComment("");
+      await fetchBottleData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!token || !id) return;
+    try {
+      await cellarService.deleteComment(token, Number(id), commentId);
+      await fetchBottleData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const confirmDelete = async () => {
     setShowDeleteModal(false);
     if (!token || !id) return;
@@ -134,7 +160,8 @@ export default function BottleDetailPage() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-app">
+    <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+    <ScrollView className="flex-1 bg-app" keyboardShouldPersistTaps="handled">
       <View className="w-full bg-wine px-10 py-14">
         <View className="flex-row justify-between items-center mb-8">
           <BackButton color="#ffffff" />
@@ -161,7 +188,7 @@ export default function BottleDetailPage() {
             <Text className="text-white text-lg">
               {bottleData.vintage.year}
             </Text>
-            <Text className="text-white text-base mt-1">
+            <Text className="text-white text-lg mt-1">
               {bottleData.bottle.domain.name}
             </Text>
           </View>
@@ -173,7 +200,7 @@ export default function BottleDetailPage() {
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
               <MapPin size={20} color="#730b1e" />
-              <Text className="text-gray-500 text-sm ml-2">Région</Text>
+              <Text className="text-gray-500 text-base font-bold ml-2">Région</Text>
             </View>
             <Text className="text-black text-base">
               {bottleData.bottle.region?.name || "Non spécifiée"}
@@ -183,7 +210,7 @@ export default function BottleDetailPage() {
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
               <Calendar size={20} color="#730b1e" />
-              <Text className="text-gray-500 text-sm ml-2">Millésime</Text>
+              <Text className="text-gray-500 text-base font-bold ml-2">Millésime</Text>
             </View>
             <Text className="text-black text-base">
               {bottleData.vintage.year}
@@ -194,7 +221,7 @@ export default function BottleDetailPage() {
             <View className="w-1/2 mb-6">
               <View className="flex-row items-center mb-2">
                 <Euro size={20} color="#730b1e" />
-                <Text className="text-gray-500 text-sm ml-2">Prix</Text>
+                <Text className="text-gray-500 text-base font-bold ml-2">Prix</Text>
               </View>
               <Text className="text-black text-base">
                 {bottleData.price % 1 === 0 ? bottleData.price : bottleData.price.toFixed(2)}€
@@ -205,7 +232,7 @@ export default function BottleDetailPage() {
           <View className="w-1/2 mb-6">
             <View className="flex-row items-center mb-2">
               <Package size={20} color="#730b1e" />
-              <Text className="text-gray-500 text-sm ml-2">Quantité</Text>
+              <Text className="text-gray-500 text-base font-bold ml-2">Quantité</Text>
             </View>
             <Text className="text-black text-base">
               x{bottleData.stock}
@@ -218,14 +245,14 @@ export default function BottleDetailPage() {
         <Text className="text-xl font-bold text-black mb-4">Détails</Text>
 
         <View className="mb-4">
-          <Text className="text-gray-500 text-sm mb-1">Appellation</Text>
+          <Text className="text-gray-500 text-base font-bold mb-1">Appellation</Text>
           <Text className="text-black text-base">
             {bottleData.appellation?.name || "Non spécifiée"}
           </Text>
         </View>
 
         <View className="mb-4">
-          <Text className="text-gray-500 text-sm mb-1">Cépages</Text>
+          <Text className="text-gray-500 text-base font-bold mb-1">Cépages</Text>
           <Text className="text-black text-base">
             {bottleData.bottle.grape_varieties && bottleData.bottle.grape_varieties.length > 0
               ? bottleData.bottle.grape_varieties.map(gv => gv.name).join(', ')
@@ -235,21 +262,21 @@ export default function BottleDetailPage() {
 
         {bottleData.shop && (
           <View className="mb-4">
-            <Text className="text-gray-500 text-sm mb-1">Lieu d'achat</Text>
+            <Text className="text-gray-500 text-base font-bold mb-1">Lieu d'achat</Text>
             <Text className="text-black text-base">{bottleData.shop}</Text>
           </View>
         )}
 
         {bottleData.offered_by && (
           <View className="mb-4">
-            <Text className="text-gray-500 text-sm mb-1">Offert par</Text>
+            <Text className="text-gray-500 text-base font-bold mb-1">Offert par</Text>
             <Text className="text-black text-base">{bottleData.offered_by}</Text>
           </View>
         )}
 
         {(bottleData.drinking_window_start || bottleData.drinking_window_end) && (
           <View className="mb-4">
-            <Text className="text-gray-500 text-sm mb-1">Période de dégustation optimale</Text>
+            <Text className="text-gray-500 text-base font-bold mb-1">Période de dégustation optimale</Text>
             <Text className="text-black text-base">
               {bottleData.drinking_window_start || '?'} - {bottleData.drinking_window_end || '?'}
             </Text>
@@ -262,7 +289,7 @@ export default function BottleDetailPage() {
 
         <View className="mb-4">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-500 text-sm">Ma note</Text>
+            <Text className="text-gray-500 text-base font-bold">Ma note</Text>
             <TouchableOpacity onPress={() => setIsEditingRating(!isEditingRating)}>
               <Pencil size={16} color="#730b1e" />
             </TouchableOpacity>
@@ -300,21 +327,52 @@ export default function BottleDetailPage() {
           )}
         </View>
 
-        {bottleData.comments && bottleData.comments.length > 0 && (
-          <View>
-            <Text className="text-gray-500 text-sm mb-2">Commentaires</Text>
-            {bottleData.comments.map((comment: any, index: number) => (
-              <View key={comment.id || index} className="mb-3 p-3 bg-gray-50 rounded-lg">
-                <Text className="text-black text-base">{comment.content}</Text>
-                {comment.date && (
-                  <Text className="text-gray-400 text-xs mt-1">
-                    {new Date(comment.date).toLocaleDateString('fr-FR')}
-                  </Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
+        <View className="mt-4">
+          <Text className="text-gray-500 text-base font-bold mb-3">Mes commentaires</Text>
+
+          {bottleData.comments && bottleData.comments.length > 0 && (
+            <View className="mb-4">
+              {bottleData.comments.map((comment: any, index: number) => (
+                <View key={comment.id || index} className="mb-3 p-3 rounded-lg flex-row justify-between items-start" style={{ backgroundColor: '#fdf3f5' }}>
+                  <View className="flex-1 mr-2">
+                    <Text className="text-black text-base">{comment.content}</Text>
+                    {comment.date && (
+                      <Text className="text-gray-400 text-xs mt-1">
+                        {new Date(comment.date).toLocaleDateString('fr-FR')}
+                      </Text>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={() => handleDeleteComment(comment.id)}>
+                    <Trash2 size={16} color="#730b1e" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <TextInput
+            value={newComment}
+            onChangeText={setNewComment}
+            placeholder="Ajouter un commentaire..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={3}
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-3 text-black"
+            style={{ textAlignVertical: 'top' }}
+          />
+          <TouchableOpacity
+            onPress={handleAddComment}
+            disabled={!newComment.trim() || isSavingComment}
+            className="flex-row items-center justify-center gap-2 py-3 rounded-lg"
+            style={{ backgroundColor: newComment.trim() ? '#730b1e' : '#d1d5db' }}
+          >
+            {isSavingComment
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <MessageSquarePlus size={18} color="#fff" />
+            }
+            <Text className="text-white font-semibold">Ajouter</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <Modal
         visible={showDeleteModal}
@@ -348,5 +406,6 @@ export default function BottleDetailPage() {
         </View>
       </Modal>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

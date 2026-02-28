@@ -241,4 +241,13 @@ export const cellarService = {
     await invalidateCaches(cellarItemId);
     return data;
   },
+
+  addComment: async (token: string, cellarItemId: number, content: string) => {
+    const date = new Date().toISOString().split('T')[0];
+    return fetchAPI(`/cellar-items/${cellarItemId}/comments`, token, 'POST', { content, date });
+  },
+
+  deleteComment: async (token: string, cellarItemId: number, commentId: number) => {
+    return fetchAPI(`/cellar-items/${cellarItemId}/comments/${commentId}`, token, 'DELETE');
+  },
 };
