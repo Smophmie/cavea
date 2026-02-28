@@ -11,6 +11,7 @@ use App\Models\Colour;
 use App\Models\Region;
 use App\Models\Domain;
 use App\Models\Appellation;
+use App\Models\Comment;
 use App\Services\BottleService;
 use App\Services\VintageService;
 use App\Services\CellarItemService;
@@ -546,5 +547,162 @@ class CellarItemControllerTest extends TestCase
         $response = $this->actingAs($this->user)->deleteJson("api/cellar-items/{$cellarItem->id}");
 
         $response->assertNoContent();
+    }
+
+    // --- storeComment ---
+
+    public function testCanStoreComment()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $comment = Comment::factory()->for($cellarItem)->make();
+
+        $this->commentService
+            ->shouldReceive('create')
+            ->once()
+            ->with(
+                Mockery::on(fn ($data) => $data['content'] === 'Très bon vin.' && isset($data['date'])),
+                $cellarItem->id
+            )
+            ->andReturn($comment);
+
+        $response = $this->actingAs($this->user)->postJson(
+            "api/cellar-items/{$cellarItem->id}/comments",
+            ['content' => 'Très bon vin.', 'date' => '2025-01-10']
+        );
+
+        $response->assertCreated();
+    }
+
+    public function testStoreCommentRequiresAuth()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $response = $this->postJson(
+            "api/cellar-items/{$cellarItem->id}/comments",
+            ['content' => 'Test', 'date' => '2025-01-10']
+        );
+
+        $response->assertUnauthorized();
+    }
+
+    public function testCannotStoreCommentOnOtherUsersCellarItem()
+    {
+        $otherUser = User::factory()->create();
+
+        $cellarItem = CellarItem::factory()
+            ->for($otherUser)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $response = $this->actingAs($this->user)->postJson(
+            "api/cellar-items/{$cellarItem->id}/comments",
+            ['content' => 'Test', 'date' => '2025-01-10']
+        );
+
+        $response->assertForbidden();
+    }
+
+    public function testStoreCommentValidationFailsWithoutContent()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $response = $this->actingAs($this->user)->postJson(
+            "api/cellar-items/{$cellarItem->id}/comments",
+            ['date' => '2025-01-10']
+        );
+
+        $response->assertUnprocessable()
+                 ->assertJsonValidationErrors(['content']);
+    }
+
+    public function testStoreCommentValidationFailsWithoutDate()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $response = $this->actingAs($this->user)->postJson(
+            "api/cellar-items/{$cellarItem->id}/comments",
+            ['content' => 'Test']
+        );
+
+        $response->assertUnprocessable()
+                 ->assertJsonValidationErrors(['date']);
+    }
+
+    // --- destroyComment ---
+
+    public function testCanDestroyComment()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $comment = Comment::factory()->for($cellarItem)->create();
+
+        $this->commentService
+            ->shouldReceive('delete')
+            ->once()
+            ->with(Mockery::on(fn ($c) => $c->id === $comment->id));
+
+        $response = $this->actingAs($this->user)->deleteJson(
+            "api/cellar-items/{$cellarItem->id}/comments/{$comment->id}"
+        );
+
+        $response->assertNoContent();
+    }
+
+    public function testDestroyCommentRequiresAuth()
+    {
+        $cellarItem = CellarItem::factory()
+            ->for($this->user)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $comment = Comment::factory()->for($cellarItem)->create();
+
+        $response = $this->deleteJson(
+            "api/cellar-items/{$cellarItem->id}/comments/{$comment->id}"
+        );
+
+        $response->assertUnauthorized();
+    }
+
+    public function testCannotDestroyCommentOnOtherUsersCellarItem()
+    {
+        $otherUser = User::factory()->create();
+
+        $cellarItem = CellarItem::factory()
+            ->for($otherUser)
+            ->for(Bottle::factory())
+            ->for(Vintage::factory())
+            ->create();
+
+        $comment = Comment::factory()->for($cellarItem)->create();
+
+        $response = $this->actingAs($this->user)->deleteJson(
+            "api/cellar-items/{$cellarItem->id}/comments/{$comment->id}"
+        );
+
+        $response->assertForbidden();
     }
 }
