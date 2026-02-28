@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CellarItem;
+use App\Models\Comment;
 use App\Services\DomainService;
 use App\Services\AppellationService;
 use App\Services\CommentService;
@@ -277,6 +278,35 @@ class CellarItemController extends Controller
         $this->authorize('delete', $cellarItem);
 
         $this->cellarItemService->delete($cellarItem);
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Store a comment for a cellar item.
+     */
+    public function storeComment(Request $request, CellarItem $cellarItem): JsonResponse
+    {
+        $this->authorize('update', $cellarItem);
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'date'    => 'required|date',
+        ]);
+
+        $comment = $this->commentService->create($validated, $cellarItem->id);
+
+        return response()->json($comment, 201);
+    }
+
+    /**
+     * Delete a comment from a cellar item.
+     */
+    public function destroyComment(CellarItem $cellarItem, Comment $comment): JsonResponse
+    {
+        $this->authorize('update', $cellarItem);
+
+        $this->commentService->delete($comment);
+
         return response()->json(null, 204);
     }
 }
