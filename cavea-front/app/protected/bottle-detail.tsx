@@ -197,7 +197,7 @@ export default function BottleDetailPage() {
                 <Text className="text-gray-500 text-sm ml-2">Prix</Text>
               </View>
               <Text className="text-black text-base">
-                {bottleData.price}€
+                {bottleData.price % 1 === 0 ? bottleData.price : bottleData.price.toFixed(2)}€
               </Text>
             </View>
           )}

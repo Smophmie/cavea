@@ -64,7 +64,7 @@ export default function BottleCard({
 
       {price && (
         <View className="ml-4">
-          <Text className="text-base font-semibold text-gray">{price}€</Text>
+          <Text className="text-base font-semibold text-gray">{price % 1 === 0 ? price : price.toFixed(2)}€</Text>
         </View>
       )}
     </TouchableOpacity>
