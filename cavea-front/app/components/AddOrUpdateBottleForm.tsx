@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList, KeyboardAvoidingView } from "react-native";
 import { ChevronDown, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
@@ -280,7 +280,11 @@ export default function AddOrUpdateBottleForm({
   );
 
   return (
-    <ScrollView>
+    <KeyboardAvoidingView
+      behavior="height"
+      style={{ flex: 1 }}
+    >
+    <ScrollView keyboardShouldPersistTaps="handled">
       <View className="pb-5 pt-16 px-10 bg-wine">
         <View className="mb-4">
           <BackButton color="#ffffff" />
@@ -623,5 +627,6 @@ export default function AddOrUpdateBottleForm({
         </>
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

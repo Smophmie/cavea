@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "./components/PrimaryButton";
 import BackButton from "./components/BackButton";
@@ -66,9 +66,14 @@ export default function RegistrationPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-app">
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1 }}
+      >
       <ScrollView
         className="p-4"
         contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="w-full">
           <BackButton color="#730b1e" />
@@ -151,6 +156,7 @@ export default function RegistrationPage() {
             />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
