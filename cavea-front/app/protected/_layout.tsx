@@ -1,9 +1,15 @@
-import { Tabs } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { Home, Wine, UserRound, PlusCircle } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/authentication/AuthContext";
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
+
+  if (!token) {
+    return <Redirect href="/" />;
+  }
 
   return (
     <Tabs
