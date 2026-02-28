@@ -89,7 +89,7 @@ describe('ProfilePage - chargement des données', () => {
 
     await waitFor(() => {
       expect(screen.getByText('42')).toBeTruthy();
-      expect(screen.getByText('1250.5 €')).toBeTruthy();
+      expect(screen.getByText('1250.50 €')).toBeTruthy();
       expect(screen.getByText('Bordeaux')).toBeTruthy();
     });
   });

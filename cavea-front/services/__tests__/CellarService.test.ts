@@ -13,6 +13,7 @@ describe('CellarService - getStats', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
       json: async () => mockStats,
     });
 
@@ -30,6 +31,7 @@ describe('CellarService - getStats', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
       json: async () => mockStats,
     });
 
@@ -43,6 +45,7 @@ describe('CellarService - getStats', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
       json: async () => mockStats,
     });
 
@@ -90,6 +93,7 @@ describe('CellarService - New Methods', () => {
         json: async () => mockBottleData,
         status: 200,
         statusText: 'OK',
+        headers: { get: jest.fn().mockReturnValue(null) },
       });
 
       const result = await cellarService.getCellarItemById(mockToken, mockBottleId);
@@ -175,6 +179,7 @@ describe('CellarService - New Methods', () => {
         json: async () => mockUpdatedData,
         status: 200,
         statusText: 'OK',
+        headers: { get: jest.fn().mockReturnValue(null) },
       });
 
       const result = await cellarService.updateCellarItem(

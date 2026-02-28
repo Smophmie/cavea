@@ -122,7 +122,7 @@ describe('BottleCard - Price Display', () => {
       />
     );
 
-    expect(screen.getByText('25.5€')).toBeTruthy();
+    expect(screen.getByText('25.50€')).toBeTruthy();
     expect(screen.getByText('7/20')).toBeTruthy();
   });
 });

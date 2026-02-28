@@ -81,22 +81,7 @@ describe('AddOrUpdateBottleForm', () => {
     });
 
     it('should validate year range', async () => {
-      render(
-        <AddOrUpdateBottleForm
-          mode="add"
-          onSubmit={mockOnSubmit}
-        />
-      );
-
-      const yearInput = screen.getByPlaceholderText('Ex: 2015');
-      fireEvent.changeText(yearInput, '1800');
-
-      const submitButton = screen.getByText('Ajouter');
-      fireEvent.press(submitButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Année invalide (1901-2100)')).toBeTruthy();
-      });
+      // Le picker n'autorise que les années valides (1901-2076), ce cas ne peut plus se produire via l'UI
     });
 
     it('should return an error if stock is negative', async () => {
@@ -126,11 +111,12 @@ describe('AddOrUpdateBottleForm', () => {
         />
       );
 
-      const startInput = screen.getByPlaceholderText('2025');
-      const endInput = screen.getByPlaceholderText('2035');
+      const yearPickers = screen.getAllByText('Année');
+      fireEvent.press(yearPickers[0]);
+      fireEvent.press(screen.getByText('2030'));
 
-      fireEvent.changeText(startInput, '2030');
-      fireEvent.changeText(endInput, '2025');
+      fireEvent.press(screen.getByText('Année'));
+      fireEvent.press(screen.getByText('2025'));
 
       const submitButton = screen.getByText('Ajouter');
       fireEvent.press(submitButton);
@@ -189,7 +175,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
 
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine test');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 15.50'), '25.50');
@@ -233,7 +220,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '3');
 
       fireEvent.press(screen.getByText('Ajouter'));
@@ -262,7 +250,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
       fireEvent.press(screen.getByText('Ajouter'));
@@ -347,7 +336,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
       fireEvent.press(screen.getByText('Ajouter'));
@@ -416,15 +406,15 @@ describe('AddOrUpdateBottleForm', () => {
 
       fireEvent.press(screen.getByText('Ajouter des cépages'));
 
-      fireEvent.press(screen.getByText('Merlot'));
-      fireEvent.press(screen.getByText('Cabernet Franc'));
-      fireEvent.press(screen.getByText('Syrah'));
+      fireEvent.press(screen.getByText('Aligoté'));
+      fireEvent.press(screen.getByText('Aramon'));
+      fireEvent.press(screen.getByText('Bourboulenc'));
 
       fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
 
-      expect(screen.getByText('Merlot')).toBeTruthy();
-      expect(screen.getByText('Cabernet Franc')).toBeTruthy();
-      expect(screen.getByText('Syrah')).toBeTruthy();
+      expect(screen.getByText('Aligoté')).toBeTruthy();
+      expect(screen.getByText('Aramon')).toBeTruthy();
+      expect(screen.getByText('Bourboulenc')).toBeTruthy();
     });
 
     it('should show checkmark for selected grape varieties in modal', () => {
@@ -437,7 +427,7 @@ describe('AddOrUpdateBottleForm', () => {
 
       fireEvent.press(screen.getByText('Ajouter des cépages'));
 
-      fireEvent.press(screen.getByText('Grenache'));
+      fireEvent.press(screen.getByText('Aligoté'));
 
       const checkmarks = screen.getAllByText('✓');
       expect(checkmarks.length).toBeGreaterThan(0);
@@ -457,7 +447,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
       // Select grape varieties
@@ -490,7 +481,8 @@ describe('AddOrUpdateBottleForm', () => {
       fireEvent.press(screen.getByText('Rouge'));
       fireEvent.press(screen.getByText('Sélectionnez une région'));
       fireEvent.press(screen.getByText('Bordeaux'));
-      fireEvent.changeText(screen.getByPlaceholderText('Ex: 2015'), '2020');
+      fireEvent.press(screen.getByText('Sélectionner une année'));
+      fireEvent.press(screen.getByText('2020'));
       fireEvent.changeText(screen.getByPlaceholderText('Ex: 6'), '5');
 
       fireEvent.press(screen.getByText('Ajouter'));
@@ -512,7 +504,7 @@ describe('AddOrUpdateBottleForm', () => {
       expect(screen.getByText('Ajouter des cépages')).toBeTruthy();
 
       fireEvent.press(screen.getByText('Ajouter des cépages'));
-      fireEvent.press(screen.getByText('Gamay'));
+      fireEvent.press(screen.getByText('Aligoté'));
 
       fireEvent.press(screen.getByTestId('close-modal-grape-varieties'));
 

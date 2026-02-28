@@ -457,6 +457,7 @@ export default function AddOrUpdateBottleForm({
                     </TouchableOpacity>
                   </View>
                   <FlatList
+                    initialNumToRender={GRAPE_VARIETIES.length}
                     data={GRAPE_VARIETIES}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
@@ -492,6 +493,7 @@ export default function AddOrUpdateBottleForm({
                     </TouchableOpacity>
                   </View>
                   <FlatList
+                    initialNumToRender={YEARS.length}
                     data={YEARS}
                     keyExtractor={(item) => item}
                     renderItem={({ item }) => {
