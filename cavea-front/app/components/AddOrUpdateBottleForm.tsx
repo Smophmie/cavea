@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
 import { ChevronDown, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
@@ -69,6 +69,10 @@ export default function AddOrUpdateBottleForm({
   const [showColourPicker, setShowColourPicker] = useState(false);
   const [showRegionPicker, setShowRegionPicker] = useState(false);
   const [showGrapeVarietyPicker, setShowGrapeVarietyPicker] = useState(false);
+  const [yearPickerField, setYearPickerField] = useState<'vintage.year' | 'drinking_window_start' | 'drinking_window_end' | null>(null);
+
+  const currentYear = new Date().getFullYear();
+  const YEARS = Array.from({ length: currentYear + 50 - 1901 + 1 }, (_, i) => String(currentYear + 50 - i));
 
   const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
@@ -280,10 +284,6 @@ export default function AddOrUpdateBottleForm({
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior="height"
-      style={{ flex: 1 }}
-    >
     <ScrollView keyboardShouldPersistTaps="handled">
       <View className="pb-5 pt-16 px-10 bg-wine">
         <View className="mb-4">
@@ -477,6 +477,52 @@ export default function AddOrUpdateBottleForm({
               </View>
             </Modal>
 
+            <Modal
+              visible={yearPickerField !== null}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setYearPickerField(null)}
+            >
+              <View className="flex-1 justify-end bg-black/50">
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '60%' }}>
+                  <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+                    <Text className="text-lg font-bold">Sélectionner une année</Text>
+                    <TouchableOpacity onPress={() => setYearPickerField(null)}>
+                      <X size={24} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  <FlatList
+                    data={YEARS}
+                    keyExtractor={(item) => item}
+                    renderItem={({ item }) => {
+                      const currentValue = yearPickerField === 'vintage.year'
+                        ? formData.vintage.year
+                        : yearPickerField === 'drinking_window_start'
+                        ? formData.drinking_window_start
+                        : formData.drinking_window_end;
+                      const isSelected = item === currentValue;
+                      return (
+                        <TouchableOpacity
+                          onPress={() => {
+                            updateField(yearPickerField!, item);
+                            setYearPickerField(null);
+                          }}
+                          className="px-4 py-4 border-b border-gray-100 flex-row justify-between items-center"
+                        >
+                          <Text className={`text-base ${isSelected ? "font-bold text-wine" : ""}`}>{item}</Text>
+                          {isSelected && (
+                            <View className="w-6 h-6 rounded-full bg-wine items-center justify-center">
+                              <Text className="text-white text-sm">✓</Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                </View>
+              </View>
+            </Modal>
+
             {mode === 'add' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
@@ -513,14 +559,15 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' && (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
-                <TextInput placeholderTextColor="#9CA3AF"
-                  value={formData.vintage.year}
-                  onChangeText={(value) => updateField('vintage.year', value)}
-                  placeholder="Ex: 2015"
-                  keyboardType="numeric"
-                  maxLength={4}
-                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
-                />
+                <TouchableOpacity
+                  onPress={() => setYearPickerField('vintage.year')}
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+                >
+                  <Text className={formData.vintage.year ? "text-black" : "text-gray-400"}>
+                    {formData.vintage.year || "Sélectionner une année"}
+                  </Text>
+                  <ChevronDown size={20} color="#6B7280" />
+                </TouchableOpacity>
                 {errors['vintage.year'] && (
                   <Text className="text-red-600 text-sm mb-4">{errors['vintage.year']}</Text>
                 )}
@@ -582,26 +629,28 @@ export default function AddOrUpdateBottleForm({
         <Text className="font-bold text-xl pb-4">Période de dégustation optimale</Text>
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Début de dégustation optimale</Text>
-            <TextInput placeholderTextColor="#9CA3AF"
-              value={formData.drinking_window_start}
-              onChangeText={(value) => updateField('drinking_window_start', value)}
-              placeholder="2025"
-              keyboardType="numeric"
-              maxLength={4}
-              className="border border-gray-300 rounded-lg px-4 py-3"
-            />
+            <Text className="text-base font-semibold text-gray mb-2">Début</Text>
+            <TouchableOpacity
+              onPress={() => setYearPickerField('drinking_window_start')}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center"
+            >
+              <Text className={formData.drinking_window_start ? "text-black" : "text-gray-400"}>
+                {formData.drinking_window_start || "Année"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Fin de dégustation optimale</Text>
-            <TextInput placeholderTextColor="#9CA3AF"
-              value={formData.drinking_window_end}
-              onChangeText={(value) => updateField('drinking_window_end', value)}
-              placeholder="2035"
-              keyboardType="numeric"
-              maxLength={4}
-              className="border border-gray-300 rounded-lg px-4 py-3"
-            />
+            <Text className="text-base font-semibold text-gray mb-2">Fin</Text>
+            <TouchableOpacity
+              onPress={() => setYearPickerField('drinking_window_end')}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center"
+            >
+              <Text className={formData.drinking_window_end ? "text-black" : "text-gray-400"}>
+                {formData.drinking_window_end || "Année"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
         </View>
         {errors['drinking_window_end'] && (
@@ -627,6 +676,5 @@ export default function AddOrUpdateBottleForm({
         </>
       )}
     </ScrollView>
-    </KeyboardAvoidingView>
   );
 }
