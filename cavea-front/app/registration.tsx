@@ -88,21 +88,21 @@ export default function RegistrationPage() {
             Commencez à gérer votre cave.
           </Text>
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Prénom"
             value={firstname}
             onChangeText={setFirstname}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Nom"
             value={name}
             onChangeText={setName}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -111,7 +111,7 @@ export default function RegistrationPage() {
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Mot de passe"
             value={password}
             onChangeText={setPassword}
@@ -119,7 +119,7 @@ export default function RegistrationPage() {
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Confirmez le mot de passe"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
