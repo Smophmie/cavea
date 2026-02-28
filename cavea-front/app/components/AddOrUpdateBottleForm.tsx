@@ -301,7 +301,7 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
-                <TextInput
+                <TextInput placeholderTextColor="#9CA3AF"
                   value={formData.bottle.name}
                   onChangeText={(value) => updateField('bottle.name', value)}
                   placeholder="Ex: A l'ombre du figuier"
@@ -321,7 +321,7 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
-                <TextInput
+                <TextInput placeholderTextColor="#9CA3AF"
                   value={formData.bottle.domain_name}
                   onChangeText={(value) => updateField('bottle.domain_name', value)}
                   placeholder="Ex: Mas de la Seranne"
@@ -406,7 +406,7 @@ export default function AddOrUpdateBottleForm({
             )}
 
             <Text className="text-base font-semibold text-gray mb-2">Appellation (AOC/AOP)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.appellation_name}
               onChangeText={(value) => updateField('appellation_name', value)}
               placeholder="Ex: AOP Languedoc"
@@ -509,7 +509,7 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' && (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
-                <TextInput
+                <TextInput placeholderTextColor="#9CA3AF"
                   value={formData.vintage.year}
                   onChangeText={(value) => updateField('vintage.year', value)}
                   placeholder="Ex: 2015"
@@ -530,7 +530,7 @@ export default function AddOrUpdateBottleForm({
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Quantité *</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.stock}
               onChangeText={(value) => updateField('stock', value)}
               placeholder="Ex: 6"
@@ -544,7 +544,7 @@ export default function AddOrUpdateBottleForm({
 
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Prix (€)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.price}
               onChangeText={(value) => updateField('price', value)}
               placeholder="Ex: 15.50"
@@ -558,7 +558,7 @@ export default function AddOrUpdateBottleForm({
         </View>
 
         <Text className="text-base font-semibold text-gray mb-2">Lieu d'achat</Text>
-        <TextInput
+        <TextInput placeholderTextColor="#9CA3AF"
           value={formData.shop}
           onChangeText={(value) => updateField('shop', value)}
           placeholder="Ex: Cave Dupont"
@@ -566,7 +566,7 @@ export default function AddOrUpdateBottleForm({
         />
 
         <Text className="text-base font-semibold text-gray mb-2">Offert par</Text>
-        <TextInput
+        <TextInput placeholderTextColor="#9CA3AF"
           value={formData.offered_by}
           onChangeText={(value) => updateField('offered_by', value)}
           placeholder="Nom de la personne"
@@ -579,7 +579,7 @@ export default function AddOrUpdateBottleForm({
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Début de garde</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.drinking_window_start}
               onChangeText={(value) => updateField('drinking_window_start', value)}
               placeholder="2025"
@@ -590,7 +590,7 @@ export default function AddOrUpdateBottleForm({
           </View>
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Fin de garde</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.drinking_window_end}
               onChangeText={(value) => updateField('drinking_window_end', value)}
               placeholder="2035"
