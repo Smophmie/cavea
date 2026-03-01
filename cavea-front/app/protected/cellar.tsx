@@ -100,7 +100,7 @@ export default function CellarPage() {
                       : "bg-wine border-lightgray"
                   }`}
                 >
-                  {COLOUR_MAP[colour.name] && (
+                  {!!COLOUR_MAP[colour.name] && (
                     <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COLOUR_MAP[colour.name] }} />
                   )}
                   <Text className={selectedColour === colour.id ? "font-bold text-white" : "text-white"}>
