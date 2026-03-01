@@ -167,10 +167,10 @@ export default function BottleDetailPage() {
           <BackButton color="#ffffff" />
 
           <View className="flex-row">
-            <Pressable onPress={handleEdit} style={{ padding: 8 }}>
+            <Pressable testID="edit-bottle-btn" onPress={handleEdit} style={{ padding: 8 }}>
               <Pencil size={20} color="#ffffff" />
             </Pressable>
-            <Pressable onPress={handleDelete} style={{ padding: 8 }}>
+            <Pressable testID="delete-bottle-btn" onPress={handleDelete} style={{ padding: 8 }}>
               <Trash2 size={20} color="#ffffff" />
             </Pressable>
           </View>
