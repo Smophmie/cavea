@@ -24,6 +24,11 @@ jest.mock('@/services/CellarService', () => ({
   },
 }));
 
+jest.mock('@/app/components/AddOrUpdateBottleForm', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
 describe('UpdateBottlePage', () => {
   let alertSpy: jest.SpyInstance;
   let handleSubmit: ((formData: any) => Promise<void>) | null = null;
@@ -32,19 +37,15 @@ describe('UpdateBottlePage', () => {
     jest.clearAllMocks();
     handleSubmit = null;
     alertSpy = jest.spyOn(Alert, 'alert');
-    
-    // Capture handleSubmit from the component
-    const originalCreateElement = React.createElement;
-    jest.spyOn(React, 'createElement').mockImplementation((type: any, props: any, ...children: any[]) => {
-      if (props?.onSubmit && props?.mode === 'update') {
-        handleSubmit = props.onSubmit;
-      }
-      return originalCreateElement(type, props, ...children);
+
+    const MockForm = require('@/app/components/AddOrUpdateBottleForm').default;
+    (MockForm as jest.Mock).mockImplementation((props: any) => {
+      handleSubmit = props.onSubmit;
+      return null;
     });
   });
 
   afterEach(() => {
-    alertSpy.mockRestore();
     jest.restoreAllMocks();
   });
 
@@ -56,9 +57,9 @@ describe('UpdateBottlePage', () => {
   it('should show error when token is missing', async () => {
     jest.spyOn(require('@/authentication/AuthContext'), 'useAuth')
       .mockReturnValue({ token: null });
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({});
       expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Informations manquantes');
@@ -68,9 +69,9 @@ describe('UpdateBottlePage', () => {
   it('should show error when id is missing', async () => {
     jest.spyOn(require('expo-router'), 'useLocalSearchParams')
       .mockReturnValue({ id: undefined });
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({});
       expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Informations manquantes');
@@ -79,12 +80,12 @@ describe('UpdateBottlePage', () => {
 
   it('should call updateCellarItem and show success', async () => {
     (cellarService.updateCellarItem as jest.Mock).mockResolvedValue({});
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({ stock: 5 });
-      
+
       await waitFor(() => {
         expect(cellarService.updateCellarItem).toHaveBeenCalledWith('mock-token', 1, { stock: 5 });
         expect(alertSpy).toHaveBeenCalledWith(
@@ -98,12 +99,12 @@ describe('UpdateBottlePage', () => {
 
   it('should navigate back when pressing OK on success', async () => {
     (cellarService.updateCellarItem as jest.Mock).mockResolvedValue({});
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({ stock: 5 });
-      
+
       await waitFor(() => {
         const okButton = alertSpy.mock.calls[0][2][0];
         okButton.onPress();
@@ -126,12 +127,12 @@ describe('UpdateBottlePage', () => {
     };
 
     (cellarService.updateCellarItem as jest.Mock).mockRejectedValue(validationError);
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({ stock: 5 });
-      
+
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalledWith(
           'Erreur',
@@ -143,14 +144,14 @@ describe('UpdateBottlePage', () => {
 
   it('should show generic error message for other errors', async () => {
     const networkError = new Error('Network timeout');
-    
+
     (cellarService.updateCellarItem as jest.Mock).mockRejectedValue(networkError);
-    
+
     render(<UpdateBottlePage />);
-    
+
     if (handleSubmit) {
       await handleSubmit({ stock: 5 });
-      
+
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Network timeout');
       });

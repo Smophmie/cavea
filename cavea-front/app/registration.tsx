@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "./components/PrimaryButton";
 import BackButton from "./components/BackButton";
@@ -66,9 +66,14 @@ export default function RegistrationPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-app">
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1 }}
+      >
       <ScrollView
         className="p-4"
         contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="w-full">
           <BackButton color="#730b1e" />
@@ -88,21 +93,21 @@ export default function RegistrationPage() {
             Commencez à gérer votre cave.
           </Text>
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Prénom"
             value={firstname}
             onChangeText={setFirstname}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Nom"
             value={name}
             onChangeText={setName}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -111,7 +116,7 @@ export default function RegistrationPage() {
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Mot de passe"
             value={password}
             onChangeText={setPassword}
@@ -119,7 +124,7 @@ export default function RegistrationPage() {
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
             placeholder="Confirmez le mot de passe"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
@@ -151,6 +156,7 @@ export default function RegistrationPage() {
             />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

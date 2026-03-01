@@ -8,6 +8,7 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
+    back: jest.fn(),
   }),
   useFocusEffect: (callback: () => void) => {
     require('react').useEffect(callback, []);
@@ -22,8 +23,17 @@ jest.mock('@/services/CellarService', () => ({
   cellarService: {
     getCellarItemById: jest.fn(),
     deleteCellarItem: jest.fn(),
+    updateCellarItem: jest.fn(),
+    addComment: jest.fn(),
+    deleteComment: jest.fn(),
   },
 }));
+
+jest.mock('@react-native-community/slider', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return (props: any) => <View testID="slider" />;
+});
 
 const mockBottleData = {
   id: 1,
@@ -95,7 +105,7 @@ describe('BottleDetailPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Mes notes personnelles')).toBeTruthy();
-      expect(screen.getByText('7.5/10')).toBeTruthy();
+      expect(screen.getByText('7.5/20')).toBeTruthy();
     });
   });
 
@@ -110,7 +120,7 @@ describe('BottleDetailPage', () => {
     });
   });
 
-  it('should not display personal notes section when no rating or comments', async () => {
+  it('should always display personal notes section and show "Non notée" when no rating', async () => {
     const dataWithoutNotes = {
       ...mockBottleData,
       rating: undefined,
@@ -121,7 +131,8 @@ describe('BottleDetailPage', () => {
     render(<BottleDetailPage />);
 
     await waitFor(() => {
-      expect(screen.queryByText('Mes notes personnelles')).toBeNull();
+      expect(screen.getByText('Mes notes personnelles')).toBeTruthy();
+      expect(screen.getByText('Non notée')).toBeTruthy();
     });
   });
 
@@ -156,5 +167,134 @@ describe('BottleDetailPage', () => {
     });
 
     consoleError.mockRestore();
+  });
+
+  it('should add a comment when pressing the add button', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+    (cellarService.addComment as jest.Mock).mockResolvedValue({ id: 2, content: 'Super', date: '2026-01-01' });
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByPlaceholderText('Ajouter un commentaire...'), 'Super');
+    fireEvent.press(screen.getByText('Ajouter'));
+
+    await waitFor(() => {
+      expect(cellarService.addComment).toHaveBeenCalledWith('mock-token', 1, 'Super');
+    });
+  });
+
+  it('should delete a comment when pressing the trash icon', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+    (cellarService.deleteComment as jest.Mock).mockResolvedValue(null);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('Excellent vin')).toBeTruthy());
+
+    const trashButtons = screen.UNSAFE_getAllByType(require('react-native').TouchableOpacity);
+    const deleteButton = trashButtons.find(
+      (btn: any) => btn.props.onPress?.toString().includes('handleDeleteComment') ||
+        btn.props.testID === 'delete-comment'
+    );
+
+    fireEvent.press(trashButtons[trashButtons.length - 2]);
+
+    await waitFor(() => {
+      expect(cellarService.deleteComment).toHaveBeenCalledWith('mock-token', 1, 1);
+    });
+  });
+
+  it('should show and hide rating edit slider', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('7.5/20')).toBeTruthy());
+
+    // index 0 = BackButton, index 1 = rating edit pencil
+    const touchables = screen.UNSAFE_getAllByType(require('react-native').TouchableOpacity);
+    fireEvent.press(touchables[1]);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('slider')).toBeTruthy();
+    });
+  });
+
+  it('should save rating when pressing save button', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+    (cellarService.updateCellarItem as jest.Mock).mockResolvedValue({ ...mockBottleData, rating: 9 });
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('7.5/20')).toBeTruthy());
+
+    // Open rating editor
+    const touchables = screen.UNSAFE_getAllByType(require('react-native').TouchableOpacity);
+    fireEvent.press(touchables[1]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Enregistrer la note')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Enregistrer la note'));
+
+    await waitFor(() => {
+      expect(cellarService.updateCellarItem).toHaveBeenCalledWith(
+        'mock-token', 1, { rating: expect.any(Number) }
+      );
+    });
+  });
+
+  it('should show delete modal when trash icon is pressed', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('delete-bottle-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Supprimer la bouteille')).toBeTruthy();
+    });
+  });
+
+  it('should cancel delete when pressing Annuler in modal', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('delete-bottle-btn'));
+
+    await waitFor(() => expect(screen.getByText('Supprimer la bouteille')).toBeTruthy());
+
+    fireEvent.press(screen.getByText('Annuler'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Supprimer la bouteille')).toBeNull();
+    });
+  });
+
+  it('should confirm delete and call deleteCellarItem', async () => {
+    (cellarService.getCellarItemById as jest.Mock).mockResolvedValue(mockBottleData);
+    (cellarService.deleteCellarItem as jest.Mock).mockResolvedValue(null);
+
+    render(<BottleDetailPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('delete-bottle-btn'));
+
+    await waitFor(() => expect(screen.getByText('Supprimer la bouteille')).toBeTruthy());
+
+    fireEvent.press(screen.getByText('Supprimer'));
+
+    await waitFor(() => {
+      expect(cellarService.deleteCellarItem).toHaveBeenCalledWith('mock-token', 1);
+    });
   });
 });

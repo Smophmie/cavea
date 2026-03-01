@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
@@ -14,17 +14,35 @@ const Logo = require('@/assets/images/logo.png');
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading, error, token } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
-    await login(email, password);
+    setError(null);
+    setLoading(true);
+    try {
+      const errorMessage = await login(email, password);
+      if (errorMessage) {
+        setError(errorMessage);
+      } else {
+        router.replace("/protected/dashboard");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-app">
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1 }}
+      >
       <ScrollView
         className="p-4"
         contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="w-full">
           <BackButton color="#730b1e" />
@@ -44,7 +62,7 @@ export default function LoginPage() {
             Retrouvez votre cave à vin.
           </Text>
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
@@ -53,7 +71,7 @@ export default function LoginPage() {
               className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput
+          <TextInput placeholderTextColor="#9CA3AF"
               placeholder="Mot de passe"
               value={password}
               onChangeText={setPassword}
@@ -77,6 +95,7 @@ export default function LoginPage() {
           />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

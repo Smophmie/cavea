@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
-import { ChevronDown, Star, X } from "lucide-react-native";
+import { ChevronDown, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import PageTitle from "./PageTitle";
@@ -21,7 +21,6 @@ interface BottleFormData {
   };
   appellation_name?: string;
   stock: number;
-  rating?: number;
   price?: number;
   shop?: string;
   offered_by?: string;
@@ -42,7 +41,6 @@ interface BottleFormInput {
   };
   appellation_name: string;
   stock: string;
-  rating: string;
   price: string;
   shop: string;
   offered_by: string;
@@ -71,6 +69,10 @@ export default function AddOrUpdateBottleForm({
   const [showColourPicker, setShowColourPicker] = useState(false);
   const [showRegionPicker, setShowRegionPicker] = useState(false);
   const [showGrapeVarietyPicker, setShowGrapeVarietyPicker] = useState(false);
+  const [yearPickerField, setYearPickerField] = useState<'vintage.year' | 'drinking_window_start' | 'drinking_window_end' | null>(null);
+
+  const currentYear = new Date().getFullYear();
+  const YEARS = Array.from({ length: currentYear + 50 - 1901 + 1 }, (_, i) => String(currentYear + 50 - i));
 
   const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
@@ -85,7 +87,6 @@ export default function AddOrUpdateBottleForm({
     },
     appellation_name: initialData?.appellation_name || "",
     stock: initialData?.stock || "",
-    rating: initialData?.rating || "",
     price: initialData?.price || "",
     shop: initialData?.shop || "",
     offered_by: initialData?.offered_by || "",
@@ -119,7 +120,6 @@ export default function AddOrUpdateBottleForm({
         },
         appellation_name: data.appellation?.name || "",
         stock: String(data.stock),
-        rating: data.rating ? String(data.rating) : "",
         price: data.price ? String(data.price) : "",
         shop: data.shop || "",
         offered_by: data.offered_by || "",
@@ -158,18 +158,13 @@ export default function AddOrUpdateBottleForm({
     }
 
     const year = parseInt(formData.vintage.year);
-    if (formData.vintage.year && (isNaN(year) || year < 1900 || year > 2100)) {
-      newErrors['vintage.year'] = "Année invalide (1900-2100)";
+    if (formData.vintage.year && (isNaN(year) || year < 1901 || year > 2100)) {
+      newErrors['vintage.year'] = "Année invalide (1901-2100)";
     }
 
     const stock = parseInt(formData.stock);
     if (formData.stock && (isNaN(stock) || stock < 0)) {
       newErrors['stock'] = "Stock invalide (minimum 0)";
-    }
-
-    const rating = parseFloat(formData.rating);
-    if (formData.rating && (isNaN(rating) || rating < 0 || rating > 10)) {
-      newErrors['rating'] = "Note invalide (0-10)";
     }
 
     const price = parseFloat(formData.price);
@@ -211,7 +206,6 @@ export default function AddOrUpdateBottleForm({
         },
         stock: parseInt(formData.stock),
         ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
-        ...(formData.rating && { rating: parseFloat(formData.rating) }),
         ...(formData.price && { price: parseFloat(formData.price) }),
         ...(formData.shop && { shop: formData.shop }),
         ...(formData.offered_by && { offered_by: formData.offered_by }),
@@ -283,29 +277,14 @@ export default function AddOrUpdateBottleForm({
     updateField('bottle.grape_variety_ids', newIds);
   };
 
-  const setRating = (stars: number) => {
-    const currentRatingValue = parseFloat(formData.rating) || 0;
-    
-    if (stars === Math.ceil(currentRatingValue)) {
-      if (currentRatingValue === stars) {
-        updateField('rating', (stars - 0.5).toString());
-      } else {
-        updateField('rating', stars.toString());
-      }
-    } else {
-      updateField('rating', stars.toString());
-    }
-  };
-
   const selectedColour = COLOURS.find(c => c.id === formData.bottle.colour_id);
   const selectedRegion = REGIONS.find(r => r.id === formData.bottle.region_id);
-  const selectedGrapeVarieties = GRAPE_VARIETIES.filter(gv => 
+  const selectedGrapeVarieties = GRAPE_VARIETIES.filter(gv =>
     formData.bottle.grape_variety_ids.includes(gv.id)
   );
-  const currentRating = parseFloat(formData.rating) || 0;
 
   return (
-    <ScrollView>
+    <ScrollView keyboardShouldPersistTaps="handled">
       <View className="pb-5 pt-16 px-10 bg-wine">
         <View className="mb-4">
           <BackButton color="#ffffff" />
@@ -326,7 +305,7 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
-                <TextInput
+                <TextInput placeholderTextColor="#9CA3AF"
                   value={formData.bottle.name}
                   onChangeText={(value) => updateField('bottle.name', value)}
                   placeholder="Ex: A l'ombre du figuier"
@@ -346,7 +325,7 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
-                <TextInput
+                <TextInput placeholderTextColor="#9CA3AF"
                   value={formData.bottle.domain_name}
                   onChangeText={(value) => updateField('bottle.domain_name', value)}
                   placeholder="Ex: Mas de la Seranne"
@@ -431,7 +410,7 @@ export default function AddOrUpdateBottleForm({
             )}
 
             <Text className="text-base font-semibold text-gray mb-2">Appellation (AOC/AOP)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.appellation_name}
               onChangeText={(value) => updateField('appellation_name', value)}
               placeholder="Ex: AOP Languedoc"
@@ -478,6 +457,7 @@ export default function AddOrUpdateBottleForm({
                     </TouchableOpacity>
                   </View>
                   <FlatList
+                    initialNumToRender={GRAPE_VARIETIES.length}
                     data={GRAPE_VARIETIES}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
@@ -493,6 +473,53 @@ export default function AddOrUpdateBottleForm({
                         )}
                       </TouchableOpacity>
                     )}
+                  />
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              visible={yearPickerField !== null}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setYearPickerField(null)}
+            >
+              <View className="flex-1 justify-end bg-black/50">
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '60%' }}>
+                  <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
+                    <Text className="text-lg font-bold">Sélectionner une année</Text>
+                    <TouchableOpacity onPress={() => setYearPickerField(null)}>
+                      <X size={24} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  <FlatList
+                    initialNumToRender={YEARS.length}
+                    data={YEARS}
+                    keyExtractor={(item) => item}
+                    renderItem={({ item }) => {
+                      const currentValue = yearPickerField === 'vintage.year'
+                        ? formData.vintage.year
+                        : yearPickerField === 'drinking_window_start'
+                        ? formData.drinking_window_start
+                        : formData.drinking_window_end;
+                      const isSelected = item === currentValue;
+                      return (
+                        <TouchableOpacity
+                          onPress={() => {
+                            updateField(yearPickerField!, item);
+                            setYearPickerField(null);
+                          }}
+                          className="px-4 py-4 border-b border-gray-100 flex-row justify-between items-center"
+                        >
+                          <Text className={`text-base ${isSelected ? "font-bold text-wine" : ""}`}>{item}</Text>
+                          {isSelected && (
+                            <View className="w-6 h-6 rounded-full bg-wine items-center justify-center">
+                              <Text className="text-white text-sm">✓</Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    }}
                   />
                 </View>
               </View>
@@ -534,14 +561,15 @@ export default function AddOrUpdateBottleForm({
             {mode === 'add' && (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
-                <TextInput
-                  value={formData.vintage.year}
-                  onChangeText={(value) => updateField('vintage.year', value)}
-                  placeholder="Ex: 2015"
-                  keyboardType="numeric"
-                  maxLength={4}
-                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2"
-                />
+                <TouchableOpacity
+                  onPress={() => setYearPickerField('vintage.year')}
+                  className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
+                >
+                  <Text className={formData.vintage.year ? "text-black" : "text-gray-400"}>
+                    {formData.vintage.year || "Sélectionner une année"}
+                  </Text>
+                  <ChevronDown size={20} color="#6B7280" />
+                </TouchableOpacity>
                 {errors['vintage.year'] && (
                   <Text className="text-red-600 text-sm mb-4">{errors['vintage.year']}</Text>
                 )}
@@ -555,7 +583,7 @@ export default function AddOrUpdateBottleForm({
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Quantité *</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.stock}
               onChangeText={(value) => updateField('stock', value)}
               placeholder="Ex: 6"
@@ -569,7 +597,7 @@ export default function AddOrUpdateBottleForm({
 
           <View className="flex-1">
             <Text className="text-base font-semibold text-gray mb-2">Prix (€)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9CA3AF"
               value={formData.price}
               onChangeText={(value) => updateField('price', value)}
               placeholder="Ex: 15.50"
@@ -583,7 +611,7 @@ export default function AddOrUpdateBottleForm({
         </View>
 
         <Text className="text-base font-semibold text-gray mb-2">Lieu d'achat</Text>
-        <TextInput
+        <TextInput placeholderTextColor="#9CA3AF"
           value={formData.shop}
           onChangeText={(value) => updateField('shop', value)}
           placeholder="Ex: Cave Dupont"
@@ -591,7 +619,7 @@ export default function AddOrUpdateBottleForm({
         />
 
         <Text className="text-base font-semibold text-gray mb-2">Offert par</Text>
-        <TextInput
+        <TextInput placeholderTextColor="#9CA3AF"
           value={formData.offered_by}
           onChangeText={(value) => updateField('offered_by', value)}
           placeholder="Nom de la personne"
@@ -600,29 +628,31 @@ export default function AddOrUpdateBottleForm({
       </View>
 
       <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
-        <Text className="font-bold text-xl pb-4">Période de garde</Text>
+        <Text className="font-bold text-xl pb-4">Période de dégustation optimale</Text>
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Début de garde</Text>
-            <TextInput
-              value={formData.drinking_window_start}
-              onChangeText={(value) => updateField('drinking_window_start', value)}
-              placeholder="2025"
-              keyboardType="numeric"
-              maxLength={4}
-              className="border border-gray-300 rounded-lg px-4 py-3"
-            />
+            <Text className="text-base font-semibold text-gray mb-2">Début</Text>
+            <TouchableOpacity
+              onPress={() => setYearPickerField('drinking_window_start')}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center"
+            >
+              <Text className={formData.drinking_window_start ? "text-black" : "text-gray-400"}>
+                {formData.drinking_window_start || "Année"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
           <View className="flex-1">
-            <Text className="text-base font-semibold text-gray mb-2">Fin de garde</Text>
-            <TextInput
-              value={formData.drinking_window_end}
-              onChangeText={(value) => updateField('drinking_window_end', value)}
-              placeholder="2035"
-              keyboardType="numeric"
-              maxLength={4}
-              className="border border-gray-300 rounded-lg px-4 py-3"
-            />
+            <Text className="text-base font-semibold text-gray mb-2">Fin</Text>
+            <TouchableOpacity
+              onPress={() => setYearPickerField('drinking_window_end')}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center"
+            >
+              <Text className={formData.drinking_window_end ? "text-black" : "text-gray-400"}>
+                {formData.drinking_window_end || "Année"}
+              </Text>
+              <ChevronDown size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
         </View>
         {errors['drinking_window_end'] && (
@@ -630,45 +660,6 @@ export default function AddOrUpdateBottleForm({
         )}
       </View>
 
-      <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
-        <Text className="font-bold text-xl pb-4">Notes personnelles</Text>
-        <Text className="text-base font-semibold text-gray mb-3">Ma note</Text>
-        <View className="flex-row items-center flex-wrap">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
-            const isFilled = currentRating >= star;
-            const isHalfFilled = !isFilled && currentRating >= star - 0.5;
-            
-            let fillColor = "transparent";
-            if (isFilled) {
-              fillColor = "#f59e0b";
-            } else if (isHalfFilled) {
-              fillColor = "rgba(245, 158, 11, 0.5)";
-            }
-            
-            return (
-              <TouchableOpacity
-                key={star}
-                onPress={() => setRating(star)}
-                style={{ padding: 2 }}
-              >
-                <Star
-                  size={24}
-                  color="#f59e0b"
-                  fill={fillColor}
-                />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        {currentRating > 0 && (
-          <Text className="text-gray mt-2 text-base">
-            {currentRating}/10
-          </Text>
-        )}
-        {errors['rating'] && (
-          <Text className="text-red-600 text-sm mt-2">{errors['rating']}</Text>
-        )}
-      </View>
         </>
       )}
 

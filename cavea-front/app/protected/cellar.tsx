@@ -6,6 +6,7 @@ import { useAuth } from "@/authentication/AuthContext";
 import { cellarService } from "@/services/CellarService";
 import OfflineIndicator from "../components/OfflineIndicator";
 import { useFocusEffect } from "expo-router";
+import { COLOUR_MAP } from "@/constants/wineData";
 
 interface CellarItem {
   id: number;
@@ -87,26 +88,27 @@ export default function CellarPage() {
         </Text>
         <View className="py-4">
           <Text className="text-white text-lg mb-3">Filtrer par couleur</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-2">
-              {colours.map((colour) => (
+          <View className="flex-row flex-wrap gap-2">
+            {colours.map((colour) => (
                 <TouchableOpacity
                   key={colour.id || "all"}
                   onPress={() => setSelectedColour(colour.id)}
                   style={{ backgroundColor: selectedColour === colour.id ? "rgba(255, 255, 255, 0.1)" : undefined }}
-                  className={`px-4 py-2 rounded-lg border ${
+                  className={`px-4 py-2 rounded-lg border flex-row items-center gap-2 ${
                     selectedColour === colour.id
                       ? "border-white"
                       : "bg-wine border-lightgray"
                   }`}
                 >
+                  {!!COLOUR_MAP[colour.name] && (
+                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COLOUR_MAP[colour.name] }} />
+                  )}
                   <Text className={selectedColour === colour.id ? "font-bold text-white" : "text-white"}>
                     {colour.name}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+            ))}
+          </View>
         </View>
       </View>
 

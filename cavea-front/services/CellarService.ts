@@ -72,6 +72,10 @@ const fetchAPI = async (
       throw error;
     }
 
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
     const responseData = await response.json();
     console.log(`[FETCH_API] ${method} success response:`, responseData);
     return responseData;
@@ -236,5 +240,14 @@ export const cellarService = {
     const data = await fetchAPI(`/cellar-items/${cellarItemId}`, token, 'DELETE');
     await invalidateCaches(cellarItemId);
     return data;
+  },
+
+  addComment: async (token: string, cellarItemId: number, content: string) => {
+    const date = new Date().toISOString().split('T')[0];
+    return fetchAPI(`/cellar-items/${cellarItemId}/comments`, token, 'POST', { content, date });
+  },
+
+  deleteComment: async (token: string, cellarItemId: number, commentId: number) => {
+    return fetchAPI(`/cellar-items/${cellarItemId}/comments/${commentId}`, token, 'DELETE');
   },
 };

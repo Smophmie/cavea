@@ -1,17 +1,31 @@
 import "../global.css"
-import { View, Text, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useRouter, Redirect } from "expo-router";
 import { Image } from 'expo-image';
 import PrimaryButton from "./components/PrimaryButton"
 import SecondaryButton from "./components/SecondaryButton";
 import CardIconText from "./components/CardIconText";
 import PageTitle from "./components/PageTitle";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/authentication/AuthContext";
 
 const Logo = require('@/assets/images/logo.png');
 
 export default function Index() {
   const router = useRouter();
+  const { token, storageLoading } = useAuth();
+
+  if (storageLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-app items-center justify-center">
+        <ActivityIndicator size="large" color="#800020" />
+      </SafeAreaView>
+    );
+  }
+
+  if (token) {
+    return <Redirect href="/protected/dashboard" />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-app">

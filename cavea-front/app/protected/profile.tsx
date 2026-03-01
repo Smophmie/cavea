@@ -139,7 +139,7 @@ export default function ProfilePage() {
               loading
                 ? "..."
                 : stats?.total_value !== null && stats?.total_value !== undefined
-                ? `${stats.total_value} €`
+                ? `${stats.total_value % 1 === 0 ? stats.total_value : stats.total_value.toFixed(2)} €`
                 : "—"
             }
             icon="TrendingUp"

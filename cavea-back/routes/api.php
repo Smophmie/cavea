@@ -31,4 +31,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/cellar-items/{cellarItem}/increment', [CellarItemController::class, 'incrementStock']);
     Route::post('/cellar-items/{cellarItem}/decrement', [CellarItemController::class, 'decrementStock']);
     Route::delete('/cellar-items/{cellarItem}', [CellarItemController::class, 'destroy']);
+    Route::post('/cellar-items/{cellarItem}/comments', [CellarItemController::class, 'storeComment']);
+    Route::delete('/cellar-items/{cellarItem}/comments/{comment}', [CellarItemController::class, 'destroyComment']);
 });

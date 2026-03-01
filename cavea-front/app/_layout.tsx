@@ -1,21 +1,7 @@
-import { Stack, Redirect } from "expo-router";
+import { Stack } from "expo-router";
 import { useFonts, PlayfairDisplay_400Regular, PlayfairDisplay_700Bold } from "@expo-google-fonts/playfair-display";
-import { AuthProvider, useAuth } from "../authentication/AuthContext";
+import { AuthProvider } from "../authentication/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
-function RootNavigator() {
-  const { token, loading } = useAuth();
-
-  if (loading) {
-    return <Redirect href="/loading" />;
-  }
-
-  if (!token) {
-    return <Redirect href="/" />;
-  }
-
-  return <Redirect href="/protected/dashboard" />;
-}
 
 export default function RootLayout() {
   useFonts({
@@ -33,7 +19,6 @@ export default function RootLayout() {
           <Stack.Screen name="loading" />
           <Stack.Screen name="protected" />
         </Stack>
-        <RootNavigator />
       </AuthProvider>
     </SafeAreaProvider>
   );
