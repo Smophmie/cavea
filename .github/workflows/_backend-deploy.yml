@@ -53,9 +53,7 @@ jobs:
             --namespace ${{ steps.env.outputs.NAMESPACE }} \
             --create-namespace \
             --install \
-            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            --set test_user_email=${{ secrets.TEST_USER_EMAIL }} \
-            --set test_user_password=${{ secrets.TEST_USER_PASSWORD }}
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
 
       - name: Wait for database pod to be ready
         run: |
@@ -93,7 +91,9 @@ jobs:
             --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             --set image.tag=${{ inputs.image_tag || 'latest' }} \
             --set app_key=${{ secrets.APP_KEY }} \
-            --set resend_key=${{ secrets.RESEND_KEY }}
+            --set resend_key=${{ secrets.RESEND_KEY }} \
+            --set test_user_email=${{ secrets.TEST_USER_EMAIL }} \
+            --set test_user_password=${{ secrets.TEST_USER_PASSWORD }}
 
       - name: Wait for backend pod to be ready
         run: |
