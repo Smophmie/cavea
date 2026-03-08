@@ -54,6 +54,8 @@ jobs:
             --create-namespace \
             --install \
             --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            --set test_user_email=${{ secrets.TEST_USER_EMAIL }} \
+            --set test_user_password=${{ secrets.TEST_USER_PASSWORD }}
 
       - name: Wait for database pod to be ready
         run: |
