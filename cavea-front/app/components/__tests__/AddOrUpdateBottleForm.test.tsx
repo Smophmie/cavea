@@ -113,10 +113,10 @@ describe('AddOrUpdateBottleForm', () => {
 
       const yearPickers = screen.getAllByText('Année');
       fireEvent.press(yearPickers[0]);
-      fireEvent.press(screen.getByText('2030'));
+      fireEvent.press(screen.getByText('2025'));
 
       fireEvent.press(screen.getByText('Année'));
-      fireEvent.press(screen.getByText('2025'));
+      fireEvent.press(screen.getByText('2020'));
 
       const submitButton = screen.getByText('Ajouter');
       fireEvent.press(submitButton);
