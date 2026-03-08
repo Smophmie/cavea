@@ -53,7 +53,7 @@ jobs:
             --namespace ${{ steps.env.outputs.NAMESPACE }} \
             --create-namespace \
             --install \
-            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            --set mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             --set test_user_email=${{ secrets.TEST_USER_EMAIL }} \
             --set test_user_password=${{ secrets.TEST_USER_PASSWORD }}
 
