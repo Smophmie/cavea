@@ -12,7 +12,7 @@ class EmailVerificationController extends Controller
     /**
      * Verify the user's email address via signed URL.
      */
-    public function verify(Request $request, $id, $hash)
+    public function verify($id, $hash)
     {
         $user = User::findOrFail($id);
 

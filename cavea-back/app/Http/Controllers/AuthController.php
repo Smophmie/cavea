@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -24,19 +25,9 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user) {
-            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
-        }
-
-        if (! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Mot de passe invalide.'], 401);
-        }
-
-        if (! $user->hasVerifiedEmail()) {
-            return response()->json([
-                'message' => 'Votre adresse email n\'a pas encore été vérifiée.',
-                'email_not_verified' => true,
-            ], 403);
+        $error = $this->getCredentialError($user, $request->password);
+        if ($error !== null) {
+            return $error;
         }
 
         $user->tokens()->delete();
@@ -47,6 +38,22 @@ class AuthController extends Controller
             'token' => $token,
             'user' => $user
         ]);
+    }
+
+    private function getCredentialError(?User $user, string $password): ?JsonResponse
+    {
+        if (! $user) {
+            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+        }
+
+        if (Hash::check($password, $user->password)) {
+            return $user->hasVerifiedEmail() ? null : response()->json([
+                'message' => 'Votre adresse email n\'a pas encore été vérifiée.',
+                'email_not_verified' => true,
+            ], 403);
+        }
+
+        return response()->json(['message' => 'Mot de passe invalide.'], 401);
     }
 
     /**
