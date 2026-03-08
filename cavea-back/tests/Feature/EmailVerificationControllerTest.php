@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
 
 class EmailVerificationControllerTest extends TestCase
@@ -24,7 +24,7 @@ class EmailVerificationControllerTest extends TestCase
         $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', $user->email)]
         );
 
         $response = $this->get($url);
@@ -56,7 +56,7 @@ class EmailVerificationControllerTest extends TestCase
         $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', $user->email)]
         );
 
         $response = $this->get($url);
@@ -72,7 +72,7 @@ class EmailVerificationControllerTest extends TestCase
         $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->subMinutes(1),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', $user->email)]
         );
 
         $response = $this->get($url);
@@ -85,7 +85,7 @@ class EmailVerificationControllerTest extends TestCase
     {
         $user = User::factory()->unverified()->create();
 
-        $response = $this->get("/api/email/verify/{$user->id}/" . sha1($user->email));
+        $response = $this->get("/api/email/verify/{$user->id}/" . hash('sha256', $user->email));
 
         $response->assertStatus(403);
         $this->assertNull($user->fresh()->email_verified_at);
@@ -106,7 +106,7 @@ class EmailVerificationControllerTest extends TestCase
         $response->assertStatus(200)
                  ->assertJson(['message' => 'Email de vérification renvoyé.']);
 
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function testResendFailsForUnknownEmail()

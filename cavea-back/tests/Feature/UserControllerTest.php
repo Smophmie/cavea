@@ -6,8 +6,8 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Laravel\Sanctum\Sanctum;
 
 class UserControllerTest extends TestCase
@@ -46,7 +46,7 @@ class UserControllerTest extends TestCase
         ]);
 
         $user = User::where('email', 'testuser@example.com')->first();
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function testUserRegisterFailsWithInvalidEmail()

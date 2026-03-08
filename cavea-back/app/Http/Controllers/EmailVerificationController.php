@@ -16,7 +16,7 @@ class EmailVerificationController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        if (! hash_equals((string) $hash, hash('sha256', $user->getEmailForVerification()))) {
             return response('<h1>Lien invalide</h1><p>Ce lien de vérification est invalide ou a expiré.</p>', 400)
                 ->header('Content-Type', self::CONTENT_TYPE_HTML);
         }
