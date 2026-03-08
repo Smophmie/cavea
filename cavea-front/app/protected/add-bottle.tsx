@@ -17,26 +17,13 @@ export default function AddBottlePage() {
   );
 
   const handleSubmit = async (formData: any) => {
-    console.log('[ADD_BOTTLE_PAGE] Form submission started', {
-      formData,
-      hasToken: !!token,
-      timestamp: new Date().toISOString(),
-    });
-
     if (!token) {
-      console.error('[ADD_BOTTLE_PAGE] No token available');
       Alert.alert("Erreur", "Vous devez être connecté");
       return;
     }
 
     try {
-      console.log('[ADD_BOTTLE_PAGE] Calling cellarService.createCellarItem');
-      const result = await cellarService.createCellarItem(token, formData);
-
-      console.log('[ADD_BOTTLE_PAGE] Cellar item created successfully', {
-        result,
-        timestamp: new Date().toISOString(),
-      });
+      await cellarService.createCellarItem(token, formData);
 
       Alert.alert(
         "Succès",
@@ -44,25 +31,14 @@ export default function AddBottlePage() {
         [
           {
             text: "OK",
-            onPress: () => {
-              console.log('[ADD_BOTTLE_PAGE] Redirecting to dashboard');
-              router.replace("/protected/dashboard");
-            }
-          }
+            onPress: () => router.replace("/protected/dashboard"),
+          },
         ]
       );
     } catch (error: any) {
-      console.error('[ADD_BOTTLE_PAGE] Error creating cellar item', {
-        error: error instanceof Error ? error.message : String(error),
-        errorResponse: error.response,
-        formData,
-        timestamp: new Date().toISOString(),
-      });
-
       let errorMessage = "Impossible d'ajouter la bouteille";
 
       if (error.response?.status === 422) {
-        console.error('[ADD_BOTTLE_PAGE] Validation error (422)', error.response.data);
         const validationErrors = error.response.data.errors;
         errorMessage = Object.values(validationErrors).flat().join("\n");
       } else {
@@ -71,10 +47,6 @@ export default function AddBottlePage() {
 
       Alert.alert("Erreur", errorMessage);
     }
-  };
-
-  const handleCancel = () => {
-    router.back();
   };
 
   return (
