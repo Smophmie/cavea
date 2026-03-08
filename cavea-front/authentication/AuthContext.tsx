@@ -35,6 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUsername(data.user.firstname);
         return null;
       } else {
+        if (response.status === 403 && data.email_not_verified) {
+          return "EMAIL_NOT_VERIFIED";
+        }
         return data.message || "Erreur lors de la connexion";
       }
     } catch (err) {
