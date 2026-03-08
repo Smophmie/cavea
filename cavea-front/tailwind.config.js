@@ -9,10 +9,11 @@ module.exports = {
     extend: {
       colors: {
         app: "#faf9f6",
-        wine: "#bb2700",
+        wine: "#730b1e",
         darkwine: "#8B1E00",
         gray: "#6B7280",
         lightgray: "#e2e8f0",
+        black: "#1d293d",
       },
       fontFamily: {
         playfair: ['PlayfairDisplay_400Regular'],

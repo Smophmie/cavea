@@ -5,23 +5,30 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CellarItemController;
+use App\Http\Controllers\EmailVerificationController;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
 Route::post('/register', [UserController::class, 'register']);
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/users', [UserController::class, 'index']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+
+Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
+
+Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
+    Route::get('/user/me', [UserController::class, 'me']);
+    Route::delete('/user', [UserController::class, 'deleteAccount']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/cellar-items', [CellarItemController::class, 'index']);
     Route::get('/cellar-items/last', [CellarItemController::class, 'getLastAdded']);
+    Route::get('/cellar-items/stats', [CellarItemController::class, 'stats']);
     Route::get('/cellar-items/total-stock', [CellarItemController::class, 'getTotalStock']);
     Route::get('/cellar-items/stock-by-colour', [CellarItemController::class, 'getStockByColour']);
     Route::get('/cellar-items/{cellarItemId}', [CellarItemController::class, 'show']);
@@ -32,4 +39,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/cellar-items/{cellarItem}/increment', [CellarItemController::class, 'incrementStock']);
     Route::post('/cellar-items/{cellarItem}/decrement', [CellarItemController::class, 'decrementStock']);
     Route::delete('/cellar-items/{cellarItem}', [CellarItemController::class, 'destroy']);
+    Route::post('/cellar-items/{cellarItem}/comments', [CellarItemController::class, 'storeComment']);
+    Route::delete('/cellar-items/{cellarItem}/comments/{comment}', [CellarItemController::class, 'destroyComment']);
 });

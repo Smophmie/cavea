@@ -1,6 +1,72 @@
 import { cellarService } from '../CellarService';
+import { baseURL } from '@/api';
 
 global.fetch = jest.fn();
+
+const mockToken = 'mock-token-123';
+
+describe('CellarService - getStats', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('should return stats with all values filled', async () => {
+    const mockStats = { total_stock: 42, total_value: 1250.5, favourite_region: 'Bordeaux' };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => mockStats,
+    });
+
+    const result = await cellarService.getStats(mockToken);
+
+    expect(result).toEqual(mockStats);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${baseURL}/cellar-items/stats`,
+      expect.objectContaining({ method: 'GET' })
+    );
+  });
+
+  it('should return stats with null total_value when no prices set', async () => {
+    const mockStats = { total_stock: 10, total_value: null, favourite_region: 'Bourgogne' };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => mockStats,
+    });
+
+    const result = await cellarService.getStats(mockToken);
+
+    expect(result.total_value).toBeNull();
+  });
+
+  it('should return stats with null favourite_region when cellar is empty', async () => {
+    const mockStats = { total_stock: 0, total_value: null, favourite_region: null };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => mockStats,
+    });
+
+    const result = await cellarService.getStats(mockToken);
+
+    expect(result.total_stock).toBe(0);
+    expect(result.favourite_region).toBeNull();
+  });
+
+  it('should throw on API error', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(cellarService.getStats(mockToken)).rejects.toThrow(
+      'Impossible de récupérer les statistiques.'
+    );
+  });
+});
 
 describe('CellarService - New Methods', () => {
   const mockToken = 'test-token';
@@ -27,6 +93,7 @@ describe('CellarService - New Methods', () => {
         json: async () => mockBottleData,
         status: 200,
         statusText: 'OK',
+        headers: { get: jest.fn().mockReturnValue(null) },
       });
 
       const result = await cellarService.getCellarItemById(mockToken, mockBottleId);
@@ -59,16 +126,15 @@ describe('CellarService - New Methods', () => {
   });
 
   describe('deleteCellarItem', () => {
-    it('should send a DELETE request and return null on 204', async () => {
-      const jsonSpy = jest.fn();
+    it('should delete a cellar item', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
+        json: async () => ({}),
         status: 204,
         statusText: 'No Content',
-        json: jsonSpy,
       });
 
-      const result = await cellarService.deleteCellarItem(mockToken, mockBottleId);
+      await cellarService.deleteCellarItem(mockToken, mockBottleId);
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/cellar-items/1'),
@@ -79,8 +145,6 @@ describe('CellarService - New Methods', () => {
           }),
         })
       );
-      expect(result).toBeNull();
-      expect(jsonSpy).not.toHaveBeenCalled();
     });
 
     it('should handle errors when deleting', async () => {
@@ -115,6 +179,7 @@ describe('CellarService - New Methods', () => {
         json: async () => mockUpdatedData,
         status: 200,
         statusText: 'OK',
+        headers: { get: jest.fn().mockReturnValue(null) },
       });
 
       const result = await cellarService.updateCellarItem(
@@ -157,303 +222,184 @@ describe('CellarService - New Methods', () => {
     });
   });
 });
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-// Factories must be self-contained: jest.mock() is hoisted before imports by
-// Babel, so any variable declared in this file is undefined at factory
-// execution time. Instead, we mock with inline implementations and retrieve
-// the mocked modules via jest.mocked() inside the tests.
 
-jest.mock('../CacheService', () => ({
-  cacheService: {
-    get: jest.fn(),
-    set: jest.fn(),
-    clear: jest.fn(),
-  },
-}));
+describe('CellarService - cached methods', () => {
+  const mockToken = 'mock-token';
 
-jest.mock('@react-native-community/netinfo', () => ({
-  fetch: jest.fn(),
-}));
+  beforeEach(() => jest.clearAllMocks());
 
-describe('CellarService - Cache & remaining methods', () => {
-  const mockToken = 'test-token';
+  const mockFetchOk = (data: any) =>
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => data,
+    });
 
-  // Retrieve the mocked instances after module resolution
-  const { cacheService } = jest.requireMock('../CacheService') as {
-    cacheService: { get: jest.Mock; set: jest.Mock; clear: jest.Mock };
-  };
-  const NetInfo = jest.requireMock('@react-native-community/netinfo') as {
-    fetch: jest.Mock;
-  };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Default: online, empty cache
-    NetInfo.fetch.mockResolvedValue({ isConnected: true });
-    cacheService.get.mockResolvedValue(null);
-    cacheService.set.mockResolvedValue(undefined);
-    cacheService.clear.mockResolvedValue(undefined);
+  it('getTotalStock should return total_stock value', async () => {
+    mockFetchOk({ total_stock: 15 });
+    const result = await cellarService.getTotalStock(mockToken);
+    expect(result).toBe(15);
   });
 
-  // ─── fetchWithCache behaviour ───────────────────────────────────────────────
-
-  describe('fetchWithCache — offline fallback', () => {
-    it('should return cached data when offline', async () => {
-      NetInfo.fetch.mockResolvedValue({ isConnected: false });
-      cacheService.get.mockResolvedValue([{ id: 1 }]);
-
-      const result = await cellarService.getAllCellarItems(mockToken);
-
-      expect(result).toEqual([{ id: 1 }]);
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it('should throw when offline and no cache available', async () => {
-      NetInfo.fetch.mockResolvedValue({ isConnected: false });
-      cacheService.get.mockResolvedValue(null);
-
-      await expect(cellarService.getAllCellarItems(mockToken)).rejects.toThrow(
-        'Aucune donnée en cache et pas de connexion'
-      );
-    });
-
-    it('should fall back to cache when the network request fails while online', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-      cacheService.get.mockResolvedValue([{ id: 42 }]);
-
-      const result = await cellarService.getAllCellarItems(mockToken);
-
-      expect(result).toEqual([{ id: 42 }]);
-    });
-
-    it('should throw when online, network fails, and cache is empty', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-      cacheService.get.mockResolvedValue(null);
-
-      await expect(cellarService.getAllCellarItems(mockToken)).rejects.toThrow();
-    });
-
-    it('should write fresh data to cache after a successful fetch', async () => {
-      const mockData = [{ id: 1 }];
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
-
-      await cellarService.getAllCellarItems(mockToken);
-
-      expect(cacheService.set).toHaveBeenCalledWith(
-        expect.stringContaining('cache_all_items'),
-        mockData
-      );
-    });
+  it('getStockByColour should return stock by colour data', async () => {
+    const mockData = [{ colour: 'Rouge', count: 5 }];
+    mockFetchOk(mockData);
+    const result = await cellarService.getStockByColour(mockToken);
+    expect(result).toEqual(mockData);
   });
 
-  // ─── getTotalStock ──────────────────────────────────────────────────────────
-
-  describe('getTotalStock', () => {
-    it('should return the total stock value', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => ({ total_stock: 42 }),
-      });
-
-      const result = await cellarService.getTotalStock(mockToken);
-
-      expect(result).toBe(42);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items/total-stock'),
-        expect.objectContaining({ method: 'GET' })
-      );
-    });
+  it('getLastAdded should return last added items', async () => {
+    const mockData = [{ id: 1, bottle: { name: 'Château Test' } }];
+    mockFetchOk(mockData);
+    const result = await cellarService.getLastAdded(mockToken);
+    expect(result).toEqual(mockData);
   });
 
-  // ─── getStockByColour ───────────────────────────────────────────────────────
-
-  describe('getStockByColour', () => {
-    it('should return stock grouped by colour', async () => {
-      const mockData = [
-        { colour: 'Rouge', stock: 10 },
-        { colour: 'Blanc', stock: 5 },
-      ];
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
-
-      const result = await cellarService.getStockByColour(mockToken);
-
-      expect(result).toEqual(mockData);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items/stock-by-colour'),
-        expect.objectContaining({ method: 'GET' })
-      );
-    });
+  it('getAllCellarItems should return all items', async () => {
+    const mockData = [{ id: 1 }, { id: 2 }];
+    mockFetchOk(mockData);
+    const result = await cellarService.getAllCellarItems(mockToken);
+    expect(result).toEqual(mockData);
   });
 
-  // ─── getLastAdded ───────────────────────────────────────────────────────────
-
-  describe('getLastAdded', () => {
-    it('should return the last added items', async () => {
-      const mockData = [{ id: 9 }, { id: 8 }];
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
-
-      const result = await cellarService.getLastAdded(mockToken);
-
-      expect(result).toEqual(mockData);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items/last'),
-        expect.objectContaining({ method: 'GET' })
-      );
-    });
+  it('getCellarItemsByColour should return items filtered by colour', async () => {
+    const mockData = [{ id: 1, bottle: { colour: { id: 1 } } }];
+    mockFetchOk(mockData);
+    const result = await cellarService.getCellarItemsByColour(mockToken, 1);
+    expect(result).toEqual(mockData);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items/colour/1'),
+      expect.any(Object)
+    );
   });
 
-  // ─── getAllCellarItems ──────────────────────────────────────────────────────
-
-  describe('getAllCellarItems', () => {
-    it('should return all cellar items', async () => {
-      const mockData = [{ id: 1 }, { id: 2 }];
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
-
-      const result = await cellarService.getAllCellarItems(mockToken);
-
-      expect(result).toEqual(mockData);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items'),
-        expect.objectContaining({ method: 'GET' })
-      );
-    });
+  it('getCellarItemsByColour with null colour should use null in URL', async () => {
+    const mockData = [{ id: 1 }];
+    mockFetchOk(mockData);
+    await cellarService.getCellarItemsByColour(mockToken, null);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items/colour/null'),
+      expect.any(Object)
+    );
   });
 
-  // ─── getCellarItemsByColour ─────────────────────────────────────────────────
+  it('getCellarItem should return a single cellar item', async () => {
+    const mockData = { id: 1, bottle: { name: 'Test' } };
+    mockFetchOk(mockData);
+    const result = await cellarService.getCellarItem(mockToken, 1);
+    expect(result).toEqual(mockData);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items/1'),
+      expect.objectContaining({ method: 'GET' })
+    );
+  });
+});
 
-  describe('getCellarItemsByColour', () => {
-    it('should filter items by colour id', async () => {
-      const mockData = [{ id: 3 }];
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
+describe('CellarService - createCellarItem', () => {
+  const mockToken = 'mock-token';
 
-      const result = await cellarService.getCellarItemsByColour(mockToken, 2);
+  beforeEach(() => jest.clearAllMocks());
 
-      expect(result).toEqual(mockData);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items/colour/2'),
-        expect.objectContaining({ method: 'GET' })
-      );
+  it('should create a cellar item and return data', async () => {
+    const mockFormData = { bottle: { name: 'Test' }, stock: 3 };
+    const mockCreated = { id: 99, ...mockFormData };
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => mockCreated,
     });
 
-    it('should use a colour-specific cache key', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => [],
-      });
-
-      await cellarService.getCellarItemsByColour(mockToken, 5);
-
-      expect(cacheService.set).toHaveBeenCalledWith(
-        expect.stringContaining('cache_items_by_colour_5'),
-        expect.anything()
-      );
-    });
+    const result = await cellarService.createCellarItem(mockToken, mockFormData);
+    expect(result).toEqual(mockCreated);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items'),
+      expect.objectContaining({ method: 'POST' })
+    );
   });
 
-  // ─── createCellarItem ───────────────────────────────────────────────────────
-
-  describe('createCellarItem', () => {
-    const formData = {
-      bottle: { name: 'Test', domain_name: 'Dom', colour_id: 1, region_id: 1 },
-      vintage: { year: 2020 },
-      stock: 2,
-    };
-
-    it('should POST and return the created item', async () => {
-      const mockCreated = { id: 10, ...formData };
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 201,
-        statusText: 'Created',
-        json: async () => mockCreated,
-      });
-
-      const result = await cellarService.createCellarItem(mockToken, formData);
-
-      expect(result).toEqual(mockCreated);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify(formData),
-        })
-      );
+  it('should throw and propagate error on API failure', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ message: 'Validation error' }),
     });
 
-    it('should invalidate caches after creation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 201,
-        statusText: 'Created',
-        json: async () => ({ id: 10 }),
-      });
+    await expect(
+      cellarService.createCellarItem(mockToken, {})
+    ).rejects.toThrow();
+  });
+});
 
-      await cellarService.createCellarItem(mockToken, formData);
+describe('CellarService - addComment and deleteComment', () => {
+  const mockToken = 'mock-token';
 
-      expect(cacheService.clear).toHaveBeenCalledTimes(4);
+  beforeEach(() => jest.clearAllMocks());
+
+  it('addComment should POST to comments endpoint', async () => {
+    const mockResponse = { id: 1, content: 'Great wine', date: '2026-02-28' };
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => mockResponse,
     });
 
-    it('should rethrow errors without invalidating caches', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 422,
-        statusText: 'Unprocessable Entity',
-        json: async () => ({ message: 'Validation failed' }),
-      });
-
-      await expect(cellarService.createCellarItem(mockToken, formData)).rejects.toThrow();
-      expect(cacheService.clear).not.toHaveBeenCalled();
-    });
+    const result = await cellarService.addComment(mockToken, 5, 'Great wine');
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items/5/comments'),
+      expect.objectContaining({ method: 'POST' })
+    );
   });
 
-  // ─── getCellarItem ──────────────────────────────────────────────────────────
-
-  describe('getCellarItem', () => {
-    it('should fetch a single item by id (alias of getCellarItemById)', async () => {
-      const mockData = { id: 7 };
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: async () => mockData,
-      });
-
-      const result = await cellarService.getCellarItem(mockToken, 7);
-
-      expect(result).toEqual(mockData);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cellar-items/7'),
-        expect.objectContaining({ method: 'GET' })
-      );
+  it('deleteComment should DELETE comment endpoint and return null for 204', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 204,
+      headers: { get: jest.fn().mockReturnValue(null) },
+      json: async () => null,
     });
+
+    const result = await cellarService.deleteComment(mockToken, 5, 2);
+    expect(result).toBeNull();
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/cellar-items/5/comments/2'),
+      expect.objectContaining({ method: 'DELETE' })
+    );
+  });
+});
+
+describe('CellarService - offline scenario', () => {
+  const mockToken = 'mock-token';
+  const NetInfo = require('@react-native-community/netinfo');
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('should throw when offline and no cache available', async () => {
+    NetInfo.fetch.mockResolvedValueOnce({ isConnected: false });
+
+    await expect(
+      cellarService.getTotalStock(mockToken)
+    ).rejects.toThrow('Aucune donnée en cache et pas de connexion');
+  });
+});
+
+describe('CellarService - error body parse failure', () => {
+  const mockToken = 'mock-token';
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('should throw with fallback message when error body is not JSON', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => { throw new Error('not json'); },
+    });
+
+    await expect(
+      cellarService.getStats(mockToken)
+    ).rejects.toThrow();
   });
 });

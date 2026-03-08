@@ -5,10 +5,10 @@ import { baseURL } from "@/api";
 type AuthContextType = {
   token: string | null;
   username: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   loading: boolean;
-  error: string | null;
+  storageLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -17,11 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken, storageLoading] = useStorageState("authToken");
   const [username, setUsername] = useStorageState("authUser");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const login = async (email: string, password: string) => {
+
+  const login = async (email: string, password: string): Promise<string | null> => {
     setLoading(true);
-    setError(null);
 
     try {
       const response = await fetch(`${baseURL}/login`, {
@@ -35,12 +33,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         setToken(data.token);
         setUsername(data.user.firstname);
+        return null;
       } else {
-        setError(data.message || "Erreur lors de la connexion");
+        if (response.status === 403 && data.email_not_verified) {
+          return "EMAIL_NOT_VERIFIED";
+        }
+        return data.message || "Erreur lors de la connexion";
       }
     } catch (err) {
-      setError("Impossible de se connecter au serveur.");
       console.error(err);
+      return "Impossible de se connecter au serveur.";
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, username, login, logout, loading: storageLoading || loading, error }}
+      value={{ token, username, login, logout, loading, storageLoading }}
     >
       {children}
     </AuthContext.Provider>

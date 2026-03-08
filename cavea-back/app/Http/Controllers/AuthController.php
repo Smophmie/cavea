@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * Handle user login and return an API token.
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -22,12 +25,9 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user) {
-            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
-        }
-
-        if (! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Mot de passe invalide.'], 401);
+        $error = $this->getCredentialError($user, $request->password);
+        if ($error !== null) {
+            return $error;
         }
 
         $user->tokens()->delete();
@@ -40,7 +40,25 @@ class AuthController extends Controller
         ]);
     }
 
+    private function getCredentialError(?User $user, string $password): ?JsonResponse
+    {
+        if (! $user) {
+            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+        }
 
+        if (Hash::check($password, $user->password)) {
+            return $user->hasVerifiedEmail() ? null : response()->json([
+                'message' => 'Votre adresse email n\'a pas encore été vérifiée.',
+                'email_not_verified' => true,
+            ], 403);
+        }
+
+        return response()->json(['message' => 'Mot de passe invalide.'], 401);
+    }
+
+    /**
+     * Handle user logout by revoking the current API token.
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

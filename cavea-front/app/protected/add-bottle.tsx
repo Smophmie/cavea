@@ -1,5 +1,6 @@
 import { ScrollView, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
 import { cellarService } from "@/services/CellarService";
@@ -7,6 +8,13 @@ import { cellarService } from "@/services/CellarService";
 export default function AddBottlePage() {
   const router = useRouter();
   const { token } = useAuth();
+  const [formKey, setFormKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setFormKey(prev => prev + 1);
+    }, [])
+  );
 
   const handleSubmit = async (formData: any) => {
     if (!token) {
@@ -44,6 +52,7 @@ export default function AddBottlePage() {
   return (
     <ScrollView className="flex-1 bg-app">
       <AddOrUpdateBottleForm
+        key={formKey}
         mode="add"
         onSubmit={handleSubmit}
       />

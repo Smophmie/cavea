@@ -83,9 +83,8 @@ export default function DashboardPage() {
         
         <View className="w-full items-center my-8">
           <Image
-            source={require("../../assets/images/cavea-white-logo.png")}
+            source={require("../../assets/images/logo-fond-rouge.png")}
             style={{ width: "70%", height: 100 }}
-            resizeMode="contain"            
           />
         </View>
 
@@ -96,7 +95,8 @@ export default function DashboardPage() {
 
         <View className="flex-row justify-between">
           <CardIconText 
-            text={loading ? "..." : `${totalStock} bouteilles`} 
+            label="Total bouteilles"
+            text={loading ? "..." : `${totalStock}`} 
             icon="BottleWine"
             iconColor="#ffffff"
             textColor="text-white"

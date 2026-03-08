@@ -76,3 +76,9 @@ jobs:
     with:
       profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
     secrets: inherit
+
+  frontend-submit:
+    needs: frontend-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: ./.github/workflows/_frontend-submit.yml
+    secrets: inherit

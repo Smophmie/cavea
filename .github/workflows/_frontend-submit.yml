@@ -1,0 +1,45 @@
+name: Frontend Submit to Play Store
+
+on:
+  workflow_call:
+
+jobs:
+  submit-playstore:
+    name: Submit AAB to Play Store (internal track)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cavea-front/package-lock.json
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: cavea-front
+        run: npm ci
+
+      - name: Write Google service account key
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > /tmp/google-service-account.json
+
+      - name: Submit to Play Store
+        working-directory: cavea-front
+        run: eas submit --platform android --profile production --latest --non-interactive
+
+      - name: Submit summary
+        run: |
+          echo "## Soumission Play Store terminée !" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Track :** Internal" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Retrouve la release dans la [Google Play Console](https://play.google.com/console)." >> $GITHUB_STEP_SUMMARY

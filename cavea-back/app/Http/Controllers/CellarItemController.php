@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CellarItem;
+use App\Models\Comment;
 use App\Services\DomainService;
 use App\Services\AppellationService;
 use App\Services\CommentService;
-use App\Policies\CellarItemPolicy;
-use Illuminate\Support\Facades\Auth;
 use App\Services\BottleService;
 use App\Services\VintageService;
 use App\Services\CellarItemService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -29,6 +27,9 @@ class CellarItemController extends Controller
     ) {
     }
 
+    /**
+     * Display all cellar items of the authenticated user.
+     */
     public function index(): JsonResponse
     {
         $items = $this->cellarItemService->getUserItems(auth()->id());
@@ -45,6 +46,14 @@ class CellarItemController extends Controller
     }
 
     /**
+    * Get statistics about the cellar items (total count, favorite region, etc.).
+     */
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->cellarItemService->getStats(auth()->id()));
+    }
+
+    /**
      * Get the stock of bottles.
      */
     public function getTotalStock(): JsonResponse
@@ -53,6 +62,9 @@ class CellarItemController extends Controller
         return response()->json(['total_stock' => $total]);
     }
 
+    /**
+     * Get the stock of bottles grouped by colour.
+     */
     public function getStockByColour(): JsonResponse
     {
         $stocks = $this->cellarItemService->getStockByColour(auth()->id());
@@ -81,15 +93,15 @@ class CellarItemController extends Controller
                 'bottle.region_id' => 'required|exists:regions,id',
                 'bottle.grape_variety_ids' => 'nullable|array',
                 'bottle.grape_variety_ids.*' => 'exists:grape_varieties,id',
-                'vintage.year' => 'required|integer|digits:4|min:1900|max:2100',
+                'vintage.year' => 'required|integer|digits:4|min:1901|max:2026',
                 'appellation_name' => 'nullable|string|max:255',
                 'stock' => 'required|integer|min:0',
-                'rating' => 'nullable|numeric|min:0|max:10',
+                'rating' => 'nullable|numeric|min:0|max:20',
                 'price' => 'nullable|numeric|min:0',
                 'shop' => 'nullable|string|max:255',
                 'offered_by' => 'nullable|string|max:255',
-                'drinking_window_start' => 'nullable|integer|digits:4|min:1900|max:2100',
-                'drinking_window_end' => 'nullable|integer|digits:4|min:1900|max:2100|gte:drinking_window_start',
+                'drinking_window_start' => 'nullable|integer|digits:4|min:1901|max:2060',
+                'drinking_window_end' => 'nullable|integer|digits:4|min:1901|max:2060|gte:drinking_window_start',
             ]);
 
             Log::info('[CELLAR_ITEM_POST] Validation successful', [
@@ -178,23 +190,30 @@ class CellarItemController extends Controller
             ], 404);
         }
 
-        $this->authorize('view', $cellarItem);
-
         return response()->json($cellarItem);
     }
 
+    /**
+     * Filter cellar items by colour.
+     */
     public function filterByColour(int $colourId): JsonResponse
     {
         $items = $this->cellarItemService->filterByColour(auth()->id(), $colourId);
         return response()->json($items);
     }
 
+    /**
+     * Filter cellar items by region.
+     */
     public function filterByRegion(int $regionId): JsonResponse
     {
         $items = $this->cellarItemService->filterByRegion(auth()->id(), $regionId);
         return response()->json($items);
     }
 
+    /**
+     * Increment the stock of a cellar item.
+     */
     public function incrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
@@ -203,6 +222,9 @@ class CellarItemController extends Controller
         return response()->json($item);
     }
 
+    /**
+     * Decrement the stock of a cellar item.
+     */
     public function decrementStock(CellarItem $cellarItem): JsonResponse
     {
         $this->authorize('update', $cellarItem);
@@ -220,12 +242,12 @@ class CellarItemController extends Controller
 
         $validated = $request->validate([
             'stock' => 'integer|min:0',
-            'rating' => 'nullable|numeric|min:0|max:10',
+            'rating' => 'nullable|numeric|min:0|max:20',
             'price' => 'nullable|numeric|min:0',
             'shop' => 'nullable|string|max:255',
             'offered_by' => 'nullable|string|max:255',
-            'drinking_window_start' => 'nullable|integer|digits:4|min:1900|max:2100',
-            'drinking_window_end' => 'nullable|integer|digits:4|min:1900|max:2100|gte:drinking_window_start',
+            'drinking_window_start' => 'nullable|integer|digits:4|min:1901|max:2060',
+            'drinking_window_end' => 'nullable|integer|digits:4|min:1901|max:2060|gte:drinking_window_start',
             'appellation_name' => 'nullable|string|max:255',
             'bottle.grape_variety_ids' => 'nullable|array',
             'bottle.grape_variety_ids.*' => 'exists:grape_varieties,id',
@@ -256,6 +278,35 @@ class CellarItemController extends Controller
         $this->authorize('delete', $cellarItem);
 
         $this->cellarItemService->delete($cellarItem);
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Store a comment for a cellar item.
+     */
+    public function storeComment(Request $request, CellarItem $cellarItem): JsonResponse
+    {
+        $this->authorize('update', $cellarItem);
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'date'    => 'required|date',
+        ]);
+
+        $comment = $this->commentService->create($validated, $cellarItem->id);
+
+        return response()->json($comment, 201);
+    }
+
+    /**
+     * Delete a comment from a cellar item.
+     */
+    public function destroyComment(CellarItem $cellarItem, Comment $comment): JsonResponse
+    {
+        $this->authorize('update', $cellarItem);
+
+        $this->commentService->delete($comment);
+
         return response()->json(null, 204);
     }
 }

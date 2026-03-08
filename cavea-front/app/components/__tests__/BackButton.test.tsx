@@ -21,7 +21,7 @@ describe('BackButton', () => {
   });
 
   it('should render with custom color', () => {
-    const { UNSAFE_root } = render(<BackButton color="#bb2700" />);
+    const { UNSAFE_root } = render(<BackButton color="#730b1e" />);
     expect(UNSAFE_root).toBeTruthy();
   });
 

@@ -6,69 +6,18 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 
 class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testCanShowAUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users/' . $user->id);
-
-        $response->assertStatus(200)
-                 ->assertJson(['id' => $user->id]);
-    }
-
-    public function testCanShowUsers()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('api/users');
-
-        $response->assertStatus(200);
-    }
-
-    public function testCanUpdateAUser()
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user);
-
-        $response = $this->putJson('api/users/' . $user->id, [
-            'firstname' => 'Firstname',
-            'name' => 'New Name',
-            'email' => 'new@example.com'
-        ]);
-
-        $response->assertStatus(200)
-                 ->assertJson(['name' => 'New Name']);
-
-        $this->assertDatabaseHas('users', ['email' => 'new@example.com']);
-    }
-
-
-    public function testCanDeleteAUser()
-    {
-        $user = User::factory()->create();
-
-        Sanctum::actingAs($user);
-
-        $response = $this->deleteJson('api/users/' . $user->id);
-
-        $response->assertStatus(200);
-
-        $this->assertDatabaseMissing('users', ['id' => $user->id]);
-    }
-
     public function testUserCanRegister()
     {
+        Notification::fake();
+
         $userData = [
             'firstname' => 'Test Firstname',
             'name' => 'Test User',
@@ -93,7 +42,11 @@ class UserControllerTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'testuser@example.com',
+            'email_verified_at' => null,
         ]);
+
+        $user = User::where('email', 'testuser@example.com')->first();
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function testUserRegisterFailsWithInvalidEmail()
@@ -144,4 +97,44 @@ class UserControllerTest extends TestCase
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['email']);
     }
+
+    public function testCanGetMe()
+    {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('api/user/me');
+
+        $response->assertStatus(200)
+                 ->assertJson(['id' => $user->id, 'email' => $user->email]);
+    }
+
+    public function testGetMeRequiresAuth()
+    {
+        $response = $this->getJson('api/user/me');
+
+        $response->assertStatus(401);
+    }
+
+    public function testCanDeleteOwnAccount()
+    {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $response = $this->deleteJson('api/user');
+
+        $response->assertStatus(204);
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
+
+    public function testDeleteAccountRequiresAuth()
+    {
+        $response = $this->deleteJson('api/user');
+
+        $response->assertStatus(401);
+    }
+
 }

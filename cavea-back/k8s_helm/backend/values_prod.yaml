@@ -19,6 +19,11 @@ app_debug: "false"
 app_url: "https://api.cavea.ovh"
 app_key: "base64:CHANGEME_PROD_KEY"
 
+mail_mailer: "resend"
+mail_from_address: "noreply@cavea.ovh"
+mail_from_name: "Cavea"
+resend_key: "CHANGE_ME"
+
 service:
   type: ClusterIP
 

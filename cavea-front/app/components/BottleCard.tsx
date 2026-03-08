@@ -30,7 +30,7 @@ export default function BottleCard({
   showRating = false
 }: BottleCardProps) {
   const router = useRouter();
-  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#bb2700";
+  const iconColor = color ? (COLOUR_MAP[color] || COLOUR_MAP["Autre"]) : "#730b1e";
 
   const handlePress = () => {
     router.push({
@@ -55,36 +55,16 @@ export default function BottleCard({
         <Text className="text-sm text-gray">{region}</Text>
         
         {showRating && rating && (
-          <View className="flex-row items-center mt-1">
-            {Array.from({ length: 10 }, (_, index) => {
-              const starValue = index + 1;
-              const isFilled = rating >= starValue;
-              const isHalfFilled = !isFilled && rating >= starValue - 0.5;
-              
-              let fillColor = "transparent";
-              if (isFilled) {
-                fillColor = "#bb2700";
-              } else if (isHalfFilled) {
-                fillColor = "rgba(187, 39, 0, 0.5)";
-              }
-              
-              return (
-                <Star
-                  key={index}
-                  size={12}
-                  color={fillColor}
-                  fill={fillColor}
-                />
-              );
-            })}
-            <Text className="text-xs text-gray ml-2">{rating}/10</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderWidth: 1, borderColor: '#f59e0b', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 4, gap: 4 }}>
+            <Star size={11} color="#f59e0b" fill="#f59e0b" />
+            <Text style={{ fontSize: 11, color: '#d97706' }}>{Number(rating) % 1 === 0 ? Number(rating) : Number(rating).toFixed(1)}/20</Text>
           </View>
         )}
       </View>
 
       {price && (
         <View className="ml-4">
-          <Text className="text-base font-semibold text-gray">{price}€</Text>
+          <Text className="text-base font-semibold text-gray">{price % 1 === 0 ? price : price.toFixed(2)}€</Text>
         </View>
       )}
     </TouchableOpacity>

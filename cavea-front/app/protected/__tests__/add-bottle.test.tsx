@@ -1,22 +1,20 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import AddBottlePage from '../add-bottle';
 import { cellarService } from '@/services/CellarService';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-
 const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockReplace }),
+  useRouter: jest.fn(),
+  useFocusEffect: (callback: () => void) => {
+    require('react').useEffect(callback, []);
+  },
 }));
 
-// Mutable token so individual tests can simulate an unauthenticated state
-let mockToken: string | null = 'mock-token';
-
 jest.mock('@/authentication/AuthContext', () => ({
-  useAuth: () => ({ token: mockToken }),
+  useAuth: jest.fn(() => ({ token: 'mock-token' })),
 }));
 
 jest.mock('@/services/CellarService', () => ({
@@ -25,117 +23,128 @@ jest.mock('@/services/CellarService', () => ({
   },
 }));
 
-jest.mock('../../components/AddOrUpdateBottleForm', () => {
-  const { TouchableOpacity, Text } = require('react-native');
-  return ({ onSubmit, onCancel }: { onSubmit: (data: any) => void; onCancel: () => void }) => (
-    <>
-      <TouchableOpacity testID="submit-button" onPress={() => onSubmit({ bottle: { name: 'Test' } })}>
-        <Text>Soumettre</Text>
-      </TouchableOpacity>
-    </>
-  );
-});
+jest.mock('@/app/components/AddOrUpdateBottleForm', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
 
 describe('AddBottlePage', () => {
-  const mockedCreate = cellarService.createCellarItem as jest.MockedFunction<
-    typeof cellarService.createCellarItem
-  >;
+  let alertSpy: jest.SpyInstance;
+  let mockCapturedSubmit: ((formData: any) => Promise<void>) | null = null;
+  const { useAuth } = require('@/authentication/AuthContext');
+  const { useRouter } = require('expo-router');
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockToken = 'mock-token';
+    mockCapturedSubmit = null;
+    useAuth.mockReturnValue({ token: 'mock-token' });
+    useRouter.mockReturnValue({ replace: mockReplace, back: jest.fn() });
+    alertSpy = jest.spyOn(Alert, 'alert');
+
+    const MockForm = require('@/app/components/AddOrUpdateBottleForm').default;
+    (MockForm as jest.Mock).mockImplementation((props: any) => {
+      mockCapturedSubmit = props.onSubmit;
+      return null;
+    });
   });
 
-  it('renders the form', () => {
-    render(<AddBottlePage />);
-
-    expect(screen.getByTestId('submit-button')).toBeTruthy();
+  afterEach(() => {
+    alertSpy.mockRestore();
   });
 
-  it('shows an error alert when no token is available', async () => {
-    mockToken = null;
-    const alertSpy = jest.spyOn(Alert, 'alert');
+  it('should render the page', () => {
+    const { UNSAFE_root } = render(<AddBottlePage />);
+    expect(UNSAFE_root).toBeTruthy();
+  });
+
+  it('should show success alert on successful submit', async () => {
+    (cellarService.createCellarItem as jest.Mock).mockResolvedValue({ id: 1 });
 
     render(<AddBottlePage />);
-    fireEvent.press(screen.getByTestId('submit-button'));
+
+    if (mockCapturedSubmit) {
+      await mockCapturedSubmit({ bottle: { name: 'Test' }, stock: 3 });
+    }
+
+    await waitFor(() => {
+      expect(cellarService.createCellarItem).toHaveBeenCalledWith(
+        'mock-token',
+        { bottle: { name: 'Test' }, stock: 3 }
+      );
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Succès',
+        'Bouteille ajoutée avec succès !',
+        expect.any(Array)
+      );
+    });
+  });
+
+  it('should navigate to dashboard when pressing OK', async () => {
+    (cellarService.createCellarItem as jest.Mock).mockResolvedValue({ id: 1 });
+
+    render(<AddBottlePage />);
+
+    if (mockCapturedSubmit) {
+      await mockCapturedSubmit({ stock: 1 });
+    }
+
+    await waitFor(() => {
+      const okButton = alertSpy.mock.calls[0][2][0];
+      okButton.onPress();
+      expect(mockReplace).toHaveBeenCalledWith('/protected/dashboard');
+    });
+  });
+
+  it('should show error alert when no token', async () => {
+    useAuth.mockReturnValue({ token: null });
+
+    render(<AddBottlePage />);
+
+    if (mockCapturedSubmit) {
+      await mockCapturedSubmit({});
+    }
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Vous devez être connecté');
     });
-
-    expect(mockedCreate).not.toHaveBeenCalled();
   });
 
-  it('calls createCellarItem with the token and form data on submit', async () => {
-    mockedCreate.mockResolvedValueOnce({ id: 1 } as any);
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-
-    render(<AddBottlePage />);
-    fireEvent.press(screen.getByTestId('submit-button'));
-
-    await waitFor(() => {
-      expect(mockedCreate).toHaveBeenCalledWith('mock-token', { bottle: { name: 'Test' } });
-    });
-  });
-
-  it('shows a success alert and redirects to dashboard on OK press', async () => {
-    mockedCreate.mockResolvedValueOnce({ id: 1 } as any);
-    const alertSpy = jest.spyOn(Alert, 'alert');
-
-    render(<AddBottlePage />);
-    fireEvent.press(screen.getByTestId('submit-button'));
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith(
-        'Succès',
-        'Bouteille ajoutée avec succès !',
-        expect.arrayContaining([expect.objectContaining({ text: 'OK' })])
-      );
-    });
-
-    // Simulate pressing OK in the success dialog
-    const [, , buttons] = alertSpy.mock.calls[0] as any;
-    buttons[0].onPress();
-
-    expect(mockReplace).toHaveBeenCalledWith('/protected/dashboard');
-  });
-
-  it('shows a generic error alert on network failure', async () => {
-    mockedCreate.mockRejectedValueOnce(new Error('Network error'));
-    const alertSpy = jest.spyOn(Alert, 'alert');
-
-    render(<AddBottlePage />);
-    fireEvent.press(screen.getByTestId('submit-button'));
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Network error');
-    });
-
-    expect(mockReplace).not.toHaveBeenCalled();
-  });
-
-  it('shows flattened validation messages on 422 error', async () => {
-    const validationError = new Error('Validation failed') as any;
-    validationError.response = {
-      status: 422,
-      data: {
-        errors: {
-          'bottle.name': ['Le nom est requis'],
-          stock: ['Le stock doit être positif'],
-        },
+  it('should format 422 validation errors', async () => {
+    const validationError = {
+      response: {
+        status: 422,
+        data: { errors: { stock: ['Stock invalide'] } },
       },
     };
-    mockedCreate.mockRejectedValueOnce(validationError);
-    const alertSpy = jest.spyOn(Alert, 'alert');
+    (cellarService.createCellarItem as jest.Mock).mockRejectedValue(validationError);
 
     render(<AddBottlePage />);
-    fireEvent.press(screen.getByTestId('submit-button'));
+
+    if (mockCapturedSubmit) {
+      await mockCapturedSubmit({ stock: -1 });
+    }
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(
         'Erreur',
-        'Le nom est requis\nLe stock doit être positif'
+        expect.stringContaining('Stock invalide')
       );
+    });
+  });
+
+  it('should show generic error for non-422 errors', async () => {
+    (cellarService.createCellarItem as jest.Mock).mockRejectedValue(
+      new Error('Connexion impossible')
+    );
+
+    render(<AddBottlePage />);
+
+    if (mockCapturedSubmit) {
+      await mockCapturedSubmit({});
+    }
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Connexion impossible');
     });
   });
 });

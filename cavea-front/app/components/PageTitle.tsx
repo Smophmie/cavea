@@ -3,7 +3,7 @@ import { Text } from "react-native";
 
 type PageTitleProps = {
   text: string;
-  color?: "wine" | "white";
+  color?: "wine" | "white" | "black";
 };
 
 export default function PageTitle({ text, color = "white" }: PageTitleProps) {

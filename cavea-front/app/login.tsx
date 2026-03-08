@@ -1,63 +1,147 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
 import PageTitle from "./components/PageTitle";
 import { useAuth } from "@/authentication/AuthContext";
+import { Image } from "expo-image";
+import BackButton from "./components/BackButton";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { baseURL } from "@/api";
+
+const Logo = require('@/assets/images/logo.png');
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading, error, token } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
-    await login(email, password);
+    setError(null);
+    setEmailNotVerified(false);
+    setResendMessage(null);
+    setLoading(true);
+    try {
+      const errorMessage = await login(email, password);
+      if (errorMessage === "EMAIL_NOT_VERIFIED") {
+        setEmailNotVerified(true);
+        setError("Votre email n'a pas encore été vérifié.");
+      } else if (errorMessage) {
+        setError(errorMessage);
+      } else {
+        router.replace("/protected/dashboard");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage(null);
+    try {
+      const response = await fetch(`${baseURL}/email/resend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      setResendMessage(data.message || (response.ok ? "Email envoyé." : "Erreur lors de l'envoi."));
+    } catch {
+      setResendMessage("Impossible de contacter le serveur.");
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-white px-6"
-      contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
-    >
-            
-        <PageTitle text="Connexion" color="wine"></PageTitle>
+    <SafeAreaView className="flex-1 bg-app">
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1 }}
+      >
+      <ScrollView
+        className="p-4"
+        contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="w-full">
+          <BackButton color="#730b1e" />
+        </View>
 
-        <Text className="text-center text-gray text-lg mb-9">
-          Retrouvez votre cave à vin.
-        </Text>
-
-        <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
+        <Image
+          source={Logo}
+          style={{ width:"60%",height: 100, margin: 20 }}
         />
 
-        <TextInput
-            placeholder="Mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
-        />
+        <View className="border border-lightgray rounded-lg px-6 m-6 py-14 w-full bg-white">
+          <View className="flex-col items-center">
+          <PageTitle text="Connexion" color="black"></PageTitle>
+          </View>
 
-        {loading ? (
-            <ActivityIndicator size="large" color="#800020" className="mb-4" />
-        ) : (
-            <PrimaryButton text="Connexion" onPress={handleLogin} />
-        )}
+          <Text className="text-center text-gray text-lg mb-9">
+            Retrouvez votre cave à vin.
+          </Text>
 
-        {error && <Text className="text-red-600 text-center">{error}</Text>}
+          <TextInput placeholderTextColor="#9CA3AF"
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
+          />
 
-        <Text className="mt-9 text-lg text-grey">Pas encore de compte?</Text>
-        <TextLink
-            text="Créer mon compte"
-            className="text-lg"
-            onPress={() => router.push("/registration")}
-        />
-    </ScrollView>
+          <TextInput placeholderTextColor="#9CA3AF"
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
+          />
+
+          {loading ? (
+              <ActivityIndicator size="large" color="#800020" className="mb-4" />
+          ) : (
+              <PrimaryButton text="Connexion" onPress={handleLogin} />
+          )}
+
+          {error && <Text className="text-red-600 text-center mt-3">{error}</Text>}
+
+          {emailNotVerified && (
+            <View className="mt-4 items-center">
+              {resendLoading ? (
+                <ActivityIndicator size="small" color="#800020" />
+              ) : (
+                <TextLink
+                  text="Renvoyer l'email de vérification"
+                  className="text-lg"
+                  onPress={handleResend}
+                />
+              )}
+              {resendMessage && (
+                <Text className={`text-center text-base mt-2 ${resendMessage.includes("envoyé") ? "text-green-600" : "text-red-600"}`}>
+                  {resendMessage}
+                </Text>
+              )}
+            </View>
+          )}
+
+          <Text className="mt-9 text-lg text-gray">Pas encore de compte?</Text>
+          <TextLink
+              text="Créer mon compte"
+              className="text-lg"
+              onPress={() => router.push("/registration")}
+          />
+        </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

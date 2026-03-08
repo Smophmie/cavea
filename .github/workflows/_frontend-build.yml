@@ -1,4 +1,4 @@
-name: Frontend Build APK
+name: Frontend Build Android
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ jobs:
         working-directory: cavea-front
         run: npm ci
 
-      - name: Build APK with EAS
+      - name: Build with EAS
         working-directory: cavea-front
         run: |
           echo "Starting EAS Build for Android (${{ inputs.profile }})..."
