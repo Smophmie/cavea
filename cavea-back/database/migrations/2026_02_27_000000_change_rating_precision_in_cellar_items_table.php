@@ -15,7 +15,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('cellar_items', function (Blueprint $table) {
-            $table->decimal('rating', 2, 1)->nullable()->change();
+            $table->decimal('rating', 3, 1)->nullable()->change();
         });
     }
 };
