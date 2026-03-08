@@ -72,7 +72,7 @@ export default function AddOrUpdateBottleForm({
   const [yearPickerField, setYearPickerField] = useState<'vintage.year' | 'drinking_window_start' | 'drinking_window_end' | null>(null);
 
   const currentYear = new Date().getFullYear();
-  const YEARS = Array.from({ length: currentYear + 50 - 1901 + 1 }, (_, i) => String(currentYear + 50 - i));
+  const YEARS = Array.from({ length: currentYear - 1901 + 1 }, (_, i) => String(currentYear - i));
 
   const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
