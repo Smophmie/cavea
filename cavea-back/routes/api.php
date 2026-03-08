@@ -5,19 +5,27 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CellarItemController;
+use App\Http\Controllers\EmailVerificationController;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
 Route::post('/register', [UserController::class, 'register']);
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+
+Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
+
+Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/user/me', [UserController::class, 'me']);
     Route::delete('/user', [UserController::class, 'deleteAccount']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/cellar-items', [CellarItemController::class, 'index']);
     Route::get('/cellar-items/last', [CellarItemController::class, 'getLastAdded']);
     Route::get('/cellar-items/stats', [CellarItemController::class, 'stats']);
