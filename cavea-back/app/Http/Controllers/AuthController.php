@@ -32,6 +32,13 @@ class AuthController extends Controller
             return response()->json(['message' => 'Mot de passe invalide.'], 401);
         }
 
+        if (! $user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Votre adresse email n\'a pas encore été vérifiée.',
+                'email_not_verified' => true,
+            ], 403);
+        }
+
         $user->tokens()->delete();
 
         $token = $user->createToken('api-token')->plainTextToken;
