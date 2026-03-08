@@ -64,13 +64,11 @@ describe('RegistrationPage', () => {
     });
   });
 
-  it('should show success message and redirect on successful registration', async () => {
+  it('should show success message on successful registration', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ user: { firstname: 'Sophie' } }),
     }) as any;
-
-    jest.useFakeTimers();
 
     render(<RegistrationPage />);
     fireEvent.changeText(screen.getByPlaceholderText('Prénom'), 'Sophie');
@@ -81,12 +79,10 @@ describe('RegistrationPage', () => {
     fireEvent.press(screen.getByText('Créer mon compte'));
 
     await waitFor(() => {
-      expect(screen.getByText(/Compte créé avec succès/)).toBeTruthy();
+      expect(screen.getByText('Compte créé ! Vérifiez votre email pour activer votre compte.')).toBeTruthy();
     });
 
-    jest.runAllTimers();
-    expect(mockPush).toHaveBeenCalledWith('/login');
-    jest.useRealTimers();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('should show API validation errors', async () => {

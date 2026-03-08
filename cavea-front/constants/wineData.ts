@@ -5,17 +5,17 @@ export const REGIONS = [
   { id: 4, name: "Bourgogne" },
   { id: 5, name: "Champagne" },
   { id: 6, name: "Corse" },
+  { id: 16, name: "Île-de-France" },
   { id: 7, name: "Jura" },
   { id: 8, name: "Languedoc" },
-  { id: 9, name: "Roussillon" },
   { id: 10, name: "Lorraine" },
+  { id: 17, name: "Poitou-Charentes" },
   { id: 11, name: "Provence" },
+  { id: 9, name: "Roussillon" },
   { id: 12, name: "Savoie et Bugey" },
   { id: 13, name: "Sud-Ouest" },
   { id: 14, name: "Vallée de la Loire" },
   { id: 15, name: "Vallée du Rhône" },
-  { id: 16, name: "Île-de-France" },
-  { id: 17, name: "Poitou-Charentes" },
 ];
 
 export const COLOURS = [

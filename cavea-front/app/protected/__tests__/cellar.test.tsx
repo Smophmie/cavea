@@ -138,4 +138,75 @@ describe('CellarPage', () => {
       expect(screen.getByText('Aucune bouteille trouvée')).toBeTruthy();
     });
   });
+
+  it('should render the search input', async () => {
+    (cellarService.getAllCellarItems as jest.Mock).mockResolvedValue([]);
+    render(<CellarPage />);
+    expect(screen.getByTestId('search-input')).toBeTruthy();
+  });
+
+  it('should filter items by bottle name using the search bar', async () => {
+    (cellarService.getAllCellarItems as jest.Mock).mockResolvedValue(mockItems);
+    render(<CellarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Test')).toBeTruthy();
+      expect(screen.getByText('Blanc de Blancs')).toBeTruthy();
+    });
+
+    fireEvent.changeText(screen.getByTestId('search-input'), 'château');
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Test')).toBeTruthy();
+      expect(screen.queryByText('Blanc de Blancs')).toBeNull();
+    });
+  });
+
+  it('should filter items by domain name using the search bar', async () => {
+    (cellarService.getAllCellarItems as jest.Mock).mockResolvedValue(mockItems);
+    render(<CellarPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByTestId('search-input'), 'domaine blanc');
+
+    await waitFor(() => {
+      expect(screen.queryByText('Château Test')).toBeNull();
+      expect(screen.getByText('Blanc de Blancs')).toBeTruthy();
+    });
+  });
+
+  it('should show "Aucune bouteille trouvée" when search matches nothing', async () => {
+    (cellarService.getAllCellarItems as jest.Mock).mockResolvedValue(mockItems);
+    render(<CellarPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByTestId('search-input'), 'zzz inexistant');
+
+    await waitFor(() => {
+      expect(screen.getByText('Aucune bouteille trouvée')).toBeTruthy();
+    });
+  });
+
+  it('should combine colour filter and search bar', async () => {
+    (cellarService.getAllCellarItems as jest.Mock).mockResolvedValue(mockItems);
+    (cellarService.getCellarItemsByColour as jest.Mock).mockResolvedValue([mockItems[0]]);
+    render(<CellarPage />);
+
+    await waitFor(() => expect(screen.getByText('Château Test')).toBeTruthy());
+
+    fireEvent.press(screen.getByText('Rouge'));
+
+    await waitFor(() => {
+      expect(cellarService.getCellarItemsByColour).toHaveBeenCalledWith('mock-token', 1);
+      expect(screen.getByText('Château Test')).toBeTruthy();
+    });
+
+    fireEvent.changeText(screen.getByTestId('search-input'), 'bordeaux');
+
+    await waitFor(() => {
+      expect(screen.getByText('Château Test')).toBeTruthy();
+    });
+  });
 });

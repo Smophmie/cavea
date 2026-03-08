@@ -46,8 +46,7 @@ export default function RegistrationPage() {
 
       const data = await response.json();
       if (response.ok) {
-        setMessage(`Compte créé avec succès. Bienvenue ${data.user.firstname}, vous pouvez maintenant vous connecter !`);
-        setTimeout(() => router.push("/login"), 2000);
+        setMessage(`Compte créé ! Vérifiez votre email pour activer votre compte.`);
       } else {
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join("\n");

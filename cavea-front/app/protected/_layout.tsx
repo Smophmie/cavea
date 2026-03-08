@@ -1,5 +1,6 @@
 import { Tabs, Redirect } from "expo-router";
-import { Home, Wine, UserRound, PlusCircle } from "lucide-react-native";
+import { Home, Wine, UserRound, Plus, Heart } from "lucide-react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/authentication/AuthContext";
 
@@ -41,7 +42,34 @@ export default function TabsLayout() {
         name="add-bottle"
         options={{
           title: "",
-          tabBarIcon: ({ color, size }) => <PlusCircle color={color} size={size} />,
+          tabBarIcon: () => (
+            <View
+              style={{
+                backgroundColor: "#730b1e",
+                borderRadius: 32,
+                width: 56,
+                height: 56,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.3,
+                shadowRadius: 5,
+                elevation: 6,
+              }}
+            >
+              <Plus color="white" size={28} />
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: "",
+          tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
         }}
       />
 

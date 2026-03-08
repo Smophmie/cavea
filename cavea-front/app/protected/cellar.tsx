@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import PageTitle from "../components/PageTitle";
 import BottleCard from "../components/BottleCard";
 import { useState, useCallback } from "react";
@@ -49,6 +49,7 @@ export default function CellarPage() {
   const [cellarItems, setCellarItems] = useState<CellarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedColour, setSelectedColour] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchCellarItems = async () => {
     if (!token) return;
@@ -71,6 +72,18 @@ export default function CellarPage() {
       fetchCellarItems();
     }, [token, selectedColour])
   );
+
+  const query = searchQuery.trim().toLowerCase();
+  const displayedItems = query
+    ? cellarItems.filter((item) => {
+        return (
+          item.bottle.name.toLowerCase().includes(query) ||
+          item.bottle.domain.name.toLowerCase().includes(query) ||
+          (item.bottle.region?.name ?? "").toLowerCase().includes(query) ||
+          (item.appellation?.name ?? "").toLowerCase().includes(query)
+        );
+      })
+    : cellarItems;
 
   return (
     <ScrollView className="flex-1 bg-app">
@@ -110,14 +123,26 @@ export default function CellarPage() {
             ))}
           </View>
         </View>
+        <View className="mt-2 mb-4">
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Rechercher un vin, domaine, région…"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            className="border border-lightgray rounded-lg px-4 py-3 text-white"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+            clearButtonMode="while-editing"
+            testID="search-input"
+          />
+        </View>
       </View>
 
       <View className="px-6 py-6">
         {loading ? (
           <Text className="text-gray-500 text-center mt-4">Chargement...</Text>
-        ) : cellarItems.length > 0 ? (
+        ) : displayedItems.length > 0 ? (
           <View className="gap-3">
-            {cellarItems.map((item) => (
+            {displayedItems.map((item) => (
               <BottleCard
                 key={item.id}
                 id={item.id}

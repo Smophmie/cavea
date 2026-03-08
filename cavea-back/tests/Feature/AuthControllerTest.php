@@ -7,6 +7,7 @@ use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
 class AuthControllerTest extends TestCase
 {
@@ -25,6 +26,23 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure(['token', 'user']);
+    }
+
+    public function testUnverifiedUserCannotLogin()
+    {
+        $user = User::factory()->unverified()->create([
+            'password' => Hash::make('Password123!')
+        ]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'Password123!',
+        ]);
+
+        $response->assertStatus(403)
+                 ->assertJson([
+                     'email_not_verified' => true,
+                 ]);
     }
 
     public function testUserCanNotLoginWithWrongPassword()

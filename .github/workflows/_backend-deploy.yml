@@ -90,7 +90,8 @@ jobs:
             --install \
             --set db_password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             --set image.tag=${{ inputs.image_tag || 'latest' }} \
-            --set app_key=${{ secrets.APP_KEY }}
+            --set app_key=${{ secrets.APP_KEY }} \
+            --set resend_key=${{ secrets.RESEND_KEY }}
 
       - name: Wait for backend pod to be ready
         run: |

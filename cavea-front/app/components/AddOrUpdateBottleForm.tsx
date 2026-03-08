@@ -158,8 +158,8 @@ export default function AddOrUpdateBottleForm({
     }
 
     const year = parseInt(formData.vintage.year);
-    if (formData.vintage.year && (isNaN(year) || year < 1901 || year > 2100)) {
-      newErrors['vintage.year'] = "Année invalide (1901-2100)";
+    if (formData.vintage.year && (isNaN(year) || year < 1901 || year > 2026)) {
+      newErrors['vintage.year'] = "Année invalide (1901-2026)";
     }
 
     const stock = parseInt(formData.stock);

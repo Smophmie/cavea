@@ -8,6 +8,7 @@ import { useAuth } from "@/authentication/AuthContext";
 import { Image } from "expo-image";
 import BackButton from "./components/BackButton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { baseURL } from "@/api";
 
 const Logo = require('@/assets/images/logo.png');
 
@@ -16,20 +17,46 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const { login } = useAuth();
 
   const handleLogin = async () => {
     setError(null);
+    setEmailNotVerified(false);
+    setResendMessage(null);
     setLoading(true);
     try {
       const errorMessage = await login(email, password);
-      if (errorMessage) {
+      if (errorMessage === "EMAIL_NOT_VERIFIED") {
+        setEmailNotVerified(true);
+        setError("Votre email n'a pas encore été vérifié.");
+      } else if (errorMessage) {
         setError(errorMessage);
       } else {
         router.replace("/protected/dashboard");
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage(null);
+    try {
+      const response = await fetch(`${baseURL}/email/resend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      setResendMessage(data.message || (response.ok ? "Email envoyé." : "Erreur lors de l'envoi."));
+    } catch {
+      setResendMessage("Impossible de contacter le serveur.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -47,13 +74,13 @@ export default function LoginPage() {
         <View className="w-full">
           <BackButton color="#730b1e" />
         </View>
-        
-        <Image 
+
+        <Image
           source={Logo}
           style={{ width:"60%",height: 100, margin: 20 }}
         />
 
-        <View className="border border-lightgray rounded-lg px-6 m-6 py-14 w-full bg-white"> 
+        <View className="border border-lightgray rounded-lg px-6 m-6 py-14 w-full bg-white">
           <View className="flex-col items-center">
           <PageTitle text="Connexion" color="black"></PageTitle>
           </View>
@@ -85,7 +112,26 @@ export default function LoginPage() {
               <PrimaryButton text="Connexion" onPress={handleLogin} />
           )}
 
-          {error && <Text className="text-red-600 text-center">{error}</Text>}
+          {error && <Text className="text-red-600 text-center mt-3">{error}</Text>}
+
+          {emailNotVerified && (
+            <View className="mt-4 items-center">
+              {resendLoading ? (
+                <ActivityIndicator size="small" color="#800020" />
+              ) : (
+                <TextLink
+                  text="Renvoyer l'email de vérification"
+                  className="text-lg"
+                  onPress={handleResend}
+                />
+              )}
+              {resendMessage && (
+                <Text className={`text-center text-base mt-2 ${resendMessage.includes("envoyé") ? "text-green-600" : "text-red-600"}`}>
+                  {resendMessage}
+                </Text>
+              )}
+            </View>
+          )}
 
           <Text className="mt-9 text-lg text-gray">Pas encore de compte?</Text>
           <TextLink

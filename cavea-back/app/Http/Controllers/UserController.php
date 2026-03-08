@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -65,8 +66,10 @@ class UserController extends Controller
 
             $user = User::create($data);
 
+            event(new Registered($user));
+
             return response()->json([
-                'message' => 'Compte créé avec succès.',
+                'message' => 'Compte créé avec succès. Vérifiez votre email pour activer votre compte.',
                 'user' => $user,
             ], 201);
         } catch (\Exception $e) {

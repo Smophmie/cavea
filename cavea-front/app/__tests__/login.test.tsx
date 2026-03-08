@@ -20,6 +20,10 @@ jest.mock('@/authentication/AuthContext', () => ({
   useAuth: () => ({ login: mockLogin }),
 }));
 
+jest.mock('@/api', () => ({
+  baseURL: 'http://localhost',
+}));
+
 jest.mock('expo-image', () => {
   const { Image } = require('react-native');
   return { Image };
@@ -89,6 +93,81 @@ describe('LoginPage', () => {
     await waitFor(() => {
       // Button disappears when loading, only the PageTitle "Connexion" remains
       expect(screen.getAllByText('Connexion').length).toBe(1);
+    });
+  });
+
+  it('should show email not verified message when login returns EMAIL_NOT_VERIFIED', async () => {
+    mockLogin.mockResolvedValueOnce('EMAIL_NOT_VERIFIED');
+
+    render(<LoginPage />);
+    fireEvent.changeText(screen.getByPlaceholderText('Email'), 'user@test.com');
+    fireEvent.press(screen.getAllByText('Connexion')[1]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Votre email n'a pas encore été vérifié.")).toBeTruthy();
+      expect(screen.getByText("Renvoyer l'email de vérification")).toBeTruthy();
+    });
+  });
+
+  it('should not redirect to dashboard when email is not verified', async () => {
+    mockLogin.mockResolvedValueOnce('EMAIL_NOT_VERIFIED');
+
+    render(<LoginPage />);
+    fireEvent.press(screen.getAllByText('Connexion')[1]);
+
+    const { router } = require('expo-router');
+    await waitFor(() => {
+      expect(router.replace).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should call resend API and show success message', async () => {
+    mockLogin.mockResolvedValueOnce('EMAIL_NOT_VERIFIED');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ message: 'Email de vérification renvoyé.' }),
+    }) as any;
+
+    render(<LoginPage />);
+    fireEvent.changeText(screen.getByPlaceholderText('Email'), 'user@test.com');
+    fireEvent.press(screen.getAllByText('Connexion')[1]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Renvoyer l'email de vérification")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText("Renvoyer l'email de vérification"));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost/email/resend',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ email: 'user@test.com' }),
+        })
+      );
+      expect(screen.getByText('Email de vérification renvoyé.')).toBeTruthy();
+    });
+  });
+
+  it('should show error message when resend fails', async () => {
+    mockLogin.mockResolvedValueOnce('EMAIL_NOT_VERIFIED');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: 'Aucun compte trouvé avec cet email.' }),
+    }) as any;
+
+    render(<LoginPage />);
+    fireEvent.press(screen.getAllByText('Connexion')[1]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Renvoyer l'email de vérification")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText("Renvoyer l'email de vérification"));
+
+    await waitFor(() => {
+      expect(screen.getByText('Aucun compte trouvé avec cet email.')).toBeTruthy();
     });
   });
 });
