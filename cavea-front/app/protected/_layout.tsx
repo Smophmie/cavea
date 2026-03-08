@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from "expo-router";
-import { Home, Wine, UserRound, Plus } from "lucide-react-native";
+import { Home, Wine, UserRound, Plus, Heart } from "lucide-react-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/authentication/AuthContext";
@@ -62,6 +62,14 @@ export default function TabsLayout() {
               <Plus color="white" size={28} />
             </View>
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: "",
+          tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
         }}
       />
 
