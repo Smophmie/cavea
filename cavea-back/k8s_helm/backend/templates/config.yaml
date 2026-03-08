@@ -12,3 +12,7 @@ data:
   DB_PASSWORD: {{ .Values.db_password }}
   DB_PORT: "3306"
   DB_CONNECTION: "mysql"
+  MAIL_MAILER: {{ .Values.mail_mailer | default "log" | quote }}
+  MAIL_FROM_ADDRESS: {{ .Values.mail_from_address | default "noreply@cavea.ovh" | quote }}
+  MAIL_FROM_NAME: {{ .Values.mail_from_name | default "Cavea" | quote }}
+  RESEND_KEY: {{ .Values.resend_key | default "" | quote }}
