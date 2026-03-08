@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class EmailVerificationController extends Controller
 {
+    private const CONTENT_TYPE_HTML = 'text/html';
+
     /**
      * Verify the user's email address via signed URL.
      */
@@ -16,18 +18,18 @@ class EmailVerificationController extends Controller
 
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             return response('<h1>Lien invalide</h1><p>Ce lien de vérification est invalide ou a expiré.</p>', 400)
-                ->header('Content-Type', 'text/html');
+                ->header('Content-Type', self::CONTENT_TYPE_HTML);
         }
 
         if ($user->hasVerifiedEmail()) {
             return response('<h1>Email déjà vérifié</h1><p>Votre adresse email est déjà vérifiée. Vous pouvez vous connecter sur Cavea.</p>')
-                ->header('Content-Type', 'text/html');
+                ->header('Content-Type', self::CONTENT_TYPE_HTML);
         }
 
         $user->markEmailAsVerified();
 
         return response('<h1>Email vérifié !</h1><p>Votre adresse email a été vérifiée avec succès. Vous pouvez retourner sur Cavea et vous connecter.</p>')
-            ->header('Content-Type', 'text/html');
+            ->header('Content-Type', self::CONTENT_TYPE_HTML);
     }
 
     /**
