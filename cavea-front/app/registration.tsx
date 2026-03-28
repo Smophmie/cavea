@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView, TouchableOpacity } from "react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "./components/PrimaryButton";
 import BackButton from "./components/BackButton";
@@ -21,6 +22,8 @@ export default function RegistrationPage() {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
   const handleRegister = async () => {
     if (password !== passwordConfirmation) {
@@ -115,23 +118,39 @@ export default function RegistrationPage() {
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput placeholderTextColor="#9CA3AF"
-            placeholder="Mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={{ color: '#1d293d' }}
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
-          />
+          <View className="w-full mb-4">
+            <TextInput placeholderTextColor="#9CA3AF"
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              style={{ color: '#1d293d' }}
+              className="border border-gray-300 rounded-lg px-4 py-3 pr-12 w-full"
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(v => !v)}
+              style={{ position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' }}
+            >
+              {showPassword ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
+            </TouchableOpacity>
+          </View>
 
-          <TextInput placeholderTextColor="#9CA3AF"
-            placeholder="Confirmez le mot de passe"
-            value={passwordConfirmation}
-            onChangeText={setPasswordConfirmation}
-            secureTextEntry
-            style={{ color: '#1d293d' }}
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
-          />
+          <View className="w-full mb-6">
+            <TextInput placeholderTextColor="#9CA3AF"
+              placeholder="Confirmez le mot de passe"
+              value={passwordConfirmation}
+              onChangeText={setPasswordConfirmation}
+              secureTextEntry={!showPasswordConfirmation}
+              style={{ color: '#1d293d' }}
+              className="border border-gray-300 rounded-lg px-4 py-3 pr-12 w-full"
+            />
+            <TouchableOpacity
+              onPress={() => setShowPasswordConfirmation(v => !v)}
+              style={{ position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' }}
+            >
+              {showPasswordConfirmation ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
+            </TouchableOpacity>
+          </View>
 
           {loading ? (
             <ActivityIndicator size="large" color="#800020" className="mb-4" />

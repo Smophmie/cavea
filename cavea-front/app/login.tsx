@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView, TouchableOpacity } from "react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import PrimaryButton from "./components/PrimaryButton";
 import TextLink from "./components/TextLink";
 import { router } from "expo-router";
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     setError(null);
@@ -98,14 +100,22 @@ export default function LoginPage() {
               className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
-          <TextInput placeholderTextColor="#9CA3AF"
-              placeholder="Mot de passe"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={{ color: '#1d293d' }}
-              className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
-          />
+          <View className="w-full mb-6">
+            <TextInput placeholderTextColor="#9CA3AF"
+                placeholder="Mot de passe"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                style={{ color: '#1d293d' }}
+                className="border border-gray-300 rounded-lg px-4 py-3 pr-12 w-full"
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(v => !v)}
+              style={{ position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' }}
+            >
+              {showPassword ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
+            </TouchableOpacity>
+          </View>
 
           {loading ? (
               <ActivityIndicator size="large" color="#800020" className="mb-4" />
