@@ -15,7 +15,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-           'email' => 'required|email:rfc,dns',
+           'email' => 'required|email',
            'password' => 'required',
         ], [
             'email.required' => 'L’email est obligatoire.',
