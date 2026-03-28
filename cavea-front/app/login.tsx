@@ -103,6 +103,7 @@ export default function LoginPage() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              style={{ color: '#1d293d' }}
               className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
           />
 

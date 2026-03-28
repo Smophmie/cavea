@@ -120,6 +120,7 @@ export default function RegistrationPage() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            style={{ color: '#1d293d' }}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-4 w-full"
           />
 
@@ -128,6 +129,7 @@ export default function RegistrationPage() {
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
             secureTextEntry
+            style={{ color: '#1d293d' }}
             className="border border-gray-300 rounded-lg px-4 py-3 mb-6 w-full"
           />
 
