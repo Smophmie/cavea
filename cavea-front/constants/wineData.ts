@@ -14,8 +14,9 @@ export const REGIONS = [
   { id: 9, name: "Roussillon" },
   { id: 12, name: "Savoie et Bugey" },
   { id: 13, name: "Sud-Ouest" },
-  { id: 14, name: "Vallée de la Loire" },
+  { id: 14, name: "Vallée de la Loire et Auvergne" },
   { id: 15, name: "Vallée du Rhône" },
+  { id: 18, name: "Autre" },
 ];
 
 export const COLOURS = [
@@ -51,6 +52,7 @@ export const GRAPE_VARIETIES = [
   { id: 46, name: "Jacquère" },
   { id: 11, name: "Malbec" },
   { id: 28, name: "Marsanne" },
+  { id: 51, name: "Marselan" },
   { id: 36, name: "Mauzac" },
   { id: 34, name: "Melon de Bourgogne" },
   { id: 3, name: "Merlot" },
