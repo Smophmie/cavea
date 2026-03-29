@@ -9,10 +9,6 @@ class BottleService
 {
     public function findOrCreate(array $data): Bottle
     {
-        Log::info('[BOTTLE_SERVICE] Finding or creating bottle', [
-            'bottle_data' => $data,
-        ]);
-
         try {
             $bottle = Bottle::firstOrCreate([
                 'name' => $data['name'],
@@ -24,11 +20,6 @@ class BottleService
             if (!empty($data['grape_variety_ids'])) {
                 $bottle->grapeVarieties()->sync($data['grape_variety_ids']);
             }
-
-            Log::info('[BOTTLE_SERVICE] Bottle operation completed', [
-                'bottle_id' => $bottle->id,
-                'bottle_name' => $bottle->name,
-            ]);
 
             return $bottle;
         } catch (\Exception $e) {

@@ -124,14 +124,6 @@ class CellarItemService
      */
     public function create(array $data, int $userId): CellarItem
     {
-        Log::info('[CELLAR_ITEM_SERVICE] Creating cellar item', [
-            'user_id' => $userId,
-            'bottle_id' => $data['bottle_id'] ?? null,
-            'vintage_id' => $data['vintage_id'] ?? null,
-            'stock' => $data['stock'] ?? null,
-            'data' => $data,
-        ]);
-
         try {
             $cellarItem = CellarItem::create([
                 'user_id' => $userId,
@@ -147,10 +139,6 @@ class CellarItemService
                 'drinking_window_end' => $data['drinking_window_end'] ?? null,
             ]);
 
-            Log::info('[CELLAR_ITEM_SERVICE] Cellar item created in database', [
-                'cellar_item_id' => $cellarItem->id,
-            ]);
-
             $cellarItem->load([
                 'bottle.colour',
                 'bottle.region',
@@ -158,14 +146,6 @@ class CellarItemService
                 'bottle.grapeVarieties',
                 'vintage',
                 'appellation'
-            ]);
-
-            Log::info('[CELLAR_ITEM_SERVICE] Relationships loaded successfully', [
-                'user_id' => $userId,
-                'cellar_item_id' => $cellarItem->id,
-                'bottle_name' => $cellarItem->bottle->name ?? null,
-                'colour_name' => $cellarItem->bottle->colour->name ?? null,
-                'vintage_year' => $cellarItem->vintage->year ?? null,
             ]);
 
             return $cellarItem;

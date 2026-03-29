@@ -11,21 +11,11 @@ class CommentService
 {
     public function create(array $data, int $cellarItemId): Comment
     {
-        Log::info('[COMMENT_SERVICE] Creating comment', [
-            'cellar_item_id' => $cellarItemId,
-            'data' => $data,
-        ]);
-
         try {
             $comment = Comment::create([
                 'cellar_item_id' => $cellarItemId,
                 'date' => $data['date'],
                 'content' => $data['content'],
-            ]);
-
-            Log::info('[COMMENT_SERVICE] Comment created successfully', [
-                'comment_id' => $comment->id,
-                'cellar_item_id' => $cellarItemId,
             ]);
 
             return $comment;
