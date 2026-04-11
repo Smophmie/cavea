@@ -2,6 +2,17 @@ name: Versioning
 
 on:
   workflow_call:
+    inputs:
+      bump-type:
+        description: 'Increment type: patch, minor or major.'
+        required: false
+        type: string
+        default: 'patch'
+      target-version:
+        description: 'Manual version override (e.g. 1.0.0). If set, skips auto-increment.'
+        required: false
+        type: string
+        default: ''
     outputs:
       new-version:
         value: ${{ jobs.bump-version.outputs.new-version }}
@@ -27,13 +38,49 @@ jobs:
         run: |
           echo "Current VERSION:"
           cat VERSION
-          VERSION=$(cat VERSION)
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          PATCH=$(echo $VERSION | cut -d. -f3)
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          echo "New version: $NEW_VERSION"
+          if [ -n "${{ inputs.target-version }}" ]; then
+            NEW_VERSION="${{ inputs.target-version }}"
+            echo "Using manual version: $NEW_VERSION"
+          else
+            VERSION=$(cat VERSION)
+            MAJOR=$(echo $VERSION | cut -d. -f1)
+            MINOR=$(echo $VERSION | cut -d. -f2)
+            PATCH=$(echo $VERSION | cut -d. -f3)
+
+            # Determine bump type:
+            # - workflow_dispatch: use bump-type input
+            # - automatic push: read bump type from last commit message
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              BUMP_TYPE="${{ inputs.bump-type }}"
+            else
+              COMMIT_MSG=$(git log -1 --pretty=%s)
+              echo "Commit message: $COMMIT_MSG"
+              if echo "$COMMIT_MSG" | grep -qi '\[major\]'; then
+                BUMP_TYPE="major"
+              elif echo "$COMMIT_MSG" | grep -qi '\[minor\]'; then
+                BUMP_TYPE="minor"
+              else
+                BUMP_TYPE="patch"
+              fi
+            fi
+
+            case "$BUMP_TYPE" in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              *)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            echo "Bump type: $BUMP_TYPE → $NEW_VERSION"
+          fi
           echo "$NEW_VERSION" > VERSION
           echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
 

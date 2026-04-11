@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, Modal, FlatList } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronDown, X } from "lucide-react-native";
 import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
@@ -70,9 +71,11 @@ export default function AddOrUpdateBottleForm({
   const [showRegionPicker, setShowRegionPicker] = useState(false);
   const [showGrapeVarietyPicker, setShowGrapeVarietyPicker] = useState(false);
   const [yearPickerField, setYearPickerField] = useState<'vintage.year' | 'drinking_window_start' | 'drinking_window_end' | null>(null);
+  const insets = useSafeAreaInsets();
 
   const currentYear = new Date().getFullYear();
   const YEARS = Array.from({ length: currentYear - 1901 + 1 }, (_, i) => String(currentYear - i));
+  const FUTURE_YEARS = Array.from({ length: currentYear + 30 - 1901 + 1 }, (_, i) => String(currentYear + 30 - i));
 
   const [formData, setFormData] = useState<BottleFormInput>({
     bottle: {
@@ -158,8 +161,8 @@ export default function AddOrUpdateBottleForm({
     }
 
     const year = parseInt(formData.vintage.year);
-    if (formData.vintage.year && (isNaN(year) || year < 1901 || year > 2026)) {
-      newErrors['vintage.year'] = "Année invalide (1901-2026)";
+    if (formData.vintage.year && (isNaN(year) || year < 1901 || year > currentYear)) {
+      newErrors['vintage.year'] = `Année invalide (1901-${currentYear})`;
     }
 
     const stock = parseInt(formData.stock);
@@ -362,7 +365,7 @@ export default function AddOrUpdateBottleForm({
                   onRequestClose={() => setShowRegionPicker(false)}
                 >
                   <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
+                    <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%', paddingBottom: insets.bottom }}>
                       <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
                         <Text className="text-lg font-bold">Sélectionnez une région</Text>
                         <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
@@ -449,7 +452,7 @@ export default function AddOrUpdateBottleForm({
               onRequestClose={() => setShowGrapeVarietyPicker(false)}
             >
               <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%' }}>
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '70%', paddingBottom: insets.bottom }}>
                   <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
                     <Text className="text-lg font-bold">Sélectionnez des cépages</Text>
                     <TouchableOpacity onPress={() => setShowGrapeVarietyPicker(false)} testID="close-modal-grape-varieties">
@@ -485,7 +488,7 @@ export default function AddOrUpdateBottleForm({
               onRequestClose={() => setYearPickerField(null)}
             >
               <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '60%' }}>
+                <View className="bg-white rounded-t-3xl" style={{ maxHeight: '60%', paddingBottom: insets.bottom }}>
                   <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
                     <Text className="text-lg font-bold">Sélectionner une année</Text>
                     <TouchableOpacity onPress={() => setYearPickerField(null)}>
@@ -494,7 +497,7 @@ export default function AddOrUpdateBottleForm({
                   </View>
                   <FlatList
                     initialNumToRender={YEARS.length}
-                    data={YEARS}
+                    data={yearPickerField === 'vintage.year' ? YEARS : FUTURE_YEARS}
                     keyExtractor={(item) => item}
                     renderItem={({ item }) => {
                       const currentValue = yearPickerField === 'vintage.year'

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, Linking } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, Linking, Modal, TextInput } from "react-native";
 import { Image } from "expo-image";
 import { useCallback, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -23,6 +23,8 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<CellarStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const fetchData = async () => {
     if (!token) return;
@@ -48,28 +50,21 @@ export default function ProfilePage() {
   );
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Supprimer le compte",
-      "Cette action est irréversible. Toutes vos données seront supprimées définitivement. Êtes-vous sûr ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            if (!token) return;
-            setDeleting(true);
-            try {
-              await userService.deleteAccount(token);
-              await logout();
-            } catch (error) {
-              setDeleting(false);
-              Alert.alert("Erreur", "La suppression du compte a échoué. Veuillez réessayer.");
-            }
-          },
-        },
-      ]
-    );
+    setDeleteConfirmText("");
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!token) return;
+    setDeleting(true);
+    setShowDeleteModal(false);
+    try {
+      await userService.deleteAccount(token);
+      await logout();
+    } catch (error) {
+      setDeleting(false);
+      Alert.alert("Erreur", "La suppression du compte a échoué. Veuillez réessayer.");
+    }
   };
 
   const handleContact = () => {
@@ -194,16 +189,50 @@ export default function ProfilePage() {
       <View className="px-6 pb-10 gap-3 mt-2">
         <LogoutButton />
         <TouchableOpacity
-          className="flex-row items-center justify-center gap-3 border border-red-600 rounded-lg px-6 py-3 mt-2"
+          className="items-center py-3 mt-2"
           onPress={handleDeleteAccount}
           disabled={deleting}
         >
-          <Trash2 size={18} color="#dc2626" />
-          <Text className="text-red-600 text-base font-semibold">
+          <Text className="text-gray text-sm underline">
             {deleting ? "Suppression..." : "Supprimer mon compte"}
           </Text>
         </TouchableOpacity>
       </View>
+      <Modal visible={showDeleteModal} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/60 px-6">
+          <View className="bg-white rounded-xl p-6 w-full gap-4">
+            <Text className="text-black text-lg font-bold">Supprimer mon compte</Text>
+            <Text className="text-gray text-sm">
+              Cette action est irréversible. Toutes vos données seront supprimées définitivement.
+            </Text>
+            <Text className="text-gray text-sm">
+              Tapez <Text className="font-bold text-red-600">SUPPRIMER</Text> pour confirmer.
+            </Text>
+            <TextInput
+              className="border border-lightgray rounded-lg px-4 py-3 text-black"
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              autoCapitalize="characters"
+              placeholder="SUPPRIMER"
+            />
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                className="flex-1 border border-lightgray rounded-lg py-3 items-center"
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text className="text-gray font-semibold">Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 rounded-lg py-3 items-center ${deleteConfirmText === "SUPPRIMER" ? "bg-red-600" : "bg-red-200"}`}
+                onPress={confirmDeleteAccount}
+                disabled={deleteConfirmText !== "SUPPRIMER"}
+              >
+                <Text className="text-white font-semibold">Supprimer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

@@ -5,6 +5,21 @@ on:
     branches: [ main, dev, feature/** ]
   pull_request:
     branches: [ main, dev ]
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: 'Increment type (ignored if target-version is set)'
+        required: false
+        type: choice
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+      target-version:
+        description: 'Manual version override (e.g. 1.0.0). If set, ignores bump-type.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -31,8 +46,11 @@ jobs:
 
   versioning:
     needs: sonarqube
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     uses: ./.github/workflows/_versioning.yml
+    with:
+      bump-type: ${{ inputs.bump-type || 'patch' }}
+      target-version: ${{ inputs.target-version || '' }}
     secrets: inherit
 
   backend-build-dev:

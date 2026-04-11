@@ -149,20 +149,34 @@ describe('ProfilePage - suppression du compte', () => {
 
   afterEach(() => alertSpy.mockRestore());
 
-  it('should show confirmation alert when pressing delete button', async () => {
+  it('should show delete modal when pressing delete link', async () => {
     render(<ProfilePage />);
 
     await waitFor(() => screen.getByText('Supprimer mon compte'));
     fireEvent.press(screen.getByText('Supprimer mon compte'));
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      'Supprimer le compte',
-      expect.stringContaining('irréversible'),
-      expect.any(Array)
-    );
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('SUPPRIMER')).toBeTruthy();
+      expect(screen.getByText(/irréversible/)).toBeTruthy();
+    });
   });
 
-  it('should call deleteAccount and logout when confirming deletion', async () => {
+  it('should keep confirm button disabled until SUPPRIMER is typed', async () => {
+    render(<ProfilePage />);
+
+    await waitFor(() => screen.getByText('Supprimer mon compte'));
+    fireEvent.press(screen.getByText('Supprimer mon compte'));
+
+    await waitFor(() => screen.getByPlaceholderText('SUPPRIMER'));
+
+    fireEvent.changeText(screen.getByPlaceholderText('SUPPRIMER'), 'supprimer');
+    expect(userService.deleteAccount).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByPlaceholderText('SUPPRIMER'), 'SUPPRIME');
+    expect(userService.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  it('should call deleteAccount and logout when typing SUPPRIMER and confirming', async () => {
     (userService.deleteAccount as jest.Mock).mockResolvedValue(undefined);
 
     render(<ProfilePage />);
@@ -170,10 +184,11 @@ describe('ProfilePage - suppression du compte', () => {
     await waitFor(() => screen.getByText('Supprimer mon compte'));
     fireEvent.press(screen.getByText('Supprimer mon compte'));
 
-    const confirmButton = alertSpy.mock.calls[0][2].find(
-      (btn: any) => btn.style === 'destructive'
-    );
-    confirmButton.onPress();
+    await waitFor(() => screen.getByPlaceholderText('SUPPRIMER'));
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('SUPPRIMER'), 'SUPPRIMER');
+    });
+    fireEvent.press(screen.getByText('Supprimer'));
 
     await waitFor(() => {
       expect(userService.deleteAccount).toHaveBeenCalledWith('mock-token');
@@ -181,16 +196,14 @@ describe('ProfilePage - suppression du compte', () => {
     });
   });
 
-  it('should not call deleteAccount when canceling', async () => {
+  it('should close modal and not call deleteAccount when canceling', async () => {
     render(<ProfilePage />);
 
     await waitFor(() => screen.getByText('Supprimer mon compte'));
     fireEvent.press(screen.getByText('Supprimer mon compte'));
 
-    const cancelButton = alertSpy.mock.calls[0][2].find(
-      (btn: any) => btn.style === 'cancel'
-    );
-    cancelButton.onPress?.();
+    await waitFor(() => screen.getByPlaceholderText('SUPPRIMER'));
+    fireEvent.press(screen.getByText('Annuler'));
 
     expect(userService.deleteAccount).not.toHaveBeenCalled();
     expect(mockLogout).not.toHaveBeenCalled();
@@ -204,10 +217,11 @@ describe('ProfilePage - suppression du compte', () => {
     await waitFor(() => screen.getByText('Supprimer mon compte'));
     fireEvent.press(screen.getByText('Supprimer mon compte'));
 
-    const confirmButton = alertSpy.mock.calls[0][2].find(
-      (btn: any) => btn.style === 'destructive'
-    );
-    confirmButton.onPress();
+    await waitFor(() => screen.getByPlaceholderText('SUPPRIMER'));
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('SUPPRIMER'), 'SUPPRIMER');
+    });
+    fireEvent.press(screen.getByText('Supprimer'));
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(
