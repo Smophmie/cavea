@@ -128,6 +128,7 @@ export default function RegistrationPage() {
               className="border border-gray-300 rounded-lg px-4 py-3 pr-12 w-full"
             />
             <TouchableOpacity
+              testID="toggle-password-visibility"
               onPress={() => setShowPassword(v => !v)}
               style={{ position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' }}
             >
@@ -145,6 +146,7 @@ export default function RegistrationPage() {
               className="border border-gray-300 rounded-lg px-4 py-3 pr-12 w-full"
             />
             <TouchableOpacity
+              testID="toggle-confirm-password-visibility"
               onPress={() => setShowPasswordConfirmation(v => !v)}
               style={{ position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' }}
             >
