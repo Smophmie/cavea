@@ -9,19 +9,9 @@ class VintageService
 {
     public function findOrCreate(array $data): Vintage
     {
-        Log::info('[VINTAGE_SERVICE] Finding or creating vintage', [
-            'vintage_data' => $data,
-        ]);
-
         try {
             $vintage = Vintage::firstOrCreate([
                 'year' => $data['year'],
-            ]);
-
-            Log::info('[VINTAGE_SERVICE] Vintage operation completed', [
-                'vintage_id' => $vintage->id,
-                'vintage_year' => $vintage->year,
-                'was_created' => $vintage->wasRecentlyCreated,
             ]);
 
             return $vintage;

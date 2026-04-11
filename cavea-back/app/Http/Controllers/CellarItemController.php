@@ -76,15 +76,6 @@ class CellarItemController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        Log::info('[CELLAR_ITEM_POST] Request received', [
-            'user_id' => auth()->id(),
-            'request_data' => $request->all(),
-            'headers' => [
-                'content-type' => $request->header('Content-Type'),
-                'authorization' => $request->header('Authorization') ? 'Bearer ***' : null,
-            ],
-        ]);
-
         try {
             $validated = $request->validate([
                 'bottle.name' => 'required|string|max:255',
@@ -104,10 +95,6 @@ class CellarItemController extends Controller
                 'drinking_window_end' => 'nullable|integer|digits:4|min:1901|max:2060|gte:drinking_window_start',
             ]);
 
-            Log::info('[CELLAR_ITEM_POST] Validation successful', [
-                'user_id' => auth()->id(),
-                'validated_data' => $validated,
-            ]);
         } catch (ValidationException $e) {
             Log::error('[CELLAR_ITEM_POST] Validation failed', [
                 'user_id' => auth()->id(),
@@ -155,11 +142,6 @@ class CellarItemController extends Controller
                 'drinking_window_start' => $validated['drinking_window_start'] ?? null,
                 'drinking_window_end' => $validated['drinking_window_end'] ?? null,
             ], auth()->id());
-
-            Log::info('[CELLAR_ITEM_POST] Cellar item created successfully', [
-                'user_id' => auth()->id(),
-                'cellar_item_id' => $cellarItem->id,
-            ]);
 
             return response()->json($cellarItem, 201);
         } catch (\Exception $e) {

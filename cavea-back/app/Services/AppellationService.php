@@ -10,18 +10,9 @@ class AppellationService
 {
     public function findOrCreate(array $data): Appellation
     {
-        Log::info('[APPELLATION_SERVICE] Finding or creating appellation', [
-            'appellation_data' => $data,
-        ]);
-
         try {
             $appellation = Appellation::firstOrCreate([
                 'name' => $data['name'],
-            ]);
-
-            Log::info('[APPELLATION_SERVICE] Appellation operation completed', [
-                'appellation_id' => $appellation->id,
-                'appellation_name' => $appellation->name,
             ]);
 
             return $appellation;

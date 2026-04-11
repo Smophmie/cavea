@@ -119,6 +119,45 @@ describe('RegistrationPage', () => {
     });
   });
 
+  describe('Password visibility toggle', () => {
+    it('should hide password by default', () => {
+      render(<RegistrationPage />);
+      const passwordInput = screen.getByPlaceholderText('Mot de passe');
+      expect(passwordInput.props.secureTextEntry).toBe(true);
+    });
+
+    it('should show password when toggle is pressed', () => {
+      render(<RegistrationPage />);
+      fireEvent.press(screen.getByTestId('toggle-password-visibility'));
+      expect(screen.getByPlaceholderText('Mot de passe').props.secureTextEntry).toBe(false);
+    });
+
+    it('should hide password again when toggle is pressed twice', () => {
+      render(<RegistrationPage />);
+      fireEvent.press(screen.getByTestId('toggle-password-visibility'));
+      fireEvent.press(screen.getByTestId('toggle-password-visibility'));
+      expect(screen.getByPlaceholderText('Mot de passe').props.secureTextEntry).toBe(true);
+    });
+
+    it('should hide confirm password by default', () => {
+      render(<RegistrationPage />);
+      expect(screen.getByPlaceholderText('Confirmez le mot de passe').props.secureTextEntry).toBe(true);
+    });
+
+    it('should show confirm password when toggle is pressed', () => {
+      render(<RegistrationPage />);
+      fireEvent.press(screen.getByTestId('toggle-confirm-password-visibility'));
+      expect(screen.getByPlaceholderText('Confirmez le mot de passe').props.secureTextEntry).toBe(false);
+    });
+
+    it('should toggle password and confirm password independently', () => {
+      render(<RegistrationPage />);
+      fireEvent.press(screen.getByTestId('toggle-password-visibility'));
+      expect(screen.getByPlaceholderText('Mot de passe').props.secureTextEntry).toBe(false);
+      expect(screen.getByPlaceholderText('Confirmez le mot de passe').props.secureTextEntry).toBe(true);
+    });
+  });
+
   it('should show server unreachable message on network error', async () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('Network error')) as any;
 

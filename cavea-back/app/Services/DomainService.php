@@ -10,18 +10,9 @@ class DomainService
 {
     public function findOrCreate(array $data): Domain
     {
-        Log::info('[DOMAIN_SERVICE] Finding or creating domain', [
-            'domain_data' => $data,
-        ]);
-
         try {
             $domain = Domain::firstOrCreate([
                 'name' => $data['name'],
-            ]);
-
-            Log::info('[DOMAIN_SERVICE] Domain operation completed', [
-                'domain_id' => $domain->id,
-                'domain_name' => $domain->name,
             ]);
 
             return $domain;
