@@ -31,7 +31,7 @@ export default function Index() {
     <SafeAreaView className="flex-1 bg-app">
       <ScrollView 
         className="p-6"
-        contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
       >
         <Image 
           source={Logo}

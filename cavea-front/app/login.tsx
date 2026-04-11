@@ -70,7 +70,7 @@ export default function LoginPage() {
       >
       <ScrollView
         className="p-4"
-        contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="w-full">
