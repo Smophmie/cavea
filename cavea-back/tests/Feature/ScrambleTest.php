@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
+use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Tests\TestCase;
 
 class ScrambleTest extends TestCase
 {
     public function testOpenApiHasBearerSecurityScheme()
     {
-        $response = $this->getJson('/docs/api.json');
+        $response = $this->withoutMiddleware(RestrictedDocsAccess::class)->getJson('/docs/api.json');
 
         $response->assertStatus(200);
 
