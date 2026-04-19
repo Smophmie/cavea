@@ -8,7 +8,7 @@ use App\Http\Controllers\CellarItemController;
 use App\Http\Controllers\EmailVerificationController;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
-Route::post('/register', [UserController::class, 'register']);
+Route::post('/register', [UserController::class, 'register'])->middleware('throttle:5,1');
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -16,7 +16,7 @@ Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 've
     ->middleware(['signed'])
     ->name('verification.verify');
 
-Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
+Route::post('/email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:3,1');
 
 Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/user/me', [UserController::class, 'me']);
