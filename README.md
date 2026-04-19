@@ -40,7 +40,7 @@
 
 ```
 cavea/
-├── cavea-back/       # Laravel REST API (PHP 8.3)
+├── cavea-back/       # Laravel REST API (PHP 8.2)
 ├── cavea-front/      # Expo / React Native mobile app
 ├── .github/
 │   └── workflows/    # GitHub Actions CI/CD pipelines
@@ -57,7 +57,7 @@ cavea/
 
 | Technology      | Version |
 |-----------------|---------|
-| PHP             | 8.3     |
+| PHP             | 8.2     |
 | Laravel         | 12.0    |
 | FrankenPHP      | 1       |
 | MySQL           | 8.0     |
@@ -90,7 +90,7 @@ cavea/
 
 ## Prerequisites
 
-- PHP >= 8.3 + Composer
+- PHP >= 8.2 + Composer
 - Node.js >= 22.16.0 + npm
 - MySQL 8.0
 - **Expo Go** app installed on your Android device ([download on Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent))
@@ -279,14 +279,16 @@ GitHub Actions pipelines automatically trigger:
 2. **Backend tests** — PHPUnit with code coverage
 3. **Frontend tests** — Jest
 4. **SonarQube** — Code quality analysis
-5. **Versioning** — Auto-increment of `VERSION` on `main`
+5. **Versioning** — Auto-increment of `VERSION` and `app.json` on `main`
 6. **Docker Build** — Build and push to DockerHub
 7. **Kubernetes Deploy** — Update AKS cluster
+8. **Frontend Build** — AAB (main) or APK (dev) via EAS Build
+9. **Play Store Submit** — AAB submission to internal track (main only)
 
 ---
 
 ## Version
 
-Current version: **0.0.15**
+Current version: **1.0.0**
 
 See [VERSION](./VERSION).

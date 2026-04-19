@@ -7,7 +7,7 @@ This documentation describes the DevOps infrastructure set up for the Cavea proj
 ## Architecture
 
 ### Backend
-- Framework: Laravel (PHP 8.3)
+- Framework: Laravel (PHP 8.2)
 - Server: FrankenPHP
 - Database: MySQL 8.0
 - Containerization: Docker
@@ -38,7 +38,7 @@ composer lint:fix
 Code analysis via SonarQube for backend and frontend with coverage report retrieval.
 
 ### 4. Versioning
-On main branch only, the VERSION file is automatically incremented and a Git tag is created.
+On main branch only, the VERSION file is automatically incremented, `cavea-front/app.json` is updated with the same version, and a Git tag is created.
 
 ### 5. Docker Build
 Docker image build and publish to DockerHub with:
@@ -59,7 +59,12 @@ Deployment includes:
 - Laravel migrations execution
 
 ### 7. Frontend Build
-On main and dev branches, Android APK generation via EAS Build.
+On main and dev branches, Android build via EAS Build:
+- `main`: AAB (App Bundle) with `production` profile
+- `dev`: APK with `preview` profile
+
+### 8. Play Store Submit
+On main branch only, the AAB is automatically submitted to the Google Play Store (internal track) via EAS Submit.
 
 ## Environments
 
@@ -100,6 +105,7 @@ The following secrets must be configured in the repository:
 - MYSQL_ROOT_PASSWORD
 - APP_KEY
 - EXPO_TOKEN
+- GOOGLE_SERVICE_ACCOUNT_KEY
 - SONAR_TOKEN
 - SONAR_HOST_URL
 - SONAR_PROJECT_KEY
