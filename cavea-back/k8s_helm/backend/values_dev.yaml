@@ -14,7 +14,7 @@ resources:
 db_name: cavea_dev_db
 db_password: "CHANGE_ME"
 
-app_env: local
+app_env: development
 app_debug: "true"
 app_url: "https://api-dev.cavea.ovh"
 app_key: "base64:CHANGEME_DEV_KEY"
