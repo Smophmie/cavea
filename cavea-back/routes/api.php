@@ -10,7 +10,7 @@ use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
 Route::post('/register', [UserController::class, 'register'])->middleware('throttle:5,1');
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->middleware(['signed'])
