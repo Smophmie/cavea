@@ -21,7 +21,7 @@ return [
 
     // local  : Expo web (navigateur) sur les ports Metro/Expo Go
     // dev/prod: app mobile uniquement — CORS non applicable (pas de navigateur)
-    'allowed_origins' => app()->environment('local')
+    'allowed_origins' => env('APP_ENV') === 'local'
         ? [
             'http://localhost:8081',  // Expo web / Metro
             'http://localhost:19006', // Expo Go web (versions < SDK 49)
