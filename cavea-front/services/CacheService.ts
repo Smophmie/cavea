@@ -3,10 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const cacheService = {
   set: async (key: string, data: any) => {
     try {
-      const jsonData = JSON.stringify({
-        data,
-        timestamp: Date.now()
-      });
+      const jsonData = JSON.stringify({ data });
       await AsyncStorage.setItem(key, jsonData);
     } catch (error) {
       console.error(`Error saving cache for ${key}:`, error);
