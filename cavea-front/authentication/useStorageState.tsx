@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 export function useStorageState(key: string) {
   const [state, setState] = useState<string | null>(null);
@@ -7,7 +7,7 @@ export function useStorageState(key: string) {
 
   useEffect(() => {
     const load = async () => {
-      const value = await AsyncStorage.getItem(key);
+      const value = await SecureStore.getItemAsync(key);
       setState(value);
       setLoading(false);
     };
@@ -16,10 +16,10 @@ export function useStorageState(key: string) {
 
   const setValue = async (value: string | null) => {
     if (value === null) {
-      await AsyncStorage.removeItem(key);
+      await SecureStore.deleteItemAsync(key);
       setState(null);
     } else {
-      await AsyncStorage.setItem(key, value);
+      await SecureStore.setItemAsync(key, value);
       setState(value);
     }
   };
