@@ -1,4 +1,5 @@
 import { baseURL } from "@/api";
+import { onSessionExpired } from "./sessionHandler";
 
 type HttpMethod = "GET" | "DELETE";
 
@@ -25,6 +26,9 @@ const fetchAPI = async (
   const data = await response.json();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      onSessionExpired();
+    }
     throw new Error(errorMessage || data.message || "Une erreur est survenue.");
   }
 

@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useStorageState } from "./useStorageState";
 import { baseURL } from "@/api";
+import { registerSessionHandler } from "@/services/sessionHandler";
 
 type AuthContextType = {
   token: string | null;
@@ -17,6 +18,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken, storageLoading] = useStorageState("authToken");
   const [username, setUsername] = useStorageState("authUser");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    registerSessionHandler(() => {
+      setToken(null);
+      setUsername(null);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (storageLoading || !token) return;
+
+    fetch(`${baseURL}/user/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => {
+      if (res.status === 401) {
+        setToken(null);
+        setUsername(null);
+      }
+    }).catch(() => {
+      // Pas de réseau — on ne déconnecte pas
+    });
+  }, [storageLoading]);
 
   const login = async (email: string, password: string): Promise<string | null> => {
     setLoading(true);

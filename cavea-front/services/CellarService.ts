@@ -1,6 +1,7 @@
 import { baseURL } from "@/api";
 import { cacheService } from "./CacheService";
 import NetInfo from '@react-native-community/netinfo';
+import { onSessionExpired } from "./sessionHandler";
 
 const CACHE_KEYS = {
   TOTAL_STOCK: 'cache_total_stock',
@@ -59,6 +60,10 @@ const fetchAPI = async (
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        onSessionExpired();
+      }
+
       let errorData: any = {};
       try {
         errorData = await response.json();
