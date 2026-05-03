@@ -157,13 +157,13 @@ class WishlistControllerTest extends TestCase
 
         $response->assertUnprocessable()
                  ->assertJsonFragment(['message' => 'Les données fournies ne sont pas valides'])
-                 ->assertJsonPath('errors.bottle\.name', fn ($v) => !empty($v))
-                 ->assertJsonPath('errors.bottle\.domain_name', fn ($v) => !empty($v))
-                 ->assertJsonPath('errors.bottle\.colour_id', fn ($v) => !empty($v))
-                 ->assertJsonPath('errors.bottle\.region_id', fn ($v) => !empty($v));
-
-        // vintage.year is now optional for wishlist items
-        $response->assertJsonMissingPath('errors.vintage\.year');
+                 ->assertJsonValidationErrors([
+                     'bottle.name',
+                     'bottle.domain_name',
+                     'bottle.colour_id',
+                     'bottle.region_id',
+                 ])
+                 ->assertJsonMissingValidationErrors(['vintage.year']);
     }
 
     public function testCanStoreWishlistItemWithoutVintage(): void
@@ -223,7 +223,7 @@ class WishlistControllerTest extends TestCase
         ]);
 
         $response->assertUnprocessable()
-                 ->assertJsonPath('errors.vintage\.year', fn ($v) => !empty($v));
+                 ->assertJsonValidationErrors(['vintage.year']);
     }
 
     public function testCanShowWishlistItem(): void
