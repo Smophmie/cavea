@@ -314,7 +314,7 @@ export default function AddOrUpdateBottleForm({
           <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
             <Text className="font-bold text-xl pb-4">Informations principales</Text>
             
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
                 <TextInput placeholderTextColor="#9CA3AF"
@@ -334,7 +334,7 @@ export default function AddOrUpdateBottleForm({
               </>
             )}
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
                 <TextInput placeholderTextColor="#9CA3AF"
@@ -354,7 +354,7 @@ export default function AddOrUpdateBottleForm({
               </>
             )}
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Région *</Text>
                 <TouchableOpacity
@@ -537,7 +537,7 @@ export default function AddOrUpdateBottleForm({
               </View>
             </Modal>
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
                 <TouchableOpacity
