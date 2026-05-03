@@ -88,7 +88,11 @@ export default function AddFromWishlistPage() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-app">
+    <ScrollView
+      className="flex-1 bg-app"
+      accessibilityRole="scrollbar"
+      accessibilityLabel="Formulaire d'ajout à la cave depuis la liste de souhaits"
+    >
       <AddOrUpdateBottleForm
         mode="add"
         initialData={initialData}
