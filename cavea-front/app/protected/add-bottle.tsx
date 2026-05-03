@@ -33,7 +33,7 @@ export default function AddBottlePage() {
             region_id: item.bottle.region?.id || null,
             grape_variety_ids: item.bottle.grapeVarieties?.map((gv: any) => gv.id) || [],
           },
-          vintage: { year: String(item.vintage.year) },
+          ...(item.vintage && { vintage: { year: String(item.vintage.year) } }),
           appellation_name: item.appellation?.name || "",
         });
       })

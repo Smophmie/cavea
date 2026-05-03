@@ -1,5 +1,6 @@
 import { ScrollView, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
 import { wishlistService } from "@/services/WishlistService";
@@ -7,6 +8,13 @@ import { wishlistService } from "@/services/WishlistService";
 export default function AddWishlistItemPage() {
   const router = useRouter();
   const { token } = useAuth();
+  const [formKey, setFormKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setFormKey(prev => prev + 1);
+    }, [])
+  );
 
   const handleSubmit = async (formData: any) => {
     if (!token) {
@@ -47,6 +55,7 @@ export default function AddWishlistItemPage() {
       accessibilityLabel="Formulaire d'ajout à la liste de souhaits"
     >
       <AddOrUpdateBottleForm
+        key={formKey}
         mode="wishlist"
         onSubmit={handleSubmit}
       />
