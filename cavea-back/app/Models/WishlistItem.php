@@ -29,7 +29,7 @@ class WishlistItem extends Model
 
     public function vintage(): BelongsTo
     {
-        return $this->belongsTo(Vintage::class)->withDefault();
+        return $this->belongsTo(Vintage::class);
     }
 
     public function appellation(): BelongsTo
