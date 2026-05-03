@@ -71,8 +71,8 @@ export default function WishlistPage() {
 
   const handleAddToCellar = (id: number) => {
     router.push({
-      pathname: "/protected/add-bottle",
-      params: { fromWishlistId: id },
+      pathname: "/protected/add-from-wishlist",
+      params: { id },
     } as any);
   };
 
