@@ -1,4 +1,4 @@
-import { ScrollView, Alert } from "react-native";
+import { ScrollView, Alert, ActivityIndicator, View } from "react-native";
 import { useRouter, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/authentication/AuthContext";
@@ -12,15 +12,21 @@ export default function AddBottlePage() {
   const { fromWishlistId } = useLocalSearchParams<{ fromWishlistId?: string }>();
   const [formKey, setFormKey] = useState(0);
   const [initialData, setInitialData] = useState<any>(undefined);
+  const [initialDataLoading, setInitialDataLoading] = useState(!!fromWishlistId);
 
   useFocusEffect(
     useCallback(() => {
-      setFormKey(prev => prev + 1);
-    }, [])
+      if (!fromWishlistId) {
+        setFormKey(prev => prev + 1);
+      }
+    }, [fromWishlistId])
   );
 
   useEffect(() => {
-    if (!fromWishlistId || !token) return;
+    if (!fromWishlistId || !token) {
+      setInitialDataLoading(false);
+      return;
+    }
 
     wishlistService
       .getWishlistItemById(token, Number(fromWishlistId))
@@ -39,6 +45,9 @@ export default function AddBottlePage() {
       })
       .catch(() => {
         console.warn("Could not load wishlist item for pre-fill");
+      })
+      .finally(() => {
+        setInitialDataLoading(false);
       });
   }, [fromWishlistId, token]);
 
@@ -82,6 +91,14 @@ export default function AddBottlePage() {
       Alert.alert("Erreur", errorMessage);
     }
   };
+
+  if (initialDataLoading) {
+    return (
+      <View className="flex-1 bg-app items-center justify-center">
+        <ActivityIndicator size="large" color="#730b1e" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-app">
