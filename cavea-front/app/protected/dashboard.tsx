@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from "react-native";
+import { View, Text, Image, ScrollView, ImageBackground } from "react-native";
 import PageTitle from "../components/PageTitle";
 import { useAuth } from "@/authentication/AuthContext";
 import SubTitle from "../components/SubTitle";
@@ -79,31 +79,37 @@ export default function DashboardPage() {
   return (
     <ScrollView className="flex-1 bg-app">
       <OfflineIndicator />
-      <View className="w-full flex-3 bg-wine px-10 py-14">
-        
-        <View className="w-full items-center my-8">
-          <Image
-            source={require("../../assets/images/logo-fond-rouge.png")}
-            style={{ width: "70%", height: 100 }}
-          />
-        </View>
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=1200&q=80' }}
+        style={{ width: '100%' }}
+        imageStyle={{ opacity: 0.3 }}
+      >
+        <View className="w-full flex-3 bg-wine px-10 py-14">
 
-        <PageTitle text="Ma cave" color="white" />
-        <Text className="text-white text-lg mb-8">
-          En un coup d'œil !
-        </Text>
+          <View className="w-full items-center my-8">
+            <Image
+              source={require("../../assets/images/logo-fond-rouge.png")}
+              style={{ width: "70%", height: 100 }}
+            />
+          </View>
 
-        <View className="flex-row justify-between">
-          <CardIconText 
-            label="Total bouteilles"
-            text={loading ? "..." : `${totalStock}`} 
-            icon="BottleWine"
-            iconColor="#ffffff"
-            textColor="text-white"
-            backgroundColor="rgba(255, 255, 255, 0.1)"
-          />
+          <PageTitle text="Ma cave" color="white" />
+          <Text className="text-white text-lg mb-8">
+            En un coup d'œil !
+          </Text>
+
+          <View className="flex-row justify-between">
+            <CardIconText
+              label="Total bouteilles"
+              text={loading ? "..." : `${totalStock}`}
+              icon="BottleWine"
+              iconColor="#ffffff"
+              textColor="text-white"
+              backgroundColor="rgba(255, 255, 255, 0.1)"
+            />
+          </View>
         </View>
-      </View>
+      </ImageBackground>
 
       <View className="border border-lightgray rounded-lg p-6 m-6 bg-white">
         <SubTitle text="Répartition par couleur" color="black" />
