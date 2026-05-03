@@ -17,11 +17,11 @@ interface BottleFormData {
     region_id: number;
     grape_variety_ids?: number[];
   };
-  vintage: {
+  vintage?: {
     year: number;
   };
   appellation_name?: string;
-  stock: number;
+  stock?: number;
   price?: number;
   shop?: string;
   offered_by?: string;
@@ -50,7 +50,7 @@ interface BottleFormInput {
 }
 
 interface AddOrUpdateFormProps {
-  mode: 'add' | 'update';
+  mode: 'add' | 'update' | 'wishlist';
   bottleId?: number;
   token?: string;
   initialData?: Partial<BottleFormInput>;
@@ -139,7 +139,7 @@ export default function AddOrUpdateBottleForm({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (mode === 'add') {
+    if (mode === 'add' || mode === 'wishlist') {
       if (!formData.bottle.name.trim()) {
         newErrors['bottle.name'] = "Le nom de la bouteille est requis";
       }
@@ -152,10 +152,10 @@ export default function AddOrUpdateBottleForm({
       if (!formData.bottle.region_id) {
         newErrors['bottle.region_id'] = "La région est requise";
       }
-      if (!formData.vintage.year.trim()) {
+      if (mode !== 'wishlist' && !formData.vintage.year.trim()) {
         newErrors['vintage.year'] = "Le millésime est requis";
       }
-      if (!formData.stock.trim()) {
+      if (mode === 'add' && !formData.stock.trim()) {
         newErrors['stock'] = "Le stock est requis";
       }
     }
@@ -200,23 +200,23 @@ export default function AddOrUpdateBottleForm({
           domain_name: formData.bottle.domain_name,
           colour_id: formData.bottle.colour_id!,
           region_id: formData.bottle.region_id!,
-          ...(formData.bottle.grape_variety_ids.length > 0 && { 
-            grape_variety_ids: formData.bottle.grape_variety_ids 
+          ...(formData.bottle.grape_variety_ids.length > 0 && {
+            grape_variety_ids: formData.bottle.grape_variety_ids
           }),
         },
-        vintage: {
-          year: parseInt(formData.vintage.year),
-        },
-        stock: parseInt(formData.stock),
-        ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
-        ...(formData.price && { price: parseFloat(formData.price) }),
-        ...(formData.shop && { shop: formData.shop }),
-        ...(formData.offered_by && { offered_by: formData.offered_by }),
-        ...(formData.drinking_window_start && { 
-          drinking_window_start: parseInt(formData.drinking_window_start) 
+        ...(formData.vintage.year && {
+          vintage: { year: parseInt(formData.vintage.year) },
         }),
-        ...(formData.drinking_window_end && { 
-          drinking_window_end: parseInt(formData.drinking_window_end) 
+        ...(mode !== 'wishlist' && { stock: parseInt(formData.stock) }),
+        ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
+        ...(mode !== 'wishlist' && formData.price && { price: parseFloat(formData.price) }),
+        ...(mode !== 'wishlist' && formData.shop && { shop: formData.shop }),
+        ...(mode !== 'wishlist' && formData.offered_by && { offered_by: formData.offered_by }),
+        ...(mode !== 'wishlist' && formData.drinking_window_start && {
+          drinking_window_start: parseInt(formData.drinking_window_start)
+        }),
+        ...(mode !== 'wishlist' && formData.drinking_window_end && {
+          drinking_window_end: parseInt(formData.drinking_window_end)
         }),
       };
       
@@ -292,7 +292,16 @@ export default function AddOrUpdateBottleForm({
         <View className="mb-4">
           <BackButton color="#ffffff" />
         </View>
-        <PageTitle text={mode === 'add' ? 'Ajouter une bouteille' : 'Modifier la bouteille'} color="white" />
+        <PageTitle
+          text={
+            mode === 'add'
+              ? 'Ajouter une bouteille'
+              : mode === 'wishlist'
+              ? 'Ajouter à ma liste'
+              : 'Modifier la bouteille'
+          }
+          color="white"
+        />
       </View>
 
       {dataLoading ? (
@@ -305,7 +314,7 @@ export default function AddOrUpdateBottleForm({
           <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
             <Text className="font-bold text-xl pb-4">Informations principales</Text>
             
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Nom de la bouteille *</Text>
                 <TextInput placeholderTextColor="#9CA3AF"
@@ -325,7 +334,7 @@ export default function AddOrUpdateBottleForm({
               </>
             )}
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Domaine *</Text>
                 <TextInput placeholderTextColor="#9CA3AF"
@@ -345,7 +354,7 @@ export default function AddOrUpdateBottleForm({
               </>
             )}
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Région *</Text>
                 <TouchableOpacity
@@ -528,7 +537,7 @@ export default function AddOrUpdateBottleForm({
               </View>
             </Modal>
 
-            {mode === 'add' ? (
+            {mode !== 'update' ? (
               <>
                 <Text className="text-base font-semibold text-gray mb-2">Couleur *</Text>
                 <TouchableOpacity
@@ -561,9 +570,11 @@ export default function AddOrUpdateBottleForm({
               </>
             ) : null}
 
-            {mode === 'add' && (
+            {(mode === 'add' || mode === 'wishlist') && (
               <>
-                <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
+                <Text className="text-base font-semibold text-gray mb-2">
+                  {mode === 'wishlist' ? 'Millésime (optionnel)' : 'Millésime *'}
+                </Text>
                 <TouchableOpacity
                   onPress={() => setYearPickerField('vintage.year')}
                   className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"
@@ -580,7 +591,7 @@ export default function AddOrUpdateBottleForm({
             )}
           </View>
 
-      <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
+      {mode !== 'wishlist' && <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
         <Text className="font-bold text-xl pb-4">Informations d'achat</Text>
 
         <View className="flex-row gap-4 mb-4">
@@ -628,9 +639,9 @@ export default function AddOrUpdateBottleForm({
           placeholder="Nom de la personne"
           className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
         />
-      </View>
+      </View>}
 
-      <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
+      {mode !== 'wishlist' && <View className="m-6 bg-white p-6 border border-lightgray rounded-lg">
         <Text className="font-bold text-xl pb-4">Période de dégustation optimale</Text>
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
@@ -661,7 +672,7 @@ export default function AddOrUpdateBottleForm({
         {errors['drinking_window_end'] && (
           <Text className="text-red-600 text-sm mb-4">{errors['drinking_window_end']}</Text>
         )}
-      </View>
+      </View>}
 
         </>
       )}
@@ -672,9 +683,15 @@ export default function AddOrUpdateBottleForm({
             <ActivityIndicator size="large" color="#730b1e" className="my-4" />
           ) : (
             <View className="m-6">
-              <PrimaryButton 
-                text={mode === 'add' ? 'Ajouter' : 'Modifier'} 
-                onPress={handleSubmit} 
+              <PrimaryButton
+                text={
+                  mode === 'add'
+                    ? 'Ajouter'
+                    : mode === 'wishlist'
+                    ? 'Ajouter à ma liste'
+                    : 'Modifier'
+                }
+                onPress={handleSubmit}
               />
             </View>
           )}

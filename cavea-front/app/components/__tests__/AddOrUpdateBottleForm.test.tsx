@@ -58,6 +58,92 @@ describe('AddOrUpdateBottleForm', () => {
     });
   });
 
+  describe('Rendering in WISHLIST mode', () => {
+    it('should render editable fields for name, domain and region', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      expect(screen.getByPlaceholderText("Ex: A l'ombre du figuier")).toBeTruthy();
+      expect(screen.getByPlaceholderText('Ex: Mas de la Seranne')).toBeTruthy();
+      expect(screen.getByText('Sélectionnez une région')).toBeTruthy();
+    });
+
+    it('should show colour picker in wishlist mode', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      expect(screen.getByText('Sélectionnez une couleur')).toBeTruthy();
+    });
+
+    it('should show optional vintage label in wishlist mode', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      expect(screen.getByText('Millésime (optionnel)')).toBeTruthy();
+    });
+
+    it('should render "Ajouter à ma liste" button in wishlist mode', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      // The text appears in both the page title and the submit button
+      expect(screen.getAllByText('Ajouter à ma liste').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should not show stock or price fields in wishlist mode', () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      expect(screen.queryByPlaceholderText('Ex: 6')).toBeNull();
+      expect(screen.queryByPlaceholderText('Ex: 15.50')).toBeNull();
+    });
+
+    it('should submit without vintage when year is not set', async () => {
+      render(
+        <AddOrUpdateBottleForm
+          mode="wishlist"
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.changeText(screen.getByPlaceholderText("Ex: A l'ombre du figuier"), 'Château Test');
+      fireEvent.changeText(screen.getByPlaceholderText('Ex: Mas de la Seranne'), 'Domaine Test');
+      fireEvent.press(screen.getByText('Sélectionnez une couleur'));
+      fireEvent.press(screen.getByText('Rouge'));
+      fireEvent.press(screen.getByText('Sélectionnez une région'));
+      fireEvent.press(screen.getByText('Bordeaux'));
+
+      // Use the last occurrence (submit button), the first is the page title
+      fireEvent.press(screen.getAllByText('Ajouter à ma liste').at(-1)!);
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+          expect.not.objectContaining({ vintage: expect.anything() })
+        );
+      });
+    });
+  });
+
   describe('Form validation', () => {
     it('should show error when submitting without required fields', async () => {
       render(

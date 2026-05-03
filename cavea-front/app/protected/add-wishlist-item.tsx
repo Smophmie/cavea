@@ -3,9 +3,9 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/authentication/AuthContext";
 import AddOrUpdateBottleForm from "../components/AddOrUpdateBottleForm";
-import { cellarService } from "@/services/CellarService";
+import { wishlistService } from "@/services/WishlistService";
 
-export default function AddBottlePage() {
+export default function AddWishlistItemPage() {
   const router = useRouter();
   const { token } = useAuth();
   const [formKey, setFormKey] = useState(0);
@@ -23,20 +23,19 @@ export default function AddBottlePage() {
     }
 
     try {
-      await cellarService.createCellarItem(token, formData);
+      await wishlistService.createWishlistItem(token, {
+        bottle: formData.bottle,
+        ...(formData.vintage && { vintage: formData.vintage }),
+        ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
+      });
 
       Alert.alert(
         "Succès",
-        "Bouteille ajoutée avec succès !",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/protected/dashboard"),
-          },
-        ]
+        "Bouteille ajoutée à votre liste de souhaits !",
+        [{ text: "OK", onPress: () => router.replace("/protected/wishlist") }]
       );
     } catch (error: any) {
-      let errorMessage = "Impossible d'ajouter la bouteille";
+      let errorMessage = "Impossible d'ajouter à la liste de souhaits";
 
       if (error.response?.status === 422) {
         const validationErrors = error.response.data.errors;
@@ -50,10 +49,14 @@ export default function AddBottlePage() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-app">
+    <ScrollView
+      className="flex-1 bg-app"
+      accessibilityRole="scrollbar"
+      accessibilityLabel="Formulaire d'ajout à la liste de souhaits"
+    >
       <AddOrUpdateBottleForm
         key={formKey}
-        mode="add"
+        mode="wishlist"
         onSubmit={handleSubmit}
       />
     </ScrollView>

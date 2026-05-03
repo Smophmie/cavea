@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CellarItemController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\EmailVerificationController;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
@@ -41,4 +42,9 @@ Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(functio
     Route::delete('/cellar-items/{cellarItem}', [CellarItemController::class, 'destroy']);
     Route::post('/cellar-items/{cellarItem}/comments', [CellarItemController::class, 'storeComment']);
     Route::delete('/cellar-items/{cellarItem}/comments/{comment}', [CellarItemController::class, 'destroyComment']);
+
+    Route::get('/wishlist-items', [WishlistController::class, 'index']);
+    Route::post('/wishlist-items', [WishlistController::class, 'store']);
+    Route::get('/wishlist-items/{wishlistItemId}', [WishlistController::class, 'show']);
+    Route::delete('/wishlist-items/{wishlistItem}', [WishlistController::class, 'destroy']);
 });
