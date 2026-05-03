@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('bottle_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vintage_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('vintage_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('appellation_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });

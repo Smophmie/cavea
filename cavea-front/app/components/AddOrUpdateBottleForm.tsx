@@ -17,7 +17,7 @@ interface BottleFormData {
     region_id: number;
     grape_variety_ids?: number[];
   };
-  vintage: {
+  vintage?: {
     year: number;
   };
   appellation_name?: string;
@@ -152,7 +152,7 @@ export default function AddOrUpdateBottleForm({
       if (!formData.bottle.region_id) {
         newErrors['bottle.region_id'] = "La région est requise";
       }
-      if (!formData.vintage.year.trim()) {
+      if (mode !== 'wishlist' && !formData.vintage.year.trim()) {
         newErrors['vintage.year'] = "Le millésime est requis";
       }
       if (mode === 'add' && !formData.stock.trim()) {
@@ -204,9 +204,9 @@ export default function AddOrUpdateBottleForm({
             grape_variety_ids: formData.bottle.grape_variety_ids
           }),
         },
-        vintage: {
-          year: parseInt(formData.vintage.year),
-        },
+        ...(formData.vintage.year && {
+          vintage: { year: parseInt(formData.vintage.year) },
+        }),
         ...(mode !== 'wishlist' && { stock: parseInt(formData.stock) }),
         ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
         ...(mode !== 'wishlist' && formData.price && { price: parseFloat(formData.price) }),
@@ -570,9 +570,11 @@ export default function AddOrUpdateBottleForm({
               </>
             ) : null}
 
-            {mode === 'add' && (
+            {(mode === 'add' || mode === 'wishlist') && (
               <>
-                <Text className="text-base font-semibold text-gray mb-2">Millésime *</Text>
+                <Text className="text-base font-semibold text-gray mb-2">
+                  {mode === 'wishlist' ? 'Millésime (optionnel)' : 'Millésime *'}
+                </Text>
                 <TouchableOpacity
                   onPress={() => setYearPickerField('vintage.year')}
                   className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center"

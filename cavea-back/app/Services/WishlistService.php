@@ -40,10 +40,10 @@ class WishlistService
     public function create(array $data, int $userId): WishlistItem
     {
         $wishlistItem = WishlistItem::create([
-            'user_id'         => $userId,
-            'bottle_id'       => $data['bottle_id'],
-            'vintage_id'      => $data['vintage_id'],
-            'appellation_id'  => $data['appellation_id'] ?? null,
+            'user_id'        => $userId,
+            'bottle_id'      => $data['bottle_id'],
+            'vintage_id'     => $data['vintage_id'] ?? null,
+            'appellation_id' => $data['appellation_id'] ?? null,
         ]);
 
         $wishlistItem->load([

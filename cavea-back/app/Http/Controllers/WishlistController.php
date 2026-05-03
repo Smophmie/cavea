@@ -40,7 +40,7 @@ class WishlistController extends Controller
                 'bottle.region_id'         => 'required|exists:regions,id',
                 'bottle.grape_variety_ids'   => 'nullable|array',
                 'bottle.grape_variety_ids.*' => 'exists:grape_varieties,id',
-                'vintage.year'             => 'required|integer|digits:4|min:1901|max:2026',
+                'vintage.year'             => 'nullable|integer|digits:4|min:1901|max:2026',
                 'appellation_name'         => 'nullable|string|max:255',
             ]);
         } catch (ValidationException $e) {
@@ -75,11 +75,13 @@ class WishlistController extends Controller
                 'grape_variety_ids' => $validated['bottle']['grape_variety_ids'] ?? [],
             ]);
 
-            $vintage = $this->vintageService->findOrCreate($validated['vintage']);
+            $vintage = !empty($validated['vintage']['year'])
+                ? $this->vintageService->findOrCreate($validated['vintage'])
+                : null;
 
             $wishlistItem = $this->wishlistService->create([
                 'bottle_id'      => $bottle->id,
-                'vintage_id'     => $vintage->id,
+                'vintage_id'     => $vintage?->id,
                 'appellation_id' => $appellation?->id,
             ], auth()->id());
 

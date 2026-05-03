@@ -17,7 +17,7 @@ export default function AddWishlistItemPage() {
     try {
       await wishlistService.createWishlistItem(token, {
         bottle: formData.bottle,
-        vintage: formData.vintage,
+        ...(formData.vintage && { vintage: formData.vintage }),
         ...(formData.appellation_name && { appellation_name: formData.appellation_name }),
       });
 
@@ -41,7 +41,11 @@ export default function AddWishlistItemPage() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-app">
+    <ScrollView
+      className="flex-1 bg-app"
+      accessibilityRole="scrollbar"
+      accessibilityLabel="Formulaire d'ajout à la liste de souhaits"
+    >
       <AddOrUpdateBottleForm
         mode="wishlist"
         onSubmit={handleSubmit}

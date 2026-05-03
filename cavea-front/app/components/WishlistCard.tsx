@@ -9,7 +9,7 @@ type WishlistCardProps = {
   domainName: string;
   region: string;
   colour: string;
-  vintage: number;
+  vintage?: number | null;
   onAddToCellar: (id: number) => void;
   onDelete: (id: number) => void;
 };
@@ -25,16 +25,26 @@ export default function WishlistCard({
   onDelete,
 }: WishlistCardProps) {
   const iconColor = COLOUR_MAP[colour] || COLOUR_MAP["Autre"];
+  const vintageLabel = vintage ? ` ${vintage}` : '';
+  const fullName = `${bottleName}${vintageLabel}`;
 
   return (
-    <View className="border border-lightgray rounded-lg p-4 bg-white">
-      <View className="flex-row items-center mb-3">
-        <View className="items-center mr-4">
+    <View
+      accessible={false}
+      className="border border-lightgray rounded-lg p-4 bg-white"
+    >
+      <View
+        accessible={true}
+        accessibilityRole="text"
+        accessibilityLabel={`${fullName}, ${domainName}, ${region}, ${colour}`}
+        className="flex-row items-center mb-3"
+      >
+        <View className="items-center mr-4" accessibilityElementsHidden={true} importantForAccessibility="no-hide-descendants">
           <BottleWine size={32} color={iconColor} />
         </View>
         <View className="flex-1">
           <Text className="text-base font-semibold text-black">
-            {bottleName} {vintage}
+            {bottleName}{vintage ? ` ${vintage}` : ''}
           </Text>
           <Text className="text-sm text-gray">{domainName}</Text>
           <Text className="text-sm text-gray">{region}</Text>
@@ -46,18 +56,26 @@ export default function WishlistCard({
         <TouchableOpacity
           onPress={() => onAddToCellar(id)}
           testID={`add-to-cellar-${id}`}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Ajouter ${fullName} à ma cave`}
+          accessibilityHint="Ouvre le formulaire d'ajout pré-rempli avec les informations de ce vin"
           className="flex-1 flex-row items-center justify-center gap-2 bg-wine py-2 rounded-lg"
         >
-          <ShoppingBag size={16} color="#ffffff" />
+          <ShoppingBag size={16} color="#ffffff" accessibilityElementsHidden={true} />
           <Text className="text-white text-sm font-semibold">Ajouter à ma cave</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => onDelete(id)}
           testID={`delete-wishlist-${id}`}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Supprimer ${fullName} de la liste de souhaits`}
+          accessibilityHint="Retire ce vin de votre liste de souhaits"
           className="flex-row items-center justify-center px-4 py-2 border border-lightgray rounded-lg"
         >
-          <Trash2 size={16} color="#730b1e" />
+          <Trash2 size={16} color="#730b1e" accessibilityElementsHidden={true} />
         </TouchableOpacity>
       </View>
     </View>

@@ -17,7 +17,7 @@ interface WishlistItem {
     region: { name: string } | null;
     colour: { id: number; name: string };
   };
-  vintage: { year: number };
+  vintage: { year: number } | null;
   appellation: { name: string } | null;
 }
 
@@ -77,21 +77,41 @@ export default function WishlistPage() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-app">
+    <ScrollView
+      className="flex-1 bg-app"
+      accessibilityRole="scrollbar"
+    >
       <OfflineIndicator />
-      <View className="w-full bg-wine px-10 py-14">
-        <View className="w-full items-center my-8">
+
+      <View
+        accessible={true}
+        accessibilityRole="header"
+        accessibilityLabel="Ma liste de souhaits — Les vins qui me font rêver"
+        className="w-full bg-wine px-10 py-14"
+      >
+        <View
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants"
+          className="w-full items-center my-8"
+        >
           <Image
             source={require("../../assets/images/logo-fond-rouge.png")}
             style={{ width: "70%", height: 100 }}
+            accessibilityElementsHidden={true}
           />
         </View>
         <PageTitle text="Ma liste de souhaits" color="white" />
-        <Text className="text-white text-lg mb-8">Les vins qui me font rêver !</Text>
+        <Text className="text-white text-lg mb-8">
+          Les vins qui me font rêver !
+        </Text>
       </View>
 
       <View className="px-6 py-6">
-        <View className="mb-4">
+        <View
+          accessible={true}
+          accessibilityRole="none"
+          className="mb-4"
+        >
           <PrimaryButton
             text="Ajouter un vin"
             onPress={() => router.push("/protected/add-wishlist-item" as any)}
@@ -99,11 +119,20 @@ export default function WishlistPage() {
         </View>
 
         {loading ? (
-          <View className="items-center py-10">
+          <View
+            className="items-center py-10"
+            accessible={true}
+            accessibilityRole="progressbar"
+            accessibilityLabel="Chargement de la liste de souhaits"
+          >
             <ActivityIndicator size="large" color="#730b1e" />
           </View>
         ) : items.length > 0 ? (
-          <View className="gap-3">
+          <View
+            accessible={false}
+            accessibilityRole="list"
+            className="gap-3"
+          >
             {items.map((item) => (
               <WishlistCard
                 key={item.id}
@@ -112,15 +141,25 @@ export default function WishlistPage() {
                 domainName={item.bottle.domain.name}
                 region={item.bottle.region?.name || "Région non spécifiée"}
                 colour={item.bottle.colour.name}
-                vintage={item.vintage.year}
+                vintage={item.vintage?.year}
                 onAddToCellar={handleAddToCellar}
                 onDelete={handleDelete}
               />
             ))}
           </View>
         ) : (
-          <View className="items-center justify-center py-16">
-            <Heart color="#730b1e" size={56} strokeWidth={1.5} />
+          <View
+            className="items-center justify-center py-16"
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel="Votre liste de souhaits est vide. Ajoutez des vins pour garder une trace de ceux qui vous font envie."
+          >
+            <Heart
+              color="#730b1e"
+              size={56}
+              strokeWidth={1.5}
+              accessibilityElementsHidden={true}
+            />
             <Text className="text-2xl font-bold text-center mt-6 mb-3">
               Votre liste est vide
             </Text>

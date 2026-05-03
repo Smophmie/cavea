@@ -160,8 +160,51 @@ class WishlistControllerTest extends TestCase
                  ->assertJsonPath('errors.bottle\.name', fn ($v) => !empty($v))
                  ->assertJsonPath('errors.bottle\.domain_name', fn ($v) => !empty($v))
                  ->assertJsonPath('errors.bottle\.colour_id', fn ($v) => !empty($v))
-                 ->assertJsonPath('errors.bottle\.region_id', fn ($v) => !empty($v))
-                 ->assertJsonPath('errors.vintage\.year', fn ($v) => !empty($v));
+                 ->assertJsonPath('errors.bottle\.region_id', fn ($v) => !empty($v));
+
+        // vintage.year is now optional for wishlist items
+        $response->assertJsonMissingPath('errors.vintage\.year');
+    }
+
+    public function testCanStoreWishlistItemWithoutVintage(): void
+    {
+        $colour  = Colour::factory()->create();
+        $region  = Region::factory()->create();
+        $domain  = Domain::factory()->create();
+        $bottle  = Bottle::factory()->create([
+            'colour_id' => $colour->id,
+            'region_id' => $region->id,
+            'domain_id' => $domain->id,
+        ]);
+
+        $wishlistItem = WishlistItem::factory()
+            ->for($this->user)
+            ->for($bottle)
+            ->make(['vintage_id' => null]);
+
+        $this->domainService->shouldReceive('findOrCreate')->once()->andReturn($domain);
+        $this->bottleService->shouldReceive('findOrCreate')->once()->andReturn($bottle);
+        $this->vintageService->shouldReceive('findOrCreate')->never();
+
+        $this->wishlistService
+            ->shouldReceive('create')
+            ->once()
+            ->with(
+                Mockery::on(fn ($data) => $data['vintage_id'] === null),
+                $this->user->id
+            )
+            ->andReturn($wishlistItem);
+
+        $response = $this->actingAs($this->user)->postJson('api/wishlist-items', [
+            'bottle' => [
+                'name'        => 'Château Test',
+                'domain_name' => 'Domaine Test',
+                'colour_id'   => $colour->id,
+                'region_id'   => $region->id,
+            ],
+        ]);
+
+        $response->assertCreated();
     }
 
     public function testStoreValidatesVintageYear(): void

@@ -124,6 +124,22 @@ class WishlistServiceTest extends TestCase
         $this->assertDatabaseHas('wishlist_items', ['id' => $wishlistItem->id]);
     }
 
+    public function testCreateWithoutVintage(): void
+    {
+        $user   = User::factory()->create();
+        $bottle = Bottle::factory()->create();
+
+        $wishlistItem = $this->service->create([
+            'bottle_id' => $bottle->id,
+        ], $user->id);
+
+        $this->assertNull($wishlistItem->vintage_id);
+        $this->assertDatabaseHas('wishlist_items', [
+            'id'         => $wishlistItem->id,
+            'vintage_id' => null,
+        ]);
+    }
+
     public function testCreateWithAppellationId(): void
     {
         $user        = User::factory()->create();
