@@ -11,7 +11,6 @@ jest.mock('expo-router', () => ({
   useFocusEffect: (callback: () => void) => {
     require('react').useEffect(callback, []);
   },
-  useLocalSearchParams: jest.fn(() => ({})),
 }));
 
 jest.mock('@/authentication/AuthContext', () => ({
@@ -21,13 +20,6 @@ jest.mock('@/authentication/AuthContext', () => ({
 jest.mock('@/services/CellarService', () => ({
   cellarService: {
     createCellarItem: jest.fn(),
-  },
-}));
-
-jest.mock('@/services/WishlistService', () => ({
-  wishlistService: {
-    getWishlistItemById: jest.fn(),
-    deleteWishlistItem: jest.fn(),
   },
 }));
 

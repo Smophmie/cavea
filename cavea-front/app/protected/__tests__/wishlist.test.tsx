@@ -164,7 +164,7 @@ describe('WishlistPage', () => {
     expect(mockPush).toHaveBeenCalledWith('/protected/add-wishlist-item');
   });
 
-  it('should navigate to add-bottle with fromWishlistId when add-to-cellar is pressed', async () => {
+  it('should navigate to add-from-wishlist with id when add-to-cellar is pressed', async () => {
     (wishlistService.getWishlistItems as jest.Mock).mockResolvedValue(mockItems);
 
     render(<WishlistPage />);
@@ -177,8 +177,8 @@ describe('WishlistPage', () => {
 
     expect(mockPush).toHaveBeenCalledWith(
       expect.objectContaining({
-        pathname: '/protected/add-bottle',
-        params: { fromWishlistId: 1 },
+        pathname: '/protected/add-from-wishlist',
+        params: { id: 1 },
       })
     );
   });

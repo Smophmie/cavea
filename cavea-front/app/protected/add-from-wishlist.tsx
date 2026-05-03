@@ -14,7 +14,10 @@ export default function AddFromWishlistPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id || !token) return;
+    if (!id || !token) {
+      setLoading(false);
+      return;
+    }
 
     wishlistService
       .getWishlistItemById(token, Number(id))
