@@ -59,7 +59,7 @@ export default function WishlistPage() {
             if (!token) return;
             try {
               await wishlistService.deleteWishlistItem(token, id);
-              setItems((prev) => prev.filter((i) => i.id !== id));
+              setItems(items.filter((i) => i.id !== id));
             } catch {
               Alert.alert("Erreur", "Impossible de supprimer cet élément");
             }
