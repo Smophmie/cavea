@@ -2,7 +2,7 @@ name: Backend and frontend CI/CD
 
 on:
   push:
-    branches: [ main, dev, feature/** ]
+    branches: [ main, dev, feature/**, claude/** ]
   pull_request:
     branches: [ main, dev ]
   workflow_dispatch:
