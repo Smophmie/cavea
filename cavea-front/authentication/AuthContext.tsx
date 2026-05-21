@@ -6,6 +6,7 @@ type AuthContextType = {
   token: string | null;
   username: string | null;
   login: (email: string, password: string) => Promise<string | null>;
+  loginWithGoogle: (accessToken: string) => Promise<string | null>;
   logout: () => Promise<void>;
   loading: boolean;
   storageLoading: boolean;
@@ -49,6 +50,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
 
+  const loginWithGoogle = async (accessToken: string): Promise<string | null> => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${baseURL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setToken(data.token);
+        setUsername(data.user.firstname);
+        return null;
+      } else {
+        return data.message || "Erreur lors de la connexion Google.";
+      }
+    } catch (err) {
+      console.error(err);
+      return "Impossible de se connecter au serveur.";
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       if (token) {
@@ -70,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, username, login, logout, loading, storageLoading }}
+      value={{ token, username, login, loginWithGoogle, logout, loading, storageLoading }}
     >
       {children}
     </AuthContext.Provider>

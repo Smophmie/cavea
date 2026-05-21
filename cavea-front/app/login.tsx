@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView, TouchableOpacity } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 import PrimaryButton from "./components/PrimaryButton";
@@ -10,6 +10,10 @@ import { Image } from "expo-image";
 import BackButton from "./components/BackButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { baseURL } from "@/api";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const Logo = require('@/assets/images/logo.png');
 
@@ -21,8 +25,23 @@ export default function LoginPage() {
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+
+  const [request, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (googleResponse?.type === "success") {
+      const accessToken = googleResponse.authentication?.accessToken;
+      if (accessToken) {
+        handleGoogleLogin(accessToken);
+      }
+    }
+  }, [googleResponse]);
 
   const handleLogin = async () => {
     setError(null);
@@ -35,6 +54,21 @@ export default function LoginPage() {
         setEmailNotVerified(true);
         setError("Votre email n'a pas encore été vérifié.");
       } else if (errorMessage) {
+        setError(errorMessage);
+      } else {
+        router.replace("/protected/dashboard");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (accessToken: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const errorMessage = await loginWithGoogle(accessToken);
+      if (errorMessage) {
         setError(errorMessage);
       } else {
         router.replace("/protected/dashboard");
@@ -120,7 +154,23 @@ export default function LoginPage() {
           {loading ? (
               <ActivityIndicator size="large" color="#800020" className="mb-4" />
           ) : (
+            <>
               <PrimaryButton text="Connexion" onPress={handleLogin} />
+              <View className="flex-row items-center my-3">
+                <View className="flex-1 h-px bg-gray-300" />
+                <Text className="mx-3 text-gray-400 text-sm">ou</Text>
+                <View className="flex-1 h-px bg-gray-300" />
+              </View>
+              <TouchableOpacity
+                onPress={() => promptGoogleAsync()}
+                disabled={!request}
+                className="flex-row items-center justify-center border border-gray-300 rounded-lg px-6 py-3 w-full my-2 bg-white"
+              >
+                <Text className="text-gray-700 text-center text-lg font-semibold">
+                  G  Continuer avec Google
+                </Text>
+              </TouchableOpacity>
+            </>
           )}
 
           {error && <Text className="text-red-600 text-center mt-3">{error}</Text>}

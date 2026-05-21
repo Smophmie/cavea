@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CellarItemController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\SocialAuthController;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 
 Route::post('/register', [UserController::class, 'register']);
@@ -18,6 +19,8 @@ Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 've
     ->name('verification.verify');
 
 Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
+
+Route::post('/auth/google', [SocialAuthController::class, 'handleGoogleToken']);
 
 Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/user/me', [UserController::class, 'me']);
